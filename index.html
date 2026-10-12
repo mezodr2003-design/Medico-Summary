@@ -3,133 +3,351 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medico Summary - Question Bank</title>
+    <title>Medico Summary - Advanced Q-Bank</title>
     <!-- Tailwind CSS & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Eye Care Theme Colors */
+        .theme-eyecare {
+            background-color: #f4ebd9 !important;
+            color: #433422 !important;
+        }
+        .theme-eyecare header, .theme-eyecare .card-bg {
+            background-color: #e8dcbe !important;
+            border-color: #d8c7a1 !important;
+            color: #2c2217 !important;
+        }
+        .theme-eyecare select, .theme-eyecare input, .theme-eyecare textarea {
+            background-color: #fbf7ee !important;
+            border-color: #d8c7a1 !important;
+            color: #2c2217 !important;
+        }
+        .theme-eyecare .btn-option {
+            background-color: #ede2ca !important;
+            border-color: #d8c7a1 !important;
+            color: #36291b !important;
+        }
+
+        /* Light Theme Colors */
+        .theme-light {
+            background-color: #f8fafc !important;
+            color: #0f172a !important;
+        }
+        .theme-light header, .theme-light .card-bg {
+            background-color: #ffffff !important;
+            border-color: #e2e8f0 !important;
+            color: #0f172a !important;
+        }
+        .theme-light select, .theme-light input, .theme-light textarea {
+            background-color: #f1f5f9 !important;
+            border-color: #cbd5e1 !important;
+            color: #0f172a !important;
+        }
+        .theme-light .btn-option {
+            background-color: #f8fafc !important;
+            border-color: #e2e8f0 !important;
+            color: #1e293b !important;
+        }
+    </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased selection:bg-blue-500 selection:text-white">
+<body id="app-body" class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased transition-colors duration-300">
 
     <!-- Header Navigation -->
-    <header class="bg-slate-800/80 backdrop-blur border-b border-slate-700/60 sticky top-0 z-50 px-4 py-3">
-        <div class="max-w-5xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
+    <header class="bg-slate-800/90 backdrop-blur border-b border-slate-700/60 sticky top-0 z-50 px-4 py-3 transition-colors duration-300">
+        <div class="max-w-5xl mx-auto flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="showDashboard()">
                 <div class="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
                     <i class="fa-solid fa-stethoscope text-lg"></i>
                 </div>
                 <div>
-                    <h1 class="text-base font-bold text-slate-100 leading-tight">Medico Summary</h1>
-                    <p class="text-xs text-slate-400">High-Yield USMLE Question Bank</p>
+                    <h1 class="text-base font-bold leading-tight">Medico Summary</h1>
+                    <p class="text-xs opacity-75">High-Yield Medical Question Bank</p>
                 </div>
             </div>
             
-            <button onclick="requestAdminAccess()" class="text-xs bg-slate-700/60 hover:bg-slate-700 border border-slate-600/50 px-3 py-2 rounded-xl text-slate-300 transition flex items-center gap-2">
-                <i class="fa-solid fa-lock text-slate-400"></i>
-                <span class="hidden sm:inline">Admin Access</span>
-            </button>
+            <div class="flex items-center gap-2">
+                <!-- Theme Switcher Buttons -->
+                <div class="flex bg-slate-900/60 p-1 rounded-xl border border-slate-700/60 text-xs">
+                    <button onclick="setTheme('dark')" title="Night / Dark Mode" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-700/50 transition">
+                        <i class="fa-solid fa-moon text-indigo-400"></i>
+                    </button>
+                    <button onclick="setTheme('eyecare')" title="Eye-Care / Sepia Mode" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-700/50 transition">
+                        <i class="fa-solid fa-eye text-amber-500"></i>
+                    </button>
+                    <button onclick="setTheme('light')" title="Bright / Light Mode" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-700/50 transition">
+                        <i class="fa-solid fa-sun text-yellow-400"></i>
+                    </button>
+                </div>
+
+                <button id="home-btn" onclick="showDashboard()" class="hidden text-xs bg-slate-700/60 hover:bg-slate-700 border border-slate-600/50 px-3 py-2 rounded-xl transition">
+                    <i class="fa-solid fa-house me-1"></i> Main Menu
+                </button>
+                <button onclick="requestAdminAccess()" class="text-xs bg-slate-700/60 hover:bg-slate-700 border border-slate-600/50 px-3 py-2 rounded-xl transition flex items-center gap-2">
+                    <i class="fa-solid fa-lock text-amber-400"></i>
+                    <span id="admin-btn-text" class="hidden sm:inline">Admin Access</span>
+                </button>
+            </div>
         </div>
     </header>
 
     <!-- Main Container -->
     <main class="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
 
-        <!-- Quiz Card Header -->
-        <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 flex flex-wrap justify-between items-center gap-4">
-            <div class="flex items-center gap-2">
-                <span class="text-xs text-slate-400">System / Topic:</span>
-                <span id="q-category" class="text-xs font-semibold bg-blue-500/10 text-blue-400 px-3 py-1 rounded-lg border border-blue-500/20">Cardiology</span>
-            </div>
-            <div class="text-xs font-medium text-slate-400" id="q-counter">
-                Question 1 of 1
-            </div>
-        </div>
-
-        <!-- Question View Box -->
-        <div id="quiz-card" class="bg-slate-800/90 rounded-2xl border border-slate-700/80 p-6 shadow-2xl space-y-6">
-            
-            <!-- Question Stem -->
-            <p id="q-text" class="text-base md:text-lg leading-relaxed font-medium text-slate-100">
-                Loading clinical vignette...
-            </p>
-
-            <!-- Answer Options -->
-            <div id="q-options" class="space-y-3">
-                <!-- Rendered dynamically -->
-            </div>
-
-            <!-- Explanation Box (UWorld Style) -->
-            <div id="explanation-box" class="hidden mt-6 p-5 rounded-xl bg-slate-900/90 border border-emerald-500/30 space-y-4">
-                <div class="flex items-center gap-2 text-emerald-400 font-bold border-b border-slate-800 pb-3">
-                    <i class="fa-solid fa-graduation-cap text-lg"></i>
-                    <span>Educational Objective & Explanation</span>
+        <!-- 1. DASHBOARD / SELECTION SCREEN -->
+        <div id="selection-screen" class="space-y-6">
+            <div class="card-bg bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6 transition-colors duration-300">
+                <div class="border-b border-slate-700/60 pb-4">
+                    <h2 class="text-xl font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-blue-400"></i> Create Custom Test
+                    </h2>
+                    <p class="text-xs opacity-75 mt-1">Select subject, topic/sub-specialty, and question source to begin.</p>
                 </div>
-                <p id="exp-text" class="text-sm leading-relaxed text-slate-300">
-                    --
-                </p>
-            </div>
 
-            <!-- Footer Controls -->
-            <div class="flex justify-between items-center pt-4 border-t border-slate-700/60">
-                <button onclick="prevQuestion()" class="bg-slate-700/60 hover:bg-slate-700 px-4 py-2 rounded-xl text-sm font-medium transition text-slate-300">
-                    <i class="fa-solid fa-arrow-left me-1"></i> Previous
-                </button>
-                <button onclick="nextQuestion()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-xl text-sm font-semibold transition flex items-center gap-2">
-                    <span>Next</span>
-                    <i class="fa-solid fa-arrow-right"></i>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold">1. Select Subject</label>
+                        <select id="select-subject" onchange="updateTopicsMenu()" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-500">
+                        </select>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold">2. Select Branch / Topic</label>
+                        <select id="select-topic" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-500">
+                        </select>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-xs font-semibold">3. Select Question Source</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <label class="relative flex items-center p-4 rounded-xl border border-slate-700/80 cursor-pointer hover:border-blue-500/50 transition">
+                            <input type="radio" name="source-type" value="PYEs & Formatives" checked class="text-blue-600 focus:ring-0">
+                            <div class="ml-3">
+                                <span class="block text-sm font-semibold">PYEs & Formatives</span>
+                                <span class="block text-xs opacity-75">Past Year Exams & Formatives</span>
+                            </div>
+                        </label>
+                        <label class="relative flex items-center p-4 rounded-xl border border-slate-700/80 cursor-pointer hover:border-blue-500/50 transition">
+                            <input type="radio" name="source-type" value="Other Banks" class="text-blue-600 focus:ring-0">
+                            <div class="ml-3">
+                                <span class="block text-sm font-semibold">Other Banks</span>
+                                <span class="block text-xs opacity-75">External High-Yield Banks</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <button onclick="startQuiz()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-play"></i> Start Quiz
                 </button>
             </div>
         </div>
 
-        <!-- Protected Admin Panel -->
-        <div id="admin-panel" class="hidden bg-slate-800/90 rounded-2xl border border-amber-500/40 p-6 shadow-2xl space-y-4">
+        <!-- 2. QUIZ SCREEN -->
+        <div id="quiz-screen" class="hidden space-y-6">
+            <div class="card-bg bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 flex flex-wrap justify-between items-center gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span id="badge-subject" class="text-xs font-semibold bg-blue-500/10 text-blue-400 px-3 py-1 rounded-lg border border-blue-500/20">--</span>
+                    <span id="badge-topic" class="text-xs font-semibold bg-slate-700/60 px-3 py-1 rounded-lg">--</span>
+                    <span id="badge-source" class="text-xs font-semibold bg-amber-500/10 text-amber-400 px-3 py-1 rounded-lg border border-amber-500/20">--</span>
+                </div>
+                <div class="text-xs font-medium opacity-75" id="q-counter">
+                    Question 1
+                </div>
+            </div>
+
+            <div class="card-bg bg-slate-800/90 rounded-2xl border border-slate-700/80 p-6 shadow-2xl space-y-6 transition-colors duration-300">
+                <p id="q-text" class="text-base md:text-lg leading-relaxed font-medium">
+                    Loading clinical vignette...
+                </p>
+
+                <div id="q-options" class="space-y-3">
+                </div>
+
+                <div id="explanation-box" class="hidden mt-6 p-5 rounded-xl bg-emerald-950/20 border border-emerald-500/40 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-700/40 pb-3">
+                        <div class="flex items-center gap-2 text-emerald-500 font-bold">
+                            <i class="fa-solid fa-graduation-cap text-lg"></i>
+                            <span>Educational Objective & Explanation</span>
+                        </div>
+                    </div>
+                    <p id="exp-text" class="text-sm leading-relaxed opacity-90">--</p>
+                </div>
+
+                <div class="flex justify-between items-center pt-4 border-t border-slate-700/60">
+                    <button onclick="prevQuestion()" class="bg-slate-700/60 hover:bg-slate-700 px-4 py-2 rounded-xl text-sm font-medium transition">
+                        <i class="fa-solid fa-arrow-left me-1"></i> Previous
+                    </button>
+                    <button id="edit-q-btn" onclick="openEditModal()" class="hidden text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40 px-3 py-2 rounded-xl transition">
+                        <i class="fa-solid fa-pen me-1"></i> Edit Question
+                    </button>
+                    <button onclick="nextQuestion()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-xl text-sm font-semibold transition flex items-center gap-2">
+                        <span>Next</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. EDIT QUESTION MODAL -->
+        <div id="edit-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="card-bg bg-slate-800 border border-amber-500/40 rounded-2xl p-6 w-full max-w-2xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                    <h3 class="text-base font-bold text-amber-400 flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square"></i> Edit Question Details
+                    </h3>
+                    <button onclick="closeEditModal()" class="opacity-70 hover:opacity-100"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-xs opacity-75">Question Stem:</label>
+                        <textarea id="edit-q-text" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl text-sm h-24 focus:outline-none focus:border-amber-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="text-xs opacity-75">Educational Objective & Explanation:</label>
+                        <textarea id="edit-exp-text" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl text-sm h-24 focus:outline-none focus:border-amber-500"></textarea>
+                    </div>
+                    <button onclick="saveQuestionEdits()" class="w-full bg-amber-600 hover:bg-amber-500 font-bold py-3 rounded-xl transition text-white shadow-lg shadow-amber-600/20">
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. ADMIN PANEL -->
+        <div id="admin-panel" class="hidden card-bg bg-slate-800/90 rounded-2xl border border-amber-500/40 p-6 shadow-2xl space-y-4">
             <div class="flex justify-between items-center border-b border-slate-700 pb-3">
                 <h3 class="text-base font-bold text-amber-400 flex items-center gap-2">
-                    <i class="fa-solid fa-user-shield"></i> Admin Panel (Active Session)
+                    <i class="fa-solid fa-user-shield"></i> Admin Manager
                 </h3>
-                <button onclick="closeAdminPanel()" class="text-xs bg-slate-700 px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-white">Close</button>
+                <span class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-full">Admin Active</span>
             </div>
             
-            <p class="text-xs text-slate-400">Add questions directly to the current session or generate output for permanent saving.</p>
-            
-            <div class="space-y-3">
-                <input type="text" id="new-cat" placeholder="Category / System (e.g., GI, Renal, Cardiology)" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl text-sm text-slate-100 focus:outline-none focus:border-amber-500">
-                <textarea id="new-q" placeholder="Clinical Question Stem..." class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl text-sm text-slate-100 h-24 focus:outline-none focus:border-amber-500"></textarea>
-                <textarea id="new-exp" placeholder="Educational Objective & UWorld Explanation..." class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl text-sm text-slate-100 h-24 focus:outline-none focus:border-amber-500"></textarea>
-                <button onclick="addNewQuestionFromAdmin()" class="w-full bg-amber-600 hover:bg-amber-500 font-bold py-3 rounded-xl transition text-white shadow-lg shadow-amber-600/20">
-                    Add Question To Session
-                </button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="p-4 rounded-xl border border-slate-700/60 space-y-3">
+                    <h4 class="text-xs font-bold">Add New Subject</h4>
+                    <input type="text" id="new-subj-name" placeholder="Subject Name" class="w-full border border-slate-700 p-2.5 rounded-lg text-sm">
+                    <button onclick="addNewSubject()" class="w-full bg-slate-700 hover:bg-slate-600 text-xs font-bold py-2 rounded-lg transition">Add Subject</button>
+                </div>
+                
+                <div class="p-4 rounded-xl border border-slate-700/60 space-y-3">
+                    <h4 class="text-xs font-bold">Add New Branch / Topic</h4>
+                    <input type="text" id="new-topic-name" placeholder="Branch / Topic Name" class="w-full border border-slate-700 p-2.5 rounded-lg text-sm">
+                    <button onclick="addNewTopic()" class="w-full bg-slate-700 hover:bg-slate-600 text-xs font-bold py-2 rounded-lg transition">Add Topic to Current Subject</button>
+                </div>
             </div>
         </div>
 
     </main>
 
-    <!-- Embedded Initial Data & App Logic -->
     <script>
-        // Password for Admin Access
         const ADMIN_PASS = "med2026";
+        let isAdmin = false;
+
+        let dbConfig = {
+            "ENT": ["General ENT", "Otology", "Rhinology", "Laryngology"],
+            "Urology": ["General Urology", "Urolithiasis", "Prostate & Oncology", "Pediatric Urology"],
+            "Orthopedics": ["General Orthopedics", "Trauma & Fractures", "Pediatric Orthopedics", "Joint Replacement"],
+            "Special Surgery": ["Vascular Surgery", "Cardiothoracic Surgery", "Neurosurgery", "Plastic Surgery"],
+            "Internal Medicine 3": ["Clinical Pathology", "Radiology"],
+            "Family Medicine": ["General Family Medicine", "Preventive Care & Screening", "Chronic Disease Management"]
+        };
 
         let questionsData = [
             {
                 id: 1,
-                category: "Cardiology",
-                question: "A 55-year-old male presents to the emergency department with severe crushing substernal chest pain radiating to the left jaw and arm. ECG reveals ST-segment elevation in leads V1 through V4. Cardiac biomarkers are elevated. What is the most appropriate next step in management?",
-                options: [
-                    "Immediate Percutaneous Coronary Intervention (PCI)",
-                    "Administration of Oral Beta-blockers only",
-                    "Emergent Aortic Valve Replacement",
-                    "Reassurance and Outpatient Echocardiogram"
-                ],
-                correct: 0,
-                explanation: "Educational Objective: Acute Anterior Wall Myocardial Infarction (STEMI) involving leads V1-V4 results from occlusion of the Left Anterior Descending (LAD) artery. The primary goal is immediate reperfusion via Percutaneous Coronary Intervention (PCI) within 90 minutes of door-to-balloon time."
+                subject: "Special Surgery",
+                topic: "Vascular Surgery",
+                source: "PYEs & Formatives",
+                question: "A 68-year-old male presents with sudden-onset, severe abdominal pain radiating to the back. On examination, a pulsatile abdominal mass is palpated. Blood pressure is 85/50 mmHg. What is the most likely diagnosis?",
+                options: ["Acute Pancreatitis", "Ruptured Abdominal Aortic Aneurysm (AAA)", "Renal Colic", "Acute Mesenteric Ischemia"],
+                correct: 1,
+                explanation: "Educational Objective: The classic triad of a ruptured Abdominal Aortic Aneurysm (AAA) includes severe abdominal/back pain, hypotension, and a pulsatile abdominal mass."
             }
         ];
 
+        let activeQuizQuestions = [];
         let currentIndex = 0;
 
+        function setTheme(mode) {
+            const body = document.getElementById('app-body');
+            body.classList.remove('theme-eyecare', 'theme-light');
+            if(mode === 'eyecare') body.classList.add('theme-eyecare');
+            if(mode === 'light') body.classList.add('theme-light');
+        }
+
+        function initUI() {
+            const subjSelect = document.getElementById('select-subject');
+            subjSelect.innerHTML = '';
+            Object.keys(dbConfig).forEach(subj => {
+                const opt = document.createElement('option');
+                opt.value = subj;
+                opt.innerText = subj;
+                subjSelect.appendChild(opt);
+            });
+            updateTopicsMenu();
+        }
+
+        function updateTopicsMenu() {
+            const selectedSubj = document.getElementById('select-subject').value;
+            const topicSelect = document.getElementById('select-topic');
+            topicSelect.innerHTML = '';
+            
+            if(dbConfig[selectedSubj]) {
+                dbConfig[selectedSubj].forEach(top => {
+                    const opt = document.createElement('option');
+                    opt.value = top;
+                    opt.innerText = top;
+                    topicSelect.appendChild(opt);
+                });
+            }
+        }
+
+        function startQuiz() {
+            const subj = document.getElementById('select-subject').value;
+            const topic = document.getElementById('select-topic').value;
+            const source = document.querySelector('input[name="source-type"]:checked').value;
+
+            activeQuizQuestions = questionsData.filter(q => 
+                q.subject === subj && q.topic === topic && q.source === source
+            );
+
+            if(activeQuizQuestions.length === 0) {
+                activeQuizQuestions = [{
+                    id: 999,
+                    subject: subj,
+                    topic: topic,
+                    source: source,
+                    question: `No questions uploaded yet for ${subj} -> ${topic} (${source}). Send your material/PDFs to generate and add high-yield questions!`,
+                    options: ["Option A", "Option B", "Option C", "Option D"],
+                    correct: 0,
+                    explanation: "Educational Objective: High-yield explanation will appear here upon adding questions."
+                }];
+            }
+
+            currentIndex = 0;
+            document.getElementById('badge-subject').innerText = subj;
+            document.getElementById('badge-topic').innerText = topic;
+            document.getElementById('badge-source').innerText = source;
+            
+            document.getElementById('selection-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            document.getElementById('home-btn').classList.remove('hidden');
+
+            loadQuestion();
+        }
+
+        function showDashboard() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('selection-screen').classList.remove('hidden');
+            document.getElementById('home-btn').classList.add('hidden');
+        }
+
         function loadQuestion() {
-            const q = questionsData[currentIndex];
-            document.getElementById('q-category').innerText = q.category;
-            document.getElementById('q-counter').innerText = `Question ${currentIndex + 1} of ${questionsData.length}`;
+            const q = activeQuizQuestions[currentIndex];
+            document.getElementById('q-counter').innerText = `Question ${currentIndex + 1} of ${activeQuizQuestions.length}`;
             document.getElementById('q-text').innerText = q.question;
 
             const optsBox = document.getElementById('q-options');
@@ -137,8 +355,8 @@
 
             q.options.forEach((opt, idx) => {
                 const btn = document.createElement('button');
-                btn.className = 'w-full text-left p-4 rounded-xl bg-slate-700/40 hover:bg-slate-700/80 border border-slate-600/40 transition flex justify-between items-center group';
-                btn.innerHTML = `<span class="text-sm font-medium text-slate-200 group-hover:text-white">${opt}</span> <i class="fa-regular fa-circle text-slate-500 text-sm"></i>`;
+                btn.className = 'btn-option w-full text-left p-4 rounded-xl bg-slate-700/40 hover:bg-slate-700/80 border border-slate-600/40 transition flex justify-between items-center group';
+                btn.innerHTML = `<span class="text-sm font-medium">${opt}</span> <i class="fa-regular fa-circle opacity-50 text-sm"></i>`;
                 btn.onclick = () => selectOption(idx, q.correct, btn);
                 optsBox.appendChild(btn);
             });
@@ -148,26 +366,25 @@
 
         function selectOption(selected, correct, btnElement) {
             const expBox = document.getElementById('explanation-box');
-            document.getElementById('exp-text').innerText = questionsData[currentIndex].explanation;
+            document.getElementById('exp-text').innerText = activeQuizQuestions[currentIndex].explanation;
             expBox.classList.remove('hidden');
 
-            // Reset other buttons
             const allBtns = document.getElementById('q-options').children;
             for(let btn of allBtns) {
-                btn.className = 'w-full text-left p-4 rounded-xl bg-slate-700/20 border border-slate-700/40 opacity-60 flex justify-between items-center';
+                btn.className = 'btn-option w-full text-left p-4 rounded-xl opacity-60 flex justify-between items-center';
             }
 
             if (selected === correct) {
-                btnElement.className = 'w-full text-left p-4 rounded-xl bg-emerald-950/60 border border-emerald-500 text-emerald-200 font-semibold flex justify-between items-center opacity-100 shadow-lg shadow-emerald-950/40';
-                btnElement.querySelector('i').className = 'fa-solid fa-circle-check text-emerald-400 text-base';
+                btnElement.className = 'w-full text-left p-4 rounded-xl bg-emerald-900/40 border border-emerald-500 text-emerald-400 font-semibold flex justify-between items-center opacity-100 shadow-lg';
+                btnElement.querySelector('i').className = 'fa-solid fa-circle-check text-emerald-500 text-base';
             } else {
-                btnElement.className = 'w-full text-left p-4 rounded-xl bg-rose-950/60 border border-rose-500 text-rose-200 font-semibold flex justify-between items-center opacity-100 shadow-lg shadow-rose-950/40';
-                btnElement.querySelector('i').className = 'fa-solid fa-circle-xmark text-rose-400 text-base';
+                btnElement.className = 'w-full text-left p-4 rounded-xl bg-rose-900/40 border border-rose-500 text-rose-400 font-semibold flex justify-between items-center opacity-100 shadow-lg';
+                btnElement.querySelector('i').className = 'fa-solid fa-circle-xmark text-rose-500 text-base';
             }
         }
 
         function nextQuestion() {
-            if (currentIndex < questionsData.length - 1) {
+            if (currentIndex < activeQuizQuestions.length - 1) {
                 currentIndex++;
                 loadQuestion();
             }
@@ -181,42 +398,65 @@
         }
 
         function requestAdminAccess() {
+            if(isAdmin) {
+                document.getElementById('admin-panel').classList.toggle('hidden');
+                return;
+            }
             const pwd = prompt("Enter Admin Password:");
             if (pwd === ADMIN_PASS) {
+                isAdmin = true;
+                document.getElementById('admin-btn-text').innerText = "Admin Panel";
+                document.getElementById('edit-q-btn').classList.remove('hidden');
                 document.getElementById('admin-panel').classList.remove('hidden');
-                document.getElementById('admin-panel').scrollIntoView({ behavior: 'smooth' });
+                alert("Admin Mode Activated!");
             } else if (pwd !== null) {
                 alert("Incorrect Password!");
             }
         }
 
-        function closeAdminPanel() {
-            document.getElementById('admin-panel').classList.add('hidden');
+        function openEditModal() {
+            const q = activeQuizQuestions[currentIndex];
+            document.getElementById('edit-q-text').value = q.question;
+            document.getElementById('edit-exp-text').value = q.explanation;
+            document.getElementById('edit-modal').classList.remove('hidden');
         }
 
-        function addNewQuestionFromAdmin() {
-            const cat = document.getElementById('new-cat').value || "General";
-            const qText = document.getElementById('new-q').value;
-            const expText = document.getElementById('new-exp').value;
+        function closeEditModal() {
+            document.getElementById('edit-modal').classList.add('hidden');
+        }
 
-            if(!qText) return alert("Please enter the question text.");
+        function saveQuestionEdits() {
+            const newQ = document.getElementById('edit-q-text').value;
+            const newExp = document.getElementById('edit-exp-text').value;
 
-            questionsData.push({
-                id: questionsData.length + 1,
-                category: cat,
-                question: qText,
-                options: ["Option A", "Option B", "Option C", "Option D"],
-                correct: 0,
-                explanation: expText
-            });
+            activeQuizQuestions[currentIndex].question = newQ;
+            activeQuizQuestions[currentIndex].explanation = newExp;
 
-            alert("New question added to this session!");
-            document.getElementById('new-q').value = '';
-            document.getElementById('new-exp').value = '';
             loadQuestion();
+            closeEditModal();
+            alert("Question updated successfully!");
         }
 
-        window.onload = loadQuestion;
+        function addNewSubject() {
+            const name = document.getElementById('new-subj-name').value;
+            if(!name) return alert("Enter subject name");
+            if(!dbConfig[name]) dbConfig[name] = ["General"];
+            initUI();
+            document.getElementById('new-subj-name').value = '';
+            alert("Subject Added!");
+        }
+
+        function addNewTopic() {
+            const subj = document.getElementById('select-subject').value;
+            const topic = document.getElementById('new-topic-name').value;
+            if(!topic) return alert("Enter topic name");
+            dbConfig[subj].push(topic);
+            updateTopicsMenu();
+            document.getElementById('new-topic-name').value = '';
+            alert("Topic Added!");
+        }
+
+        window.onload = initUI;
     </script>
 </body>
 </html>
