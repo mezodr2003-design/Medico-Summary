@@ -25,7 +25,7 @@
         ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
-        /* ---------------- THEMES OVERRIDES ---------------- */
+        /* THEMES OVERRIDES */
         .theme-eyecare { background-color: #f4ebd9 !important; color: #36291b !important; }
         .theme-eyecare header, .theme-eyecare .bg-slate-800 { background-color: #e8dcbe !important; border-color: #d8c7a1 !important; color: #2c2217 !important; }
         .theme-eyecare select, .theme-eyecare input, .theme-eyecare textarea, .theme-eyecare .bg-slate-900, .theme-eyecare .bg-slate-900\\/50 { background-color: #fbf7ee !important; border-color: #d8c7a1 !important; color: #2c2217 !important; }
@@ -46,7 +46,6 @@
         .theme-light .option-btn:hover:not(:disabled) { background-color: #f1f5f9 !important; }
         .theme-light .q-matrix-btn { border-color: #cbd5e1 !important; color: #475569 !important; }
 
-        /* ---------------- PRINT SPECIFIC CSS ---------------- */
         @media print {
             body * { display: none !important; }
             #print-area, #print-area * { display: block !important; }
@@ -57,7 +56,6 @@
 </head>
 <body id="app-body" class="bg-slate-900 text-slate-200 min-h-screen font-sans antialiased flex flex-col transition-colors duration-300">
 
-    <!-- Container for PDF Print Export -->
     <div id="print-area" class="hidden"></div>
 
     <!-- Navbar -->
@@ -88,13 +86,11 @@
                     <div id="timer-display" class="hidden items-center gap-2 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700 font-mono text-sm text-amber-400">
                         <i class="fa-regular fa-clock"></i> <span id="time-left">00:00:00</span>
                     </div>
-                    <!-- Export to PDF Button -->
                     <button onclick="exportToPDF()" title="Export current block as PDF" class="text-xs bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30 border border-emerald-500/30 px-3 py-1.5 rounded transition font-semibold flex items-center gap-2">
                         <i class="fa-solid fa-file-pdf"></i><span class="hidden sm:inline">Export PDF</span>
                     </button>
                     <button onclick="endQuizEarly()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded transition font-semibold">End Block</button>
                 </div>
-                <!-- Admin Button -->
                 <button onclick="requestAdminAccess()" class="text-xs bg-slate-700 hover:bg-slate-600 border border-slate-600 px-3 py-1.5 rounded transition flex items-center gap-2">
                     <i class="fa-solid fa-lock text-amber-400"></i>
                     <span id="admin-btn-text" class="hidden sm:inline">Admin Access</span>
@@ -110,13 +106,6 @@
                 <div>
                     <h2 class="text-2xl font-bold">Create Test Block</h2>
                     <p class="text-sm text-slate-400 mt-1">Configure your practice session.</p>
-                </div>
-
-                <!-- Mobile Theme Switcher (Visible only on small screens) -->
-                <div class="flex sm:hidden justify-center bg-slate-900/50 p-2 rounded-xl border border-slate-700/60 text-sm mb-4">
-                    <button onclick="setTheme('dark')" class="px-4 py-2 rounded-lg hover:bg-slate-700/50 transition"><i class="fa-solid fa-moon text-indigo-400"></i></button>
-                    <button onclick="setTheme('eyecare')" class="px-4 py-2 rounded-lg hover:bg-slate-700/50 transition"><i class="fa-solid fa-eye text-amber-500"></i></button>
-                    <button onclick="setTheme('light')" class="px-4 py-2 rounded-lg hover:bg-slate-700/50 transition"><i class="fa-solid fa-sun text-yellow-400"></i></button>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 border-b border-slate-700 pb-6">
@@ -210,7 +199,6 @@
 
                 <div class="mt-auto pt-6 flex justify-between items-center">
                     <button onclick="navigate(-1)" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 px-5 py-2.5 rounded-lg text-sm transition font-medium">Previous</button>
-                    <!-- Edit Button for Admins -->
                     <button id="edit-q-btn" onclick="openEditModal()" class="hidden text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-500 font-bold border border-amber-500/40 px-4 py-2.5 rounded-lg transition items-center gap-2">
                         <i class="fa-solid fa-pen"></i> Edit Question
                     </button>
@@ -268,7 +256,6 @@
 
     </main>
 
-    <!-- Import Data -->
     <script src="data.js"></script>
 
     <script>
@@ -283,7 +270,6 @@
         let timerInterval;
         let timeRemaining = 0;
 
-        // --- Theme Logic ---
         function setTheme(mode) {
             const body = document.getElementById('app-body');
             body.classList.remove('theme-eyecare', 'theme-light');
@@ -293,7 +279,6 @@
         }
 
         function initApp() {
-            // Load saved theme
             const savedTheme = localStorage.getItem('medico_theme') || 'dark';
             setTheme(savedTheme);
 
@@ -308,6 +293,7 @@
         function populateFilters() {
             const subjects = [...new Set(questionsDatabase.map(q => q.subject))];
             const subjSelect = document.getElementById('filter-subject');
+            subjSelect.innerHTML = '<option value="all">All Subjects</option>';
             subjects.forEach(s => subjSelect.innerHTML += `<option value="${s}">${s}</option>`);
         }
 
@@ -562,7 +548,6 @@
             updateAvailableCount(); 
         }
 
-        // --- Export to PDF Logic ---
         function exportToPDF() {
             const printArea = document.getElementById('print-area');
             const titleSubject = document.getElementById('filter-subject').value === 'all' ? 'Mixed Subjects' : document.getElementById('filter-subject').value;
@@ -614,13 +599,11 @@
             });
 
             printArea.innerHTML = htmlContent;
-            // Add a small delay to ensure DOM is updated before printing
             setTimeout(() => {
                 window.print();
             }, 100);
         }
 
-        // --- Admin Functions ---
         function requestAdminAccess() {
             if(isAdmin) {
                 alert("Admin mode is already active!");
@@ -628,7 +611,6 @@
             }
             const pwd = prompt("Enter Admin Password:");
             if (pwd !== null) {
-                // Convert entered string to char codes to match the secret array
                 const enteredSecret = pwd.split('').map(c => c.charCodeAt(0)).join(',');
                 const correctSecret = ADMIN_SECRET.join(',');
                 
