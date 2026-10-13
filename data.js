@@ -5,7 +5,7 @@ const questionsDatabase = [
         subject: "ENT",
         branch: "otology-drmosad MCQs",
         subtype: "Ototoxicity & Aging",
-        source: "Dr mosad's MCQs",
+        source: "PYEs & Formatives",
         question: "Hearing loss resulting from degenerative changes of aging is known as:",
         options: ["Otosclerosis", "Presbyacusis", "Diplacusis", "Paracusis"],
         correct: 1,
