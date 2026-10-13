@@ -608,7 +608,7 @@
             updateAvailableCount(); 
         }
 
-        // --- NEW IMPROVED PDF EXPORT ---
+        // --- NEW IMPROVED PDF EXPORT (NO EXPLANATION) ---
         function exportToPDF() {
             const printArea = document.getElementById('print-area');
             const titleSubject = document.getElementById('filter-subject').value === 'all' ? 'Mixed Subjects' : document.getElementById('filter-subject').value;
@@ -680,8 +680,7 @@
                     const correctOptText = q.options[q.correct];
                     htmlContent += `
                         <div style="margin-bottom: 8px;">
-                            <sup style="font-size: 10px;">${globalIndex + 1}</sup> <b>Answer:</b> ${correctOptText} <br>
-                            <span style="color: #4b5563; font-style: italic; margin-left: 12px;">${q.explanation}</span>
+                            <sup style="font-size: 10px;">${globalIndex + 1}</sup> <b>Answer:</b> ${correctOptText}
                         </div>
                     `;
                 });
