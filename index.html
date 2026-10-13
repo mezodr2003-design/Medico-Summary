@@ -3,460 +3,484 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medico Summary - Advanced Q-Bank</title>
-    <!-- Tailwind CSS & FontAwesome -->
+    <title>Medico Summary - Pro QBank</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* Eye Care Theme Colors */
-        .theme-eyecare {
-            background-color: #f4ebd9 !important;
-            color: #433422 !important;
-        }
-        .theme-eyecare header, .theme-eyecare .card-bg {
-            background-color: #e8dcbe !important;
-            border-color: #d8c7a1 !important;
-            color: #2c2217 !important;
-        }
-        .theme-eyecare select, .theme-eyecare input, .theme-eyecare textarea {
-            background-color: #fbf7ee !important;
-            border-color: #d8c7a1 !important;
-            color: #2c2217 !important;
-        }
-        .theme-eyecare .btn-option {
-            background-color: #ede2ca !important;
-            border-color: #d8c7a1 !important;
-            color: #36291b !important;
-        }
-
-        /* Light Theme Colors */
-        .theme-light {
-            background-color: #f8fafc !important;
-            color: #0f172a !important;
-        }
-        .theme-light header, .theme-light .card-bg {
-            background-color: #ffffff !important;
-            border-color: #e2e8f0 !important;
-            color: #0f172a !important;
-        }
-        .theme-light select, .theme-light input, .theme-light textarea {
-            background-color: #f1f5f9 !important;
-            border-color: #cbd5e1 !important;
-            color: #0f172a !important;
-        }
-        .theme-light .btn-option {
-            background-color: #f8fafc !important;
-            border-color: #e2e8f0 !important;
-            color: #1e293b !important;
-        }
+        .q-matrix-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; border-radius: 8px; border: 1px solid #475569; background: transparent; color: #cbd5e1; transition: all 0.2s; }
+        .q-matrix-btn:hover { border-color: #94a3b8; }
+        .q-matrix-btn.active { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); }
+        .q-matrix-btn.correct { background-color: #059669; border-color: #059669; color: white; }
+        .q-matrix-btn.incorrect { background-color: #e11d48; border-color: #e11d48; color: white; }
+        
+        .flag-marker { position: absolute; top: -4px; right: -4px; color: #f59e0b; font-size: 0.7rem; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.5)); }
+        
+        /* Options Styling */
+        .option-btn { transition: all 0.2s; border: 1px solid #334155; }
+        .option-btn:hover:not(:disabled) { background-color: #334155; border-color: #475569; }
+        .option-btn.selected-correct { background-color: rgba(5, 150, 105, 0.2); border-color: #059669; color: #34d399; }
+        .option-btn.selected-incorrect { background-color: rgba(225, 29, 72, 0.2); border-color: #e11d48; color: #fb7185; }
+        .option-btn.actual-correct { border-color: #059669; box-shadow: inset 0 0 0 1px #059669; }
+        
+        /* Modern Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
 </head>
-<body id="app-body" class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased transition-colors duration-300">
+<body class="bg-slate-900 text-slate-200 min-h-screen font-sans antialiased flex flex-col">
 
-    <!-- Header Navigation -->
-    <header class="bg-slate-800/90 backdrop-blur border-b border-slate-700/60 sticky top-0 z-50 px-4 py-3 transition-colors duration-300">
-        <div class="max-w-5xl mx-auto flex flex-wrap justify-between items-center gap-3">
-            <div class="flex items-center gap-3 cursor-pointer" onclick="showDashboard()">
-                <div class="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
-                    <i class="fa-solid fa-stethoscope text-lg"></i>
+    <!-- Navbar -->
+    <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-14 flex justify-between items-center">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="goHome()">
+                <div class="w-8 h-8 rounded bg-blue-600 flex items-center justify-center text-white">
+                    <i class="fa-solid fa-stethoscope"></i>
                 </div>
-                <div>
-                    <h1 class="text-base font-bold leading-tight">Medico Summary</h1>
-                    <p class="text-xs opacity-75">High-Yield Medical Question Bank</p>
-                </div>
+                <h1 class="font-bold text-slate-100 tracking-wide">Medico Summary</h1>
             </div>
             
-            <div class="flex items-center gap-2">
-                <!-- Theme Switcher Buttons -->
-                <div class="flex bg-slate-900/60 p-1 rounded-xl border border-slate-700/60 text-xs">
-                    <button onclick="setTheme('dark')" title="Night / Dark Mode" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-700/50 transition">
-                        <i class="fa-solid fa-moon text-indigo-400"></i>
-                    </button>
-                    <button onclick="setTheme('eyecare')" title="Eye-Care / Sepia Mode" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-700/50 transition">
-                        <i class="fa-solid fa-eye text-amber-500"></i>
-                    </button>
-                    <button onclick="setTheme('light')" title="Bright / Light Mode" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-700/50 transition">
-                        <i class="fa-solid fa-sun text-yellow-400"></i>
-                    </button>
+            <div id="quiz-header-controls" class="hidden flex items-center gap-4">
+                <div id="timer-display" class="hidden items-center gap-2 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700 font-mono text-sm text-amber-400">
+                    <i class="fa-regular fa-clock"></i> <span id="time-left">00:00:00</span>
                 </div>
-
-                <button id="home-btn" onclick="showDashboard()" class="hidden text-xs bg-slate-700/60 hover:bg-slate-700 border border-slate-600/50 px-3 py-2 rounded-xl transition">
-                    <i class="fa-solid fa-house me-1"></i> Main Menu
-                </button>
-                <button onclick="requestAdminAccess()" class="text-xs bg-slate-700/60 hover:bg-slate-700 border border-slate-600/50 px-3 py-2 rounded-xl transition flex items-center gap-2">
-                    <i class="fa-solid fa-lock text-amber-400"></i>
-                    <span id="admin-btn-text" class="hidden sm:inline">Admin Access</span>
-                </button>
+                <button onclick="endQuizEarly()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded transition">End Block</button>
             </div>
         </div>
     </header>
 
-    <!-- Main Container -->
-    <main class="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
-
-        <!-- 1. DASHBOARD / SELECTION SCREEN -->
-        <div id="selection-screen" class="space-y-6">
-            <div class="card-bg bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6 transition-colors duration-300">
-                <div class="border-b border-slate-700/60 pb-4">
-                    <h2 class="text-xl font-bold flex items-center gap-2">
-                        <i class="fa-solid fa-sliders text-blue-400"></i> Create Custom Test
-                    </h2>
-                    <p class="text-xs opacity-75 mt-1">Select subject, topic/sub-specialty, and question source to begin.</p>
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl mx-auto w-full p-4 flex flex-col">
+        
+        <!-- ================= DASHBOARD SCREEN ================= -->
+        <div id="dashboard-screen" class="max-w-3xl mx-auto w-full py-8 space-y-6">
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">Create Test Block</h2>
+                    <p class="text-sm text-slate-400 mt-1">Configure your practice session.</p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="space-y-2">
-                        <label class="text-xs font-semibold">1. Select Subject</label>
-                        <select id="select-subject" onchange="updateTopicsMenu()" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-500">
-                        </select>
-                    </div>
-
-                    <div class="space-y-2">
-                        <label class="text-xs font-semibold">2. Select Branch / Topic</label>
-                        <select id="select-topic" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-500">
-                        </select>
-                    </div>
+                <!-- Test Mode -->
+                <div class="grid grid-cols-2 gap-3 border-b border-slate-700 pb-6">
+                    <label class="relative flex p-4 rounded-xl border border-slate-600 cursor-pointer hover:bg-slate-700/50 transition">
+                        <input type="radio" name="test-mode" value="tutor" checked class="mt-1">
+                        <div class="ml-3">
+                            <span class="block font-semibold text-slate-200">Tutor Mode</span>
+                            <span class="block text-xs text-slate-400">Answers shown immediately</span>
+                        </div>
+                    </label>
+                    <label class="relative flex p-4 rounded-xl border border-slate-600 cursor-pointer hover:bg-slate-700/50 transition">
+                        <input type="radio" name="test-mode" value="timed" class="mt-1">
+                        <div class="ml-3">
+                            <span class="block font-semibold text-slate-200">Timed Mode</span>
+                            <span class="block text-xs text-slate-400">1.5 mins per question</span>
+                        </div>
+                    </label>
                 </div>
 
-                <div class="space-y-2">
-                    <label class="text-xs font-semibold">3. Select Question Source</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <label class="relative flex items-center p-4 rounded-xl border border-slate-700/80 cursor-pointer hover:border-blue-500/50 transition">
-                            <input type="radio" name="source-type" value="PYEs & Formatives" checked class="text-blue-600 focus:ring-0">
-                            <div class="ml-3">
-                                <span class="block text-sm font-semibold">PYEs & Formatives</span>
-                                <span class="block text-xs opacity-75">Past Year Exams & Formatives</span>
-                            </div>
-                        </label>
-                        <label class="relative flex items-center p-4 rounded-xl border border-slate-700/80 cursor-pointer hover:border-blue-500/50 transition">
-                            <input type="radio" name="source-type" value="Other Banks" class="text-blue-600 focus:ring-0">
-                            <div class="ml-3">
-                                <span class="block text-sm font-semibold">Other Banks</span>
-                                <span class="block text-xs opacity-75">External High-Yield Banks</span>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
-                <button onclick="startQuiz()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-play"></i> Start Quiz
-                </button>
-            </div>
-        </div>
-
-        <!-- 2. QUIZ SCREEN -->
-        <div id="quiz-screen" class="hidden space-y-6">
-            <div class="card-bg bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 flex flex-wrap justify-between items-center gap-2">
-                <div class="flex items-center gap-2 flex-wrap">
-                    <span id="badge-subject" class="text-xs font-semibold bg-blue-500/10 text-blue-400 px-3 py-1 rounded-lg border border-blue-500/20">--</span>
-                    <span id="badge-topic" class="text-xs font-semibold bg-slate-700/60 px-3 py-1 rounded-lg">--</span>
-                    <span id="badge-source" class="text-xs font-semibold bg-amber-500/10 text-amber-400 px-3 py-1 rounded-lg border border-amber-500/20">--</span>
-                </div>
-                <div class="text-xs font-medium opacity-75" id="q-counter">
-                    Question 1
-                </div>
-            </div>
-
-            <div class="card-bg bg-slate-800/90 rounded-2xl border border-slate-700/80 p-6 shadow-2xl space-y-6 transition-colors duration-300">
-                <p id="q-text" class="text-base md:text-lg leading-relaxed font-medium">
-                    Loading clinical vignette...
-                </p>
-
-                <div id="q-options" class="space-y-3">
-                </div>
-
-                <div id="explanation-box" class="hidden mt-6 p-5 rounded-xl bg-emerald-950/20 border border-emerald-500/40 space-y-4">
-                    <div class="flex items-center justify-between border-b border-slate-700/40 pb-3">
-                        <div class="flex items-center gap-2 text-emerald-500 font-bold">
-                            <i class="fa-solid fa-graduation-cap text-lg"></i>
-                            <span>Educational Objective & Explanation</span>
+                <!-- Filters -->
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1">Subject</label>
+                            <select id="filter-subject" onchange="updateFilters('subject')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500">
+                                <option value="all">All Subjects</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1">Branch</label>
+                            <select id="filter-branch" onchange="updateFilters('branch')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500">
+                                <option value="all">All Branches</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1">Subtype</label>
+                            <select id="filter-subtype" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500">
+                                <option value="all">All Subtypes</option>
+                            </select>
                         </div>
                     </div>
-                    <p id="exp-text" class="text-sm leading-relaxed opacity-90">--</p>
                 </div>
 
-                <div class="flex justify-between items-center pt-4 border-t border-slate-700/60">
-                    <button onclick="prevQuestion()" class="bg-slate-700/60 hover:bg-slate-700 px-4 py-2 rounded-xl text-sm font-medium transition">
-                        <i class="fa-solid fa-arrow-left me-1"></i> Previous
-                    </button>
-                    <button id="edit-q-btn" onclick="openEditModal()" class="hidden text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40 px-3 py-2 rounded-xl transition">
-                        <i class="fa-solid fa-pen me-1"></i> Edit Question
-                    </button>
-                    <button onclick="nextQuestion()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-xl text-sm font-semibold transition flex items-center gap-2">
-                        <span>Next</span>
-                        <i class="fa-solid fa-arrow-right"></i>
+                <!-- Question Pool Status -->
+                <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700 space-y-3">
+                    <label class="block text-xs font-semibold text-slate-400">Question Pool</label>
+                    <div class="flex flex-wrap gap-2">
+                        <label class="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-lg border border-slate-600 cursor-pointer">
+                            <input type="radio" name="pool-type" value="all" checked> <span class="text-sm">All Questions</span>
+                        </label>
+                        <label class="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-lg border border-red-900/50 text-red-300 cursor-pointer">
+                            <input type="radio" name="pool-type" value="incorrect"> <span class="text-sm">Incorrect Only</span>
+                        </label>
+                        <label class="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-lg border border-amber-900/50 text-amber-300 cursor-pointer">
+                            <input type="radio" name="pool-type" value="flagged"> <span class="text-sm">Flagged Only</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center pt-4">
+                    <span id="available-count" class="text-sm font-semibold text-blue-400">Loading questions...</span>
+                    <button onclick="startQuiz()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-8 rounded-lg transition shadow-lg">
+                        Generate Test
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- 3. EDIT QUESTION MODAL -->
-        <div id="edit-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div class="card-bg bg-slate-800 border border-amber-500/40 rounded-2xl p-6 w-full max-w-2xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-                <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-                    <h3 class="text-base font-bold text-amber-400 flex items-center gap-2">
-                        <i class="fa-solid fa-pen-to-square"></i> Edit Question Details
-                    </h3>
-                    <button onclick="closeEditModal()" class="opacity-70 hover:opacity-100"><i class="fa-solid fa-xmark text-lg"></i></button>
-                </div>
-                
-                <div class="space-y-3">
-                    <div>
-                        <label class="text-xs opacity-75">Question Stem:</label>
-                        <textarea id="edit-q-text" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl text-sm h-24 focus:outline-none focus:border-amber-500"></textarea>
-                    </div>
-                    <div>
-                        <label class="text-xs opacity-75">Educational Objective & Explanation:</label>
-                        <textarea id="edit-exp-text" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl text-sm h-24 focus:outline-none focus:border-amber-500"></textarea>
-                    </div>
-                    <button onclick="saveQuestionEdits()" class="w-full bg-amber-600 hover:bg-amber-500 font-bold py-3 rounded-xl transition text-white shadow-lg shadow-amber-600/20">
-                        Save Changes
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 4. ADMIN PANEL -->
-        <div id="admin-panel" class="hidden card-bg bg-slate-800/90 rounded-2xl border border-amber-500/40 p-6 shadow-2xl space-y-4">
-            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-                <h3 class="text-base font-bold text-amber-400 flex items-center gap-2">
-                    <i class="fa-solid fa-user-shield"></i> Admin Manager
-                </h3>
-                <span class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-full">Admin Active</span>
-            </div>
+        <!-- ================= QUIZ SCREEN ================= -->
+        <div id="quiz-screen" class="hidden flex-grow flex flex-col lg:flex-row gap-6">
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="p-4 rounded-xl border border-slate-700/60 space-y-3">
-                    <h4 class="text-xs font-bold">Add New Subject</h4>
-                    <input type="text" id="new-subj-name" placeholder="Subject Name" class="w-full border border-slate-700 p-2.5 rounded-lg text-sm">
-                    <button onclick="addNewSubject()" class="w-full bg-slate-700 hover:bg-slate-600 text-xs font-bold py-2 rounded-lg transition">Add Subject</button>
+            <!-- Left Column: Question Area -->
+            <div class="flex-grow flex flex-col space-y-4 max-w-4xl w-full">
+                <!-- Meta Tags & Flag -->
+                <div class="flex justify-between items-center pb-2 border-b border-slate-700">
+                    <div class="flex flex-wrap gap-2 text-xs font-medium">
+                        <span id="q-tag-branch" class="bg-blue-900/40 text-blue-300 px-2.5 py-1 rounded">Branch</span>
+                        <span id="q-tag-subtype" class="bg-slate-700 text-slate-300 px-2.5 py-1 rounded">Subtype</span>
+                    </div>
+                    <button id="flag-btn" onclick="toggleFlag()" class="text-sm flex items-center gap-2 text-slate-400 hover:text-amber-400 transition">
+                        <i class="fa-regular fa-bookmark"></i> <span>Flag Question</span>
+                    </button>
                 </div>
-                
-                <div class="p-4 rounded-xl border border-slate-700/60 space-y-3">
-                    <h4 class="text-xs font-bold">Add New Branch / Topic</h4>
-                    <input type="text" id="new-topic-name" placeholder="Branch / Topic Name" class="w-full border border-slate-700 p-2.5 rounded-lg text-sm">
-                    <button onclick="addNewTopic()" class="w-full bg-slate-700 hover:bg-slate-600 text-xs font-bold py-2 rounded-lg transition">Add Topic to Current Subject</button>
+
+                <!-- Question Text -->
+                <h3 class="text-xs font-bold text-slate-400 tracking-wider">QUESTION <span id="q-current-num">1</span> OF <span id="q-total-num">30</span></h3>
+                <p id="q-text" class="text-lg leading-relaxed text-slate-100 font-medium">Loading...</p>
+
+                <!-- Options -->
+                <div id="q-options" class="space-y-2 mt-4">
+                    <!-- Rendered dynamically -->
+                </div>
+
+                <!-- Explanation -->
+                <div id="explanation-box" class="hidden mt-6 bg-slate-800/80 border-l-4 border-emerald-500 rounded-r-xl p-5 space-y-3 shadow-lg">
+                    <h4 class="font-bold text-emerald-400 flex items-center gap-2">
+                        <i class="fa-solid fa-book-medical"></i> Educational Objective
+                    </h4>
+                    <p id="exp-text" class="text-sm leading-relaxed text-slate-200"></p>
+                </div>
+
+                <!-- Footer Navigation -->
+                <div class="mt-auto pt-6 flex justify-between items-center">
+                    <button onclick="navigate(-1)" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 px-5 py-2.5 rounded-lg text-sm transition">Previous</button>
+                    <button onclick="navigate(1)" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-8 py-2.5 rounded-lg text-sm transition">Next</button>
                 </div>
             </div>
-        </div>
 
+            <!-- Right Column: Sidebar (Matrix & Stats) -->
+            <div class="w-full lg:w-80 flex-shrink-0 space-y-4">
+                <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg sticky top-20">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-sm flex items-center gap-2"><i class="fa-solid fa-border-all text-blue-400"></i> Question Matrix</h3>
+                        <span id="answered-count" class="text-xs text-slate-400">0 / 30 Answered</span>
+                    </div>
+                    
+                    <!-- Legend -->
+                    <div class="grid grid-cols-2 gap-2 text-xs text-slate-400 mb-4">
+                        <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-slate-500"></span> Unanswered</div>
+                        <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Correct</div>
+                        <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-rose-500"></span> Incorrect</div>
+                        <div class="flex items-center gap-1"><i class="fa-solid fa-bookmark text-amber-500 text-[10px]"></i> Flagged</div>
+                    </div>
+
+                    <!-- Number Grid -->
+                    <div id="matrix-grid" class="flex flex-wrap gap-1.5 justify-start">
+                        <!-- Buttons injected here -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </main>
 
+    <!-- Import Data -->
+    <script src="data.js"></script>
+
+    <!-- Logic Engine -->
     <script>
-        const ADMIN_PASS = "med2026";
-        let isAdmin = false;
+        // App State
+        let userStats = JSON.parse(localStorage.getItem('medico_stats')) || { incorrect: [], flagged: [] };
+        let activeBlock = [];
+        let currentIdx = 0;
+        let blockState = []; // Tracks current session progress
+        let testMode = 'tutor'; 
+        let timerInterval;
+        let timeRemaining = 0;
 
-        let dbConfig = {
-            "ENT": ["General ENT", "Otology", "Rhinology", "Laryngology"],
-            "Urology": ["General Urology", "Urolithiasis", "Prostate & Oncology", "Pediatric Urology"],
-            "Orthopedics": ["General Orthopedics", "Trauma & Fractures", "Pediatric Orthopedics", "Joint Replacement"],
-            "Special Surgery": ["Vascular Surgery", "Cardiothoracic Surgery", "Neurosurgery", "Plastic Surgery"],
-            "Internal Medicine 3": ["Clinical Pathology", "Radiology"],
-            "Family Medicine": ["General Family Medicine", "Preventive Care & Screening", "Chronic Disease Management"]
-        };
-
-        let questionsData = [
-            {
-                id: 1,
-                subject: "Special Surgery",
-                topic: "Vascular Surgery",
-                source: "PYEs & Formatives",
-                question: "A 68-year-old male presents with sudden-onset, severe abdominal pain radiating to the back. On examination, a pulsatile abdominal mass is palpated. Blood pressure is 85/50 mmHg. What is the most likely diagnosis?",
-                options: ["Acute Pancreatitis", "Ruptured Abdominal Aortic Aneurysm (AAA)", "Renal Colic", "Acute Mesenteric Ischemia"],
-                correct: 1,
-                explanation: "Educational Objective: The classic triad of a ruptured Abdominal Aortic Aneurysm (AAA) includes severe abdominal/back pain, hypotension, and a pulsatile abdominal mass."
+        // --- 1. Initialization & Filters ---
+        function initApp() {
+            if(typeof questionsDatabase === 'undefined') {
+                document.getElementById('available-count').innerText = "Error: data.js not found or empty.";
+                return;
             }
-        ];
-
-        let activeQuizQuestions = [];
-        let currentIndex = 0;
-
-        function setTheme(mode) {
-            const body = document.getElementById('app-body');
-            body.classList.remove('theme-eyecare', 'theme-light');
-            if(mode === 'eyecare') body.classList.add('theme-eyecare');
-            if(mode === 'light') body.classList.add('theme-light');
+            populateFilters();
+            updateAvailableCount();
         }
 
-        function initUI() {
-            const subjSelect = document.getElementById('select-subject');
-            subjSelect.innerHTML = '';
-            Object.keys(dbConfig).forEach(subj => {
-                const opt = document.createElement('option');
-                opt.value = subj;
-                opt.innerText = subj;
-                subjSelect.appendChild(opt);
+        function populateFilters() {
+            const subjects = [...new Set(questionsDatabase.map(q => q.subject))];
+            const subjSelect = document.getElementById('filter-subject');
+            subjects.forEach(s => subjSelect.innerHTML += `<option value="${s}">${s}</option>`);
+        }
+
+        function updateFilters(changedLevel) {
+            const subj = document.getElementById('filter-subject').value;
+            const branchSelect = document.getElementById('filter-branch');
+            const subtypeSelect = document.getElementById('filter-subtype');
+
+            if (changedLevel === 'subject') {
+                branchSelect.innerHTML = '<option value="all">All Branches</option>';
+                subtypeSelect.innerHTML = '<option value="all">All Subtypes</option>';
+                if (subj !== 'all') {
+                    const branches = [...new Set(questionsDatabase.filter(q => q.subject === subj).map(q => q.branch))];
+                    branches.forEach(b => branchSelect.innerHTML += `<option value="${b}">${b}</option>`);
+                }
+            } else if (changedLevel === 'branch') {
+                subtypeSelect.innerHTML = '<option value="all">All Subtypes</option>';
+                const branch = branchSelect.value;
+                if (branch !== 'all') {
+                    const subtypes = [...new Set(questionsDatabase.filter(q => q.branch === branch && (subj==='all' || q.subject===subj)).map(q => q.subtype))];
+                    subtypes.forEach(s => subtypeSelect.innerHTML += `<option value="${s}">${s}</option>`);
+                }
+            }
+            updateAvailableCount();
+        }
+
+        function getFilteredQuestions() {
+            const subj = document.getElementById('filter-subject').value;
+            const branch = document.getElementById('filter-branch').value;
+            const subtype = document.getElementById('filter-subtype').value;
+            const pool = document.querySelector('input[name="pool-type"]:checked').value;
+
+            return questionsDatabase.filter(q => {
+                const matchSubj = subj === 'all' || q.subject === subj;
+                const matchBranch = branch === 'all' || q.branch === branch;
+                const matchSubtype = subtype === 'all' || q.subtype === subtype;
+                
+                let matchPool = true;
+                if (pool === 'incorrect') matchPool = userStats.incorrect.includes(q.id);
+                if (pool === 'flagged') matchPool = userStats.flagged.includes(q.id);
+
+                return matchSubj && matchBranch && matchSubtype && matchPool;
             });
-            updateTopicsMenu();
         }
 
-        function updateTopicsMenu() {
-            const selectedSubj = document.getElementById('select-subject').value;
-            const topicSelect = document.getElementById('select-topic');
-            topicSelect.innerHTML = '';
-            
-            if(dbConfig[selectedSubj]) {
-                dbConfig[selectedSubj].forEach(top => {
-                    const opt = document.createElement('option');
-                    opt.value = top;
-                    opt.innerText = top;
-                    topicSelect.appendChild(opt);
-                });
-            }
+        function updateAvailableCount() {
+            const count = getFilteredQuestions().length;
+            document.getElementById('available-count').innerText = `${count} Questions Available`;
         }
 
+        // --- 2. Test Engine ---
         function startQuiz() {
-            const subj = document.getElementById('select-subject').value;
-            const topic = document.getElementById('select-topic').value;
-            const source = document.querySelector('input[name="source-type"]:checked').value;
+            const pool = getFilteredQuestions();
+            if (pool.length === 0) return alert("No questions match your criteria.");
 
-            activeQuizQuestions = questionsData.filter(q => 
-                q.subject === subj && q.topic === topic && q.source === source
-            );
+            activeBlock = pool;
+            blockState = activeBlock.map(q => ({ answered: false, selected: null, correct: false }));
+            currentIdx = 0;
+            testMode = document.querySelector('input[name="test-mode"]:checked').value;
 
-            if(activeQuizQuestions.length === 0) {
-                activeQuizQuestions = [{
-                    id: 999,
-                    subject: subj,
-                    topic: topic,
-                    source: source,
-                    question: `No questions uploaded yet for ${subj} -> ${topic} (${source}). Send your material/PDFs to generate and add high-yield questions!`,
-                    options: ["Option A", "Option B", "Option C", "Option D"],
-                    correct: 0,
-                    explanation: "Educational Objective: High-yield explanation will appear here upon adding questions."
-                }];
+            document.getElementById('dashboard-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            document.getElementById('quiz-header-controls').classList.remove('hidden');
+            document.getElementById('quiz-screen').classList.add('flex');
+
+            if (testMode === 'timed') {
+                timeRemaining = activeBlock.length * 90; // 1.5 mins per question
+                document.getElementById('timer-display').classList.remove('hidden');
+                document.getElementById('timer-display').classList.add('flex');
+                timerInterval = setInterval(updateTimer, 1000);
             }
 
-            currentIndex = 0;
-            document.getElementById('badge-subject').innerText = subj;
-            document.getElementById('badge-topic').innerText = topic;
-            document.getElementById('badge-source').innerText = source;
-            
-            document.getElementById('selection-screen').classList.add('hidden');
-            document.getElementById('quiz-screen').classList.remove('hidden');
-            document.getElementById('home-btn').classList.remove('hidden');
-
+            renderMatrix();
             loadQuestion();
-        }
-
-        function showDashboard() {
-            document.getElementById('quiz-screen').classList.add('hidden');
-            document.getElementById('selection-screen').classList.remove('hidden');
-            document.getElementById('home-btn').classList.add('hidden');
         }
 
         function loadQuestion() {
-            const q = activeQuizQuestions[currentIndex];
-            document.getElementById('q-counter').innerText = `Question ${currentIndex + 1} of ${activeQuizQuestions.length}`;
+            const q = activeBlock[currentIdx];
+            const state = blockState[currentIdx];
+            const isFlagged = userStats.flagged.includes(q.id);
+
+            document.getElementById('q-current-num').innerText = currentIdx + 1;
+            document.getElementById('q-total-num').innerText = activeBlock.length;
+            document.getElementById('q-tag-branch').innerText = q.branch || "General";
+            document.getElementById('q-tag-subtype').innerText = q.subtype || "General";
             document.getElementById('q-text').innerText = q.question;
+
+            // Flag UI
+            const flagBtn = document.getElementById('flag-btn');
+            if(isFlagged) {
+                flagBtn.innerHTML = `<i class="fa-solid fa-bookmark"></i> <span class="text-amber-400 font-bold">Flagged</span>`;
+                flagBtn.classList.add('text-amber-400');
+            } else {
+                flagBtn.innerHTML = `<i class="fa-regular fa-bookmark"></i> <span>Flag Question</span>`;
+                flagBtn.classList.remove('text-amber-400');
+            }
 
             const optsBox = document.getElementById('q-options');
             optsBox.innerHTML = '';
-
+            
             q.options.forEach((opt, idx) => {
                 const btn = document.createElement('button');
-                btn.className = 'btn-option w-full text-left p-4 rounded-xl bg-slate-700/40 hover:bg-slate-700/80 border border-slate-600/40 transition flex justify-between items-center group';
-                btn.innerHTML = `<span class="text-sm font-medium">${opt}</span> <i class="fa-regular fa-circle opacity-50 text-sm"></i>`;
-                btn.onclick = () => selectOption(idx, q.correct, btn);
+                const letter = String.fromCharCode(65 + idx);
+                btn.className = 'option-btn w-full text-left p-4 rounded-xl flex items-start gap-4 cursor-pointer bg-slate-900/50';
+                btn.innerHTML = `<span class="flex-shrink-0 w-8 h-8 rounded-full border border-slate-600 flex items-center justify-center font-bold text-slate-400">${letter}</span> 
+                                 <span class="mt-1">${opt}</span>`;
+                
+                if (state.answered) {
+                    btn.disabled = true;
+                    btn.classList.add('cursor-default');
+                    // Reveal logic for Tutor mode or finished Timed mode
+                    if (testMode === 'tutor') {
+                        if (idx === q.correct) {
+                            btn.classList.add('actual-correct');
+                            btn.querySelector('span').classList.add('bg-emerald-600', 'text-white', 'border-emerald-600');
+                        }
+                        if (idx === state.selected && !state.correct) {
+                            btn.classList.add('selected-incorrect');
+                            btn.querySelector('span').classList.add('bg-rose-600', 'text-white', 'border-rose-600');
+                        }
+                    } else {
+                        // Timed mode (before submit) just shows selected
+                        if (idx === state.selected) {
+                            btn.classList.add('bg-slate-700', 'border-slate-500');
+                            btn.querySelector('span').classList.add('bg-slate-500', 'text-white');
+                        }
+                    }
+                } else {
+                    btn.onclick = () => submitAnswer(idx);
+                }
                 optsBox.appendChild(btn);
             });
 
-            document.getElementById('explanation-box').classList.add('hidden');
-        }
-
-        function selectOption(selected, correct, btnElement) {
+            // Explanation visibility
             const expBox = document.getElementById('explanation-box');
-            document.getElementById('exp-text').innerText = activeQuizQuestions[currentIndex].explanation;
-            expBox.classList.remove('hidden');
-
-            const allBtns = document.getElementById('q-options').children;
-            for(let btn of allBtns) {
-                btn.className = 'btn-option w-full text-left p-4 rounded-xl opacity-60 flex justify-between items-center';
-            }
-
-            if (selected === correct) {
-                btnElement.className = 'w-full text-left p-4 rounded-xl bg-emerald-900/40 border border-emerald-500 text-emerald-400 font-semibold flex justify-between items-center opacity-100 shadow-lg';
-                btnElement.querySelector('i').className = 'fa-solid fa-circle-check text-emerald-500 text-base';
+            if (state.answered && testMode === 'tutor') {
+                document.getElementById('exp-text').innerText = q.explanation;
+                expBox.classList.remove('hidden');
             } else {
-                btnElement.className = 'w-full text-left p-4 rounded-xl bg-rose-900/40 border border-rose-500 text-rose-400 font-semibold flex justify-between items-center opacity-100 shadow-lg';
-                btnElement.querySelector('i').className = 'fa-solid fa-circle-xmark text-rose-500 text-base';
+                expBox.classList.add('hidden');
             }
+
+            updateMatrixUI();
         }
 
-        function nextQuestion() {
-            if (currentIndex < activeQuizQuestions.length - 1) {
-                currentIndex++;
-                loadQuestion();
+        function submitAnswer(selectedIndex) {
+            const q = activeBlock[currentIdx];
+            const isCorrect = (selectedIndex === q.correct);
+            
+            blockState[currentIdx] = { answered: true, selected: selectedIndex, correct: isCorrect };
+
+            // Update persistent stats
+            if (!isCorrect && !userStats.incorrect.includes(q.id)) {
+                userStats.incorrect.push(q.id);
+            } else if (isCorrect) {
+                userStats.incorrect = userStats.incorrect.filter(id => id !== q.id); // Remove from incorrect if they got it right
             }
-        }
-
-        function prevQuestion() {
-            if (currentIndex > 0) {
-                currentIndex--;
-                loadQuestion();
-            }
-        }
-
-        function requestAdminAccess() {
-            if(isAdmin) {
-                document.getElementById('admin-panel').classList.toggle('hidden');
-                return;
-            }
-            const pwd = prompt("Enter Admin Password:");
-            if (pwd === ADMIN_PASS) {
-                isAdmin = true;
-                document.getElementById('admin-btn-text').innerText = "Admin Panel";
-                document.getElementById('edit-q-btn').classList.remove('hidden');
-                document.getElementById('admin-panel').classList.remove('hidden');
-                alert("Admin Mode Activated!");
-            } else if (pwd !== null) {
-                alert("Incorrect Password!");
-            }
-        }
-
-        function openEditModal() {
-            const q = activeQuizQuestions[currentIndex];
-            document.getElementById('edit-q-text').value = q.question;
-            document.getElementById('edit-exp-text').value = q.explanation;
-            document.getElementById('edit-modal').classList.remove('hidden');
-        }
-
-        function closeEditModal() {
-            document.getElementById('edit-modal').classList.add('hidden');
-        }
-
-        function saveQuestionEdits() {
-            const newQ = document.getElementById('edit-q-text').value;
-            const newExp = document.getElementById('edit-exp-text').value;
-
-            activeQuizQuestions[currentIndex].question = newQ;
-            activeQuizQuestions[currentIndex].explanation = newExp;
+            saveStats();
 
             loadQuestion();
-            closeEditModal();
-            alert("Question updated successfully!");
+            updateMatrixUI();
         }
 
-        function addNewSubject() {
-            const name = document.getElementById('new-subj-name').value;
-            if(!name) return alert("Enter subject name");
-            if(!dbConfig[name]) dbConfig[name] = ["General"];
-            initUI();
-            document.getElementById('new-subj-name').value = '';
-            alert("Subject Added!");
+        function toggleFlag() {
+            const qId = activeBlock[currentIdx].id;
+            const idx = userStats.flagged.indexOf(qId);
+            if (idx > -1) {
+                userStats.flagged.splice(idx, 1);
+            } else {
+                userStats.flagged.push(qId);
+            }
+            saveStats();
+            loadQuestion();
         }
 
-        function addNewTopic() {
-            const subj = document.getElementById('select-subject').value;
-            const topic = document.getElementById('new-topic-name').value;
-            if(!topic) return alert("Enter topic name");
-            dbConfig[subj].push(topic);
-            updateTopicsMenu();
-            document.getElementById('new-topic-name').value = '';
-            alert("Topic Added!");
+        function navigate(dir) {
+            const newIdx = currentIdx + dir;
+            if (newIdx >= 0 && newIdx < activeBlock.length) {
+                currentIdx = newIdx;
+                loadQuestion();
+            }
         }
 
-        window.onload = initUI;
+        // --- 3. Sidebar Matrix ---
+        function renderMatrix() {
+            const grid = document.getElementById('matrix-grid');
+            grid.innerHTML = '';
+            activeBlock.forEach((q, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'q-matrix-btn relative';
+                btn.id = `mat-btn-${i}`;
+                btn.innerText = i + 1;
+                btn.onclick = () => { currentIdx = i; loadQuestion(); };
+                grid.appendChild(btn);
+            });
+        }
+
+        function updateMatrixUI() {
+            let answeredCount = 0;
+            activeBlock.forEach((q, i) => {
+                const btn = document.getElementById(`mat-btn-${i}`);
+                const state = blockState[i];
+                const isFlagged = userStats.flagged.includes(q.id);
+                
+                btn.className = 'q-matrix-btn relative'; // Reset
+                
+                if (i === currentIdx) btn.classList.add('active');
+                
+                if (state.answered) {
+                    answeredCount++;
+                    if (testMode === 'tutor') {
+                        btn.classList.add(state.correct ? 'correct' : 'incorrect');
+                    } else {
+                        btn.classList.add('bg-slate-700'); // Just mark as answered in timed
+                    }
+                }
+                
+                // Add flag marker if needed
+                btn.innerHTML = `<span>${i+1}</span>` + (isFlagged ? `<i class="fa-solid fa-bookmark flag-marker"></i>` : '');
+            });
+            
+            document.getElementById('answered-count').innerText = `${answeredCount} / ${activeBlock.length} Answered`;
+        }
+
+        // --- 4. Utilities ---
+        function saveStats() {
+            localStorage.setItem('medico_stats', JSON.stringify(userStats));
+        }
+
+        function updateTimer() {
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                alert("Time is up! Switching to review mode.");
+                testMode = 'tutor'; // Auto switch to tutor to see explanations
+                loadQuestion();
+                return;
+            }
+            timeRemaining--;
+            const hrs = Math.floor(timeRemaining / 3600).toString().padStart(2, '0');
+            const mins = Math.floor((timeRemaining % 3600) / 60).toString().padStart(2, '0');
+            const secs = (timeRemaining % 60).toString().padStart(2, '0');
+            document.getElementById('time-left').innerText = `${hrs}:${mins}:${secs}`;
+        }
+
+        function endQuizEarly() {
+            if(confirm("Are you sure you want to exit this block? Progress is saved.")) {
+                goHome();
+            }
+        }
+
+        function goHome() {
+            clearInterval(timerInterval);
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('flex');
+            document.getElementById('quiz-header-controls').classList.add('hidden');
+            document.getElementById('dashboard-screen').classList.remove('hidden');
+            updateAvailableCount(); // Refresh counts based on new incorrect/flagged status
+        }
+
+        window.onload = initApp;
     </script>
 </body>
 </html>
