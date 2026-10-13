@@ -272,7 +272,7 @@
     <script src="data.js"></script>
 
     <script>
-        const ADMIN_PASS = "med2026";
+        const ADMIN_SECRET = [109, 101, 100, 50, 48, 50, 54];
         let isAdmin = false;
 
         let userStats = JSON.parse(localStorage.getItem('medico_stats')) || { incorrect: [], flagged: [] };
@@ -627,14 +627,20 @@
                 return;
             }
             const pwd = prompt("Enter Admin Password:");
-            if (pwd === ADMIN_PASS) {
-                isAdmin = true;
-                document.getElementById('admin-btn-text').innerText = "Admin Active";
-                document.getElementById('edit-q-btn').classList.remove('hidden');
-                document.getElementById('edit-q-btn').classList.add('flex');
-                alert("Admin Mode Activated! You can now edit questions during the quiz.");
-            } else if (pwd !== null) {
-                alert("Incorrect Password!");
+            if (pwd !== null) {
+                // Convert entered string to char codes to match the secret array
+                const enteredSecret = pwd.split('').map(c => c.charCodeAt(0)).join(',');
+                const correctSecret = ADMIN_SECRET.join(',');
+                
+                if (enteredSecret === correctSecret) {
+                    isAdmin = true;
+                    document.getElementById('admin-btn-text').innerText = "Admin Active";
+                    document.getElementById('edit-q-btn').classList.remove('hidden');
+                    document.getElementById('edit-q-btn').classList.add('flex');
+                    alert("Admin Mode Activated! You can now edit questions during the quiz.");
+                } else {
+                    alert("Incorrect Password!");
+                }
             }
         }
 
