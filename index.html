@@ -567,54 +567,65 @@
             const titleBranch = document.getElementById('filter-branch').value === 'all' ? 'Mixed Branches' : document.getElementById('filter-branch').value;
             
             let htmlContent = `
-                <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e5e7eb; padding-bottom: 20px;">
-                    <h1 style="font-size: 24px; font-weight: bold; margin: 0 0 10px 0; color: #1e293b;">Medico Summary - Study Block</h1>
-                    <h3 style="font-size: 16px; font-weight: normal; margin: 0; color: #64748b;">${titleSubject} | ${titleBranch}</h3>
-                    <p style="font-size: 12px; margin-top: 10px; color: #94a3b8;">Total Questions: ${activeBlock.length}</p>
-                </div>
+                <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: auto; background: white; color: black;">
+                    <h2 style="color: #b8860b; font-size: 22px; font-weight: bold; margin-bottom: 30px;">
+                        Section: ${titleSubject} - ${titleBranch}
+                    </h2>
             `;
 
+            // 1. Generate questions with requested design
             activeBlock.forEach((q, index) => {
                 htmlContent += `
-                    <div style="margin-bottom: 30px; page-break-inside: avoid; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px;">
-                        <p style="font-size: 16px; font-weight: bold; line-height: 1.5; margin: 0 0 15px 0; color: #0f172a;">
-                            <span style="color: #3b82f6; margin-right: 5px;">Q${index + 1}.</span>${q.question}
+                    <div style="margin-bottom: 25px; page-break-inside: avoid;">
+                        <p style="font-size: 16px; margin: 0 0 10px 0; line-height: 1.4;">
+                            <span style="color: #b8860b; font-weight: bold;">${index + 1}. </span>
+                            <span style="color: #701a75; font-weight: bold;">${q.question}<sup>${index + 1}</sup></span>
                         </p>
-                        <ul style="list-style: none; padding: 0; margin: 0 0 15px 0;">
+                        <div style="margin-left: 20px;">
                 `;
 
                 q.options.forEach((opt, optIdx) => {
-                    const isCorrect = optIdx === q.correct;
-                    const letter = String.fromCharCode(65 + optIdx);
-                    if (isCorrect) {
-                        htmlContent += `
-                            <li style="margin-bottom: 8px; padding: 8px 12px; background-color: #ecfdf5; border: 1px solid #10b981; border-radius: 6px; color: #065f46; font-weight: bold; display: flex; align-items: flex-start; gap: 10px;">
-                                <span>[ ✓ ]</span> <span>${letter}. ${opt}</span>
-                            </li>
-                        `;
-                    } else {
-                        htmlContent += `
-                            <li style="margin-bottom: 8px; padding: 8px 12px; color: #475569; display: flex; align-items: flex-start; gap: 10px;">
-                                <span>[ &nbsp;&nbsp; ]</span> <span>${letter}. ${opt}</span>
-                            </li>
-                        `;
-                    }
+                    const letter = String.fromCharCode(97 + optIdx); // a, b, c, d
+                    htmlContent += `
+                            <div style="margin-bottom: 5px; font-size: 15px; color: #000;">
+                                ${letter}. ${opt}
+                            </div>
+                    `;
                 });
 
                 htmlContent += `
-                        </ul>
-                        <div style="background-color: #f8fafc; border-left: 4px solid #3b82f6; padding: 15px; border-radius: 0 6px 6px 0;">
-                            <p style="margin: 0 0 5px 0; font-size: 13px; font-weight: bold; color: #0f172a;">Educational Objective & Explanation:</p>
-                            <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #334155;">${q.explanation}</p>
                         </div>
                     </div>
                 `;
             });
 
+            // 2. Generate answers section at the bottom below the line
+            htmlContent += `
+                    <hr style="width: 250px; margin-left: 0; border: 0; border-top: 1px solid #000; margin-top: 50px; margin-bottom: 15px;">
+                    <div style="font-size: 12px; line-height: 1.6; color: #000; page-break-inside: avoid;">
+            `;
+
+            activeBlock.forEach((q, index) => {
+                const correctOptText = q.options[q.correct];
+                htmlContent += `
+                        <div style="margin-bottom: 8px;">
+                            <sup>${index + 1}</sup><b>Answer:</b> ${correctOptText} <br>
+                            <span style="color: #4b5563; font-style: italic; margin-left: 10px;">${q.explanation}</span>
+                        </div>
+                `;
+            });
+
+            htmlContent += `
+                    </div>
+                </div>
+            `;
+
             printArea.innerHTML = htmlContent;
+            
+            // Delay to ensure rendering before print dialog
             setTimeout(() => {
                 window.print();
-            }, 100);
+            }, 300);
         }
 
         function requestAdminAccess() {
