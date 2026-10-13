@@ -49,8 +49,7 @@
         @media print {
             body * { display: none !important; }
             #print-area, #print-area * { display: block !important; }
-            #print-area { position: absolute; left: 0; top: 0; width: 100%; background: white; color: black; padding: 20px; font-family: Arial, sans-serif; }
-            .print-page-break { page-break-after: always; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; background: white; color: black; font-family: Arial, sans-serif; }
         }
     </style>
 </head>
@@ -259,7 +258,6 @@
                 </div>
             </div>
         </div>
-
     </main>
 
     <script src="data.js"></script>
@@ -284,6 +282,47 @@
             localStorage.setItem('medico_theme', mode);
         }
 
+        // --- SESSION PERSISTENCE LOGIC ---
+        function saveSession() {
+            const sessionData = {
+                activeBlock,
+                blockState,
+                currentIdx,
+                testMode,
+                timeRemaining,
+                isActive: !document.getElementById('quiz-screen').classList.contains('hidden')
+            };
+            sessionStorage.setItem('medico_session', JSON.stringify(sessionData));
+        }
+
+        function restoreSession() {
+            const savedSession = JSON.parse(sessionStorage.getItem('medico_session'));
+            if (savedSession && savedSession.isActive) {
+                activeBlock = savedSession.activeBlock;
+                blockState = savedSession.blockState;
+                currentIdx = savedSession.currentIdx;
+                testMode = savedSession.testMode;
+                timeRemaining = savedSession.timeRemaining;
+
+                document.getElementById('dashboard-screen').classList.add('hidden');
+                document.getElementById('quiz-screen').classList.remove('hidden');
+                document.getElementById('quiz-screen').classList.add('flex');
+                document.getElementById('quiz-header-controls').classList.remove('hidden');
+                document.getElementById('quiz-header-controls').classList.add('flex');
+                
+                if (testMode === 'timed') {
+                    document.getElementById('timer-display').classList.remove('hidden');
+                    document.getElementById('timer-display').classList.add('flex');
+                    timerInterval = setInterval(updateTimer, 1000);
+                }
+
+                renderMatrix();
+                loadQuestion();
+                return true;
+            }
+            return false;
+        }
+
         function initApp() {
             const savedTheme = localStorage.getItem('medico_theme') || 'dark';
             setTheme(savedTheme);
@@ -292,8 +331,12 @@
                 document.getElementById('available-count').innerText = "Error: data.js not found or empty.";
                 return;
             }
+            
             populateFilters();
             updateAvailableCount();
+
+            // Try to restore session on page reload
+            restoreSession();
         }
 
         function populateFilters() {
@@ -386,6 +429,7 @@
 
             renderMatrix();
             loadQuestion();
+            saveSession(); // Save session immediately upon starting
         }
 
         function loadQuestion() {
@@ -453,6 +497,7 @@
             }
 
             updateMatrixUI();
+            saveSession(); // Save state upon loading any new question
         }
 
         function submitAnswer(selectedIndex) {
@@ -543,6 +588,7 @@
             const mins = Math.floor((timeRemaining % 3600) / 60).toString().padStart(2, '0');
             const secs = (timeRemaining % 60).toString().padStart(2, '0');
             document.getElementById('time-left').innerText = `${hrs}:${mins}:${secs}`;
+            saveSession();
         }
 
         function endQuizEarly() {
@@ -558,15 +604,16 @@
             document.getElementById('quiz-header-controls').classList.add('hidden');
             document.getElementById('quiz-header-controls').classList.remove('flex');
             document.getElementById('dashboard-screen').classList.remove('hidden');
+            sessionStorage.removeItem('medico_session'); // Clear session on exit
             updateAvailableCount(); 
         }
 
-                function exportToPDF() {
+        // --- NEW IMPROVED PDF EXPORT ---
+        function exportToPDF() {
             const printArea = document.getElementById('print-area');
             const titleSubject = document.getElementById('filter-subject').value === 'all' ? 'Mixed Subjects' : document.getElementById('filter-subject').value;
             const titleBranch = document.getElementById('filter-branch').value === 'all' ? 'Mixed Branches' : document.getElementById('filter-branch').value;
             
-            // Print CSS for ivory background and A4 size
             let htmlContent = `
                 <style>
                     @media print {
@@ -574,22 +621,18 @@
                         body { margin: 0; background-color: #fdfbf2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                         .print-page-container { width: 100%; min-height: 297mm; display: flex; flex-direction: column; page-break-after: always; padding: 20mm; box-sizing: border-box; background-color: #fdfbf2 !important; }
                     }
-                    /* Screen styles before printing */
+                    /* Screen preview styles */
                     .print-page-container { width: 100%; min-height: 100vh; display: flex; flex-direction: column; padding: 40px; box-sizing: border-box; background-color: #fdfbf2; margin-bottom: 20px; }
                 </style>
             `;
 
-            // Number of questions per page (adjust if needed)
             const Q_PER_PAGE = 4;
             
-            // Divide questions into pages
             for (let i = 0; i < activeBlock.length; i += Q_PER_PAGE) {
                 const chunk = activeBlock.slice(i, i + Q_PER_PAGE);
                 
-                // Start a new page container
                 htmlContent += `<div class="print-page-container" dir="ltr">`;
                 
-                // Show title on the first page only
                 if (i === 0) {
                     htmlContent += `
                         <h2 style="color: #b8860b; font-size: 22px; font-weight: bold; margin-bottom: 30px; font-family: Arial, sans-serif;">
@@ -598,13 +641,11 @@
                     `;
                 }
 
-                // --- 1. Questions Section (Takes up available space) ---
                 htmlContent += `<div style="flex-grow: 1; font-family: Arial, sans-serif;">`;
                 chunk.forEach((q, chunkIdx) => {
                     const globalIndex = i + chunkIdx;
                     htmlContent += `
                         <div style="margin-bottom: 28px;">
-                            <!-- Using Flexbox to prevent number/text overlap completely -->
                             <div style="font-size: 16px; margin: 0 0 10px 0; line-height: 1.5; display: flex; align-items: flex-start;">
                                 <span style="color: #b8860b; font-weight: bold; min-width: 28px;">${globalIndex + 1}.</span>
                                 <span style="color: #701a75; font-weight: bold; flex: 1;">
@@ -615,7 +656,7 @@
                     `;
 
                     q.options.forEach((opt, optIdx) => {
-                        const letter = String.fromCharCode(97 + optIdx); // a, b, c, d
+                        const letter = String.fromCharCode(97 + optIdx); 
                         htmlContent += `
                                 <div style="margin-bottom: 6px; font-size: 15px; color: #000;">
                                     ${letter}. ${opt}
@@ -628,9 +669,8 @@
                         </div>
                     `;
                 });
-                htmlContent += `</div>`; // End of questions section
+                htmlContent += `</div>`; 
 
-                // --- 2. Answers Section (Footnotes) at the bottom ---
                 htmlContent += `
                     <div style="margin-top: auto; border-top: 1px solid #000; padding-top: 15px; font-family: Arial, sans-serif; font-size: 12px; line-height: 1.6; color: #000;">
                 `;
@@ -646,8 +686,8 @@
                     `;
                 });
 
-                htmlContent += `</div>`; // End of answers section
-                htmlContent += `</div>`; // End of page container
+                htmlContent += `</div>`; 
+                htmlContent += `</div>`; 
             }
 
             printArea.innerHTML = htmlContent;
@@ -655,30 +695,6 @@
             setTimeout(() => {
                 window.print();
             }, 500);
-        }
-
-
-            activeBlock.forEach((q, index) => {
-                const correctOptText = q.options[q.correct];
-                htmlContent += `
-                        <div style="margin-bottom: 8px;">
-                            <sup>${index + 1}</sup><b>Answer:</b> ${correctOptText} <br>
-                            <span style="color: #4b5563; font-style: italic; margin-left: 10px;">${q.explanation}</span>
-                        </div>
-                `;
-            });
-
-            htmlContent += `
-                    </div>
-                </div>
-            `;
-
-            printArea.innerHTML = htmlContent;
-            
-            // Delay to ensure rendering before print dialog
-            setTimeout(() => {
-                window.print();
-            }, 300);
         }
 
         function requestAdminAccess() {
