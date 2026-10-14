@@ -282,7 +282,6 @@
             localStorage.setItem('medico_theme', mode);
         }
 
-        // --- SESSION PERSISTENCE LOGIC ---
         function saveSession() {
             const sessionData = {
                 activeBlock,
@@ -334,8 +333,6 @@
             
             populateFilters();
             updateAvailableCount();
-
-            // Try to restore session on page reload
             restoreSession();
         }
 
@@ -355,21 +352,39 @@
             const subj = document.getElementById('filter-subject').value;
             const branchSelect = document.getElementById('filter-branch');
             const subtypeSelect = document.getElementById('filter-subtype');
+            const sourceSelect = document.getElementById('filter-source');
 
             if (changedLevel === 'subject') {
                 branchSelect.innerHTML = '<option value="all">All Branches</option>';
                 subtypeSelect.innerHTML = '<option value="all">All Subtypes</option>';
+                sourceSelect.innerHTML = '<option value="all">All Sources</option>';
+
+                let filteredForSource = questionsDatabase;
+
                 if (subj !== 'all') {
-                    const branches = [...new Set(questionsDatabase.filter(q => q.subject === subj).map(q => q.branch))];
+                    filteredForSource = questionsDatabase.filter(q => q.subject === subj);
+                    const branches = [...new Set(filteredForSource.map(q => q.branch))];
                     branches.forEach(b => branchSelect.innerHTML += `<option value="${b}">${b}</option>`);
                 }
+                
+                const sources = [...new Set(filteredForSource.map(q => q.source))];
+                sources.forEach(s => sourceSelect.innerHTML += `<option value="${s}">${s}</option>`);
+                
             } else if (changedLevel === 'branch') {
                 subtypeSelect.innerHTML = '<option value="all">All Subtypes</option>';
+                sourceSelect.innerHTML = '<option value="all">All Sources</option>'; 
+                
                 const branch = branchSelect.value;
+                let filteredForBranch = questionsDatabase.filter(q => (subj === 'all' || q.subject === subj));
+                
                 if (branch !== 'all') {
-                    const subtypes = [...new Set(questionsDatabase.filter(q => q.branch === branch && (subj==='all' || q.subject===subj)).map(q => q.subtype))];
+                    filteredForBranch = filteredForBranch.filter(q => q.branch === branch);
+                    const subtypes = [...new Set(filteredForBranch.map(q => q.subtype))];
                     subtypes.forEach(s => subtypeSelect.innerHTML += `<option value="${s}">${s}</option>`);
                 }
+                
+                const sources = [...new Set(filteredForBranch.map(q => q.source))];
+                sources.forEach(s => sourceSelect.innerHTML += `<option value="${s}">${s}</option>`);
             }
             updateAvailableCount();
         }
@@ -429,7 +444,7 @@
 
             renderMatrix();
             loadQuestion();
-            saveSession(); // Save session immediately upon starting
+            saveSession();
         }
 
         function loadQuestion() {
@@ -497,7 +512,7 @@
             }
 
             updateMatrixUI();
-            saveSession(); // Save state upon loading any new question
+            saveSession();
         }
 
         function submitAnswer(selectedIndex) {
@@ -604,11 +619,10 @@
             document.getElementById('quiz-header-controls').classList.add('hidden');
             document.getElementById('quiz-header-controls').classList.remove('flex');
             document.getElementById('dashboard-screen').classList.remove('hidden');
-            sessionStorage.removeItem('medico_session'); // Clear session on exit
+            sessionStorage.removeItem('medico_session'); 
             updateAvailableCount(); 
         }
 
-        // --- NEW IMPROVED PDF EXPORT (NO EXPLANATION) ---
         function exportToPDF() {
             const printArea = document.getElementById('print-area');
             const titleSubject = document.getElementById('filter-subject').value === 'all' ? 'Mixed Subjects' : document.getElementById('filter-subject').value;
