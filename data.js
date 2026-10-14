@@ -465,5 +465,230 @@ const questionsDatabase = [
         options: ["Otosclerosis", "Bilateral Ototoxicity", "Presbyacusis", "Acoustic neuroma"],
         correct: 2,
         explanation: "Educational Objective: Presbyacusis presents in elderly individuals as bilateral symmetric sensorineural hearing loss (AC > BC bilaterally, Weber central)."
+            },
+    // --- UROLOGY: ANDROLOGY ---
+    {
+        id: "uro_andro_001",
+        subject: "Urology",
+        branch: "Andrology",
+        subtype: "Andrology",
+        source: "PYEs and formatives",
+        question: "A 25-year-old man complained of secondary infertility. His doctor ordered semen analysis. Which of the following parameters is considered ABNORMAL in his semen analysis?",
+        options: [
+            "Sperm concentration 10 million/ml", 
+            "Progressive motility 50%", 
+            "Volume 2.5 ml", 
+            "Morphology 20% is normal"
+        ],
+        correct: 0,
+        explanation: "General Overview: Normal semen analysis parameters are defined by the WHO guidelines. Correct Answer (A): A sperm concentration of 10 million/mL is below the normal threshold of 15 million/mL, indicating oligospermia. Incorrect Options: Progressive motility >= 32%, Volume >= 1.5 mL, and normal morphology >= 4% are all considered normal parameters. Educational Objective: Recognize the WHO lower reference limits for a normal semen analysis."
+    },
+    {
+        id: "uro_andro_002",
+        subject: "Urology",
+        branch: "Andrology",
+        subtype: "Andrology",
+        source: "PYEs and formatives",
+        question: "A sub fertile 28 years old patient underwent left varicocele ligation one year ago. Now he developed a cystic scrotal swelling which is painless and gradually increasing in size. The probable diagnosis of this scrotal swelling is:",
+        options: [
+            "left secondary vaginal hydrocele.", 
+            "left infantile hydrocele.", 
+            "left congenital hydrocele.", 
+            "left encysted hydrocele of the cord."
+        ],
+        correct: 0,
+        explanation: "General Overview: Varicocelectomy involves ligation of dilated veins in the spermatic cord. Correct Answer (A): Disruption of lymphatic drainage during the ligation of the spermatic cord veins is a known complication that leads to the accumulation of fluid in the tunica vaginalis, causing a secondary vaginal hydrocele. Incorrect Options: Infantile and congenital hydroceles present in early childhood due to a patent processus vaginalis. Encysted hydrocele of the cord does not typically present as a delayed complication of varicocelectomy. Educational Objective: Identify secondary vaginal hydrocele as a potential complication of varicocelectomy due to lymphatic disruption."
+    },
+    {
+        id: "uro_andro_003",
+        subject: "Urology",
+        branch: "Andrology",
+        subtype: "Andrology",
+        source: "PYEs and formatives",
+        question: "Which of the following is NOT an inguinoscrotal swelling?",
+        options: [
+            "secondary varicocele.", 
+            "communicating hydrocele.", 
+            "congenital inguinal hernia.", 
+            "vaginal hydrocele."
+        ],
+        correct: 3,
+        explanation: "General Overview: Scrotal swellings can be confined to the scrotum or extend into the inguinal canal. Correct Answer (D): A primary vaginal hydrocele is confined entirely to the scrotum because the processus vaginalis is obliterated above it, making it a purely scrotal swelling. Incorrect Options: A communicating hydrocele, congenital inguinal hernia, and secondary varicocele all have continuous extensions along the inguinal canal, defining them as inguinoscrotal. Educational Objective: Differentiate purely scrotal swellings from inguinoscrotal swellings based on their anatomical extension."
+    },
+    {
+        id: "uro_andro_004",
+        subject: "Urology",
+        branch: "Andrology",
+        subtype: "Andrology",
+        source: "PYEs and formatives",
+        question: "For a 6-month-old child with infantile hydrocele, all the following sentences are true EXCEPT:",
+        options: [
+            "His hydrocele is constant with no size variation.", 
+            "He has an inguino-scrotal swelling.", 
+            "Treatment should be deferred to the age of one year.", 
+            "Treatment is by needle aspiration of the hydrocele."
+        ],
+        correct: 3,
+        explanation: "General Overview: Infantile hydroceles occur when fluid fills the tunica vaginalis but the processus vaginalis is closed at the deep ring. Correct Answer (D): Needle aspiration is strictly contraindicated in pediatric hydroceles due to a high risk of infection, recurrence, and potential injury to surrounding structures. Incorrect Options: Infantile hydroceles do not vary in size (unlike communicating ones), they present as inguinoscrotal swellings, and observation until age 1-2 years is standard since most resolve spontaneously. Educational Objective: Understand that infantile hydroceles are managed conservatively with observation, and needle aspiration is contraindicated."
+    },
+    {
+        id: "uro_andro_005",
+        subject: "Urology",
+        branch: "Andrology",
+        subtype: "Andrology",
+        source: "PYEs and formatives",
+        question: "Clinical picture of penile fracture include all of the followings EXCEPT:",
+        options: [
+            "History of cracking followed by persistent erection.", 
+            "penile swelling, pain, and discoloration.", 
+            "bleeding per urethra.", 
+            "a palpable tunical defect (or tunical defect on penile ultrasound & MRI)."
+        ],
+        correct: 0,
+        explanation: "General Overview: Penile fracture is a traumatic rupture of the tunica albuginea of the corpora cavernosa during an erection. Correct Answer (A): Patients classicially experience a cracking sound followed by immediate detumescence (loss of erection), not a persistent erection. Incorrect Options: It typically presents with rapid swelling, severe pain, and ecchymosis (eggplant deformity). A palpable defect is common, and bleeding per urethra occurs if there is concomitant urethral injury. Educational Objective: Recognize the classic presentation of penile fracture: popping sound, immediate loss of erection, pain, and swelling."
+    },
+    {
+        id: "uro_andro_006",
+        subject: "Urology",
+        branch: "Andrology",
+        subtype: "Andrology",
+        source: "PYEs and formatives",
+        question: "Obesity is associated with increased rates of:",
+        options: [
+            "Erectile dysfunction", 
+            "Kidney cancer", 
+            "Uric acid nephrolithiasis", 
+            "All of the above"
+        ],
+        correct: 3,
+        explanation: "General Overview: Obesity leads to metabolic syndrome, which has systemic and urologic manifestations. Correct Answer (D): Obesity increases the risk of erectile dysfunction (via vascular disease and endothelial dysfunction), renal cell carcinoma (due to hormonal and metabolic alterations), and uric acid stones (due to insulin resistance resulting in highly acidic urine). Educational Objective: Identify the urological complications of obesity, including erectile dysfunction, renal cell carcinoma, and uric acid nephrolithiasis."
+    },
+    {
+        id: "uro_andro_007",
+        subject: "Urology",
+        branch: "Andrology",
+        subtype: "Andrology",
+        source: "PYEs and formatives",
+        question: "The parents of a one year-old boy noticed the absence of his left testis. On clinical examination, the right testis is found normally in the scrotum but the left one cannot be found in the scrotum, inguinal region or other ectopic sites. Otherwise, his external genitalia were normal. Which of the following investigations is indicated in this case?",
+        options: [
+            "Karyotyping.", 
+            "Pre and post contrast abdominal CT.", 
+            "Abdominal ultrasonography.", 
+            "Diagnostic laparoscopy."
+        ],
+        correct: 3,
+        explanation: "General Overview: A non-palpable testis can be intra-abdominal, absent, or extremely atrophic. Correct Answer (D): Diagnostic laparoscopy is the gold standard investigation for a unilateral non-palpable testis, allowing direct visualization and concurrent therapeutic intervention (orchiopexy or orchiectomy). Incorrect Options: Ultrasound and CT lack the sensitivity required to reliably locate intra-abdominal testes. Karyotyping is indicated for bilateral non-palpable testes or if associated with disorders of sex development like hypospadias. Educational Objective: Identify diagnostic laparoscopy as the most appropriate next step in the management of a unilateral non-palpable testis."
+    },
+    {
+        id: "uro_andro_008",
+        subject: "Urology",
+        branch: "Andrology",
+        subtype: "Andrology",
+        source: "PYEs and formatives",
+        question: "A retractile testis:",
+        options: [
+            "is caused by exaggerated cremasteric reflex.", 
+            "cannot be pulled down to the bottom of scrotum.", 
+            "need surgical treatment between 6-12 months.", 
+            "indicates laparoscopy."
+        ],
+        correct: 0,
+        explanation: "General Overview: Retractile testes are normal variants where the testis is temporarily pulled out of the scrotum. Correct Answer (A): This condition is caused by an overactive or exaggerated cremasteric reflex. Incorrect Options: Unlike true undescended testes, retractile testes can be manually brought down to the bottom of the scrotum and will stay there temporarily without tension. They do not require surgical treatment or laparoscopy. Educational Objective: Differentiate retractile testis (caused by a hyperactive cremasteric reflex and managed conservatively) from true cryptorchidism."
+    },
+    {
+        id: "uro_andro_009",
+        subject: "Urology",
+        branch: "Andrology",
+        subtype: "Andrology",
+        source: "PYEs and formatives",
+        question: "For bilateral impalpable testes:",
+        options: [
+            "Optimum age of treatment is 6-12 months.", 
+            "Karyotyping is not indicated.", 
+            "Open surgery orchiolysis and orchiopexy is the suitable treatment.", 
+            "Pelvi-abdominal CT is the preferred diagnostic tool."
+        ],
+        correct: 0,
+        explanation: "General Overview: Management of undescended testes aims to preserve fertility and facilitate cancer screening. Correct Answer (A): The optimal age for surgical correction (orchiopexy) is between 6 and 12 months to maximize fertility potential. Incorrect Options: Karyotyping IS indicated for bilateral impalpable testes to rule out congenital adrenal hyperplasia or chromosomal abnormalities. Laparoscopy is the diagnostic and therapeutic modality of choice, not open surgery or CT. Educational Objective: Recall that orchiopexy for cryptorchidism should be performed between 6 and 12 months of age."
+    },
+    {
+        id: "uro_andro_010",
+        subject: "Urology",
+        branch: "Andrology",
+        subtype: "Andrology",
+        source: "PYEs and formatives",
+        question: "A 21 year-old patient presented by acute agonizing right scrotal pain of three hours duration. There was no history of any scrotal trauma. The pain did not respond to analgesics. On examination, the right testis was found to be enlarged, tender and high riding with absent cremasteric reflex. Which of the following investigations is indicated in this case?",
+        options: [
+            "Semen culture and sensitivity.", 
+            "Semen analysis.", 
+            "Scrotal color duplex ultrasonography.", 
+            "Testicular biopsy."
+        ],
+        correct: 2,
+        explanation: "General Overview: The clinical presentation (acute pain, high-riding testis, absent cremasteric reflex) is highly suspicious for testicular torsion. Correct Answer (C): Scrotal color duplex ultrasonography is the standard diagnostic imaging study to evaluate testicular blood flow. Absent or decreased blood flow confirms torsion. Incorrect Options: Semen cultures and analysis play no role in an acute surgical emergency. Biopsy is not indicated. Educational Objective: Recognize the presentation of testicular torsion and identify scrotal color Doppler ultrasound as the definitive diagnostic imaging modality."
+    },
+    {
+        id: "uro_andro_011",
+        subject: "Urology",
+        branch: "Andrology",
+        subtype: "Andrology",
+        source: "PYEs and formatives",
+        question: "A teenage boy presents with left testicular pain. Which of the following options need to be excluded first?",
+        options: [
+            "Orchitis", 
+            "Epididymitis", 
+            "Torsion of epididymal appendage", 
+            "Testicular torsion"
+        ],
+        correct: 3,
+        explanation: "General Overview: Acute scrotum in a young male requires rapid assessment to rule out conditions that threaten organ viability. Correct Answer (D): Testicular torsion is a true urologic emergency that must be excluded first, as irreversible ischemic damage to the testicle can occur within 4 to 8 hours. Incorrect Options: While epididymitis and appendage torsion cause pain, they do not result in acute organ loss and thus are secondary diagnoses of exclusion. Educational Objective: Prioritize ruling out testicular torsion in the differential diagnosis of the acute scrotum due to its time-sensitive and limb-threatening nature."
+    },
+    {
+        id: "uro_andro_012",
+        subject: "Urology",
+        branch: "Andrology",
+        subtype: "Andrology",
+        source: "PYEs and formatives",
+        question: "The corner stone to differentiate between acute Epididymo-orchitis and acute torsion:",
+        options: [
+            "History", 
+            "Examination", 
+            "Urine analysis", 
+            "Scrotal US and duplex"
+        ],
+        correct: 3,
+        explanation: "General Overview: Differentiating acute scrotum etiologies dictates management (emergency surgery vs. antibiotics). Correct Answer (D): Scrotal Doppler ultrasound is the cornerstone investigation because it definitively assesses arterial perfusion—demonstrating absent blood flow in torsion versus hyperemia (increased flow) in epididymo-orchitis. Incorrect Options: History and physical exam are crucial but lack the definitive diagnostic accuracy of Doppler ultrasound in ambiguous cases. Educational Objective: Identify scrotal Doppler ultrasound as the primary objective modality to differentiate testicular torsion from epididymo-orchitis."
+    },
+    {
+        id: "uro_andro_013",
+        subject: "Urology",
+        branch: "Andrology",
+        subtype: "Andrology",
+        source: "PYEs and formatives",
+        question: "A 63-year diabetic man presents with fever and scrotal pain of 2 days duration. He has history of marked obstructive lower urinary tract symptoms. On local examination, there are areas of blackish discoloration and crepitus sensation in the scrotum. Abdominal ultrasonography revealed markedly distended urinary bladder and bilateral mild hydronephrosis. Standard management includes:",
+        options: [
+            "oral broad-spectrum antibiotic, scrotal debridement and urethral catheter fixation.", 
+            "oral broad-spectrum antibiotic, scrotal debridement and suprapubic tube fixation.", 
+            "parenteral broad-spectrum antibiotic, scrotal debridement and suprapubic tube fixation (or suprapubic cystotomy catheter).", 
+            "parenteral broad-spectrum antibiotic, scrotal debridement and urethral catheter fixation."
+        ],
+        correct: 2,
+        explanation: "General Overview: Fournier gangrene is a polymicrobial necrotizing fasciitis of the perineal and scrotal tissues. Correct Answer (C): It is a surgical emergency requiring immediate parenteral (IV) broad-spectrum antibiotics and aggressive surgical debridement. Because this patient has significant lower urinary tract obstruction, suprapubic cystostomy is preferred over urethral catheterization to divert urine away from the infected field and prevent further urethral trauma. Educational Objective: Outline the standard management of Fournier gangrene: hemodynamic support, broad-spectrum IV antibiotics, urgent aggressive surgical debridement, and suprapubic urinary diversion if outlet obstruction exists."
+    },
+    {
+        id: "uro_andro_014",
+        subject: "Urology",
+        branch: "Andrology",
+        subtype: "Andrology",
+        source: "PYEs and formatives",
+        question: "The primary site of lymphatic spread of testicular tumors is:",
+        options: [
+            "Superficial inguinal lymph nodes", 
+            "Deep inguinal lymph nodes", 
+            "Para-aortic lymph nodes", 
+            "Femoral lymph node"
+        ],
+        correct: 2,
+        explanation: "General Overview: The lymphatic drainage pathways dictate the initial spread of urologic malignancies. Correct Answer (C): Because the testes originate embryologically in the posterior abdominal wall before descending, their lymphatic and venous drainage ascends alongside the gonadal vessels directly to the para-aortic (retroperitoneal) lymph nodes. Incorrect Options: The superficial and deep inguinal nodes drain the scrotal skin and penis, not the testicles (unless the scrotal skin is invaded or there is a history of scrotal surgery). Educational Objective: Trace the lymphatic drainage of the testes directly to the para-aortic lymph nodes based on their embryologic descent."
     }
 ];
