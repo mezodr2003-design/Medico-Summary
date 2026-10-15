@@ -692,3 +692,438 @@ const questionsDatabase = [
         explanation: "General Overview: The lymphatic drainage pathways dictate the initial spread of urologic malignancies. Correct Answer (C): Because the testes originate embryologically in the posterior abdominal wall before descending, their lymphatic and venous drainage ascends alongside the gonadal vessels directly to the para-aortic (retroperitoneal) lymph nodes. Incorrect Options: The superficial and deep inguinal nodes drain the scrotal skin and penis, not the testicles (unless the scrotal skin is invaded or there is a history of scrotal surgery). Educational Objective: Trace the lymphatic drainage of the testes directly to the para-aortic lymph nodes based on their embryologic descent."
     }
 ];
+questionsDatabase.push(
+    {
+        id: "ent_phar_anat_mosad_01",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "At the level of 6th cervical vertebra, the following are true except:",
+        options: [
+            "Larynx ends; trachea begins",
+            "Pharynx ends; esophagus begins",
+            "Inferior thyroid artery crosses posterior to carotid sheath",
+            "Arytenoids cartilage are present"
+        ],
+        correct: 3,
+        explanation: "<b>Overview:</b> The level of the 6th cervical vertebra (C6) is a critical anatomical landmark in the neck.<br><br><b>Correct Answer (d):</b> The arytenoid cartilages articulate with the superior border of the cricoid cartilage lamina, which is located higher up (around the C4-C5 level). Therefore, they are not present at the C6 level.<br><br><b>Incorrect Options:</b><br>- <b>a & b:</b> C6 marks the lower border of the cricoid cartilage, which is exactly where the larynx transitions into the trachea, and the pharynx transitions into the esophagus.<br>- <b>c:</b> The inferior thyroid artery consistently crosses posterior to the carotid sheath near this level to supply the thyroid gland.<br><br><b>Educational Objective:</b> The C6 vertebra (cricoid cartilage lower border) marks the junction of the larynx with the trachea and the pharynx with the esophagus."
+    },
+    {
+        id: "ent_phar_anat_mosad_02",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "Regarding the nasopharynx, all the following statements are correct except:",
+        options: [
+            "It is the post-nasal space",
+            "It contains the Eustachian tube in its lateral wall",
+            "Its roof contains nasopharyngeal lymphoid tissues",
+            "It is not related to the skull base"
+        ],
+        correct: 3,
+        explanation: "<b>Overview:</b> The nasopharynx is the uppermost part of the pharynx, extending from the skull base to the upper surface of the soft palate.<br><br><b>Correct Answer (d):</b> The statement 'It is not related to the skull base' is false. The roof and posterior wall of the nasopharynx are formed by the sloping inferior surfaces of the body of the sphenoid bone and the basilar part of the occipital bone (the skull base).<br><br><b>Incorrect Options:</b><br>- <b>a:</b> It is synonymous with the post-nasal space.<br>- <b>b:</b> The lateral wall houses the pharyngeal opening of the Eustachian tube.<br>- <b>c:</b> The roof contains the adenoids (pharyngeal tonsils).<br><br><b>Educational Objective:</b> The nasopharynx is intimately related to the central skull base, making it a critical pathway for the superior spread of nasopharyngeal carcinoma."
+    },
+    {
+        id: "ent_phar_anat_mosad_03",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "Fossa of Rosen-Muller is characterized by the following:",
+        options: [
+            "Present in the posterior wall of the nasopharynx",
+            "It is in front of the Eustachian tube",
+            "It is the commonest site for nasopharyngeal carcinoma",
+            "It can be seen by anterior rhinoscopy"
+        ],
+        correct: 2,
+        explanation: "<b>Overview:</b> The pharyngeal recess, or Fossa of Rosen-Müller, is a slit-like depression in the lateral wall of the nasopharynx.<br><br><b>Correct Answer (c):</b> It is clinically highly significant as it is the most common site of origin for nasopharyngeal carcinoma (NPC).<br><br><b>Incorrect Options:</b><br>- <b>a:</b> It is located on the <i>lateral</i> wall of the nasopharynx, not the posterior wall.<br>- <b>b:</b> It is located <i>behind</i> (posterior to) the Eustachian tube elevation (torus tubarius), not in front of it.<br>- <b>d:</b> It cannot be adequately visualized via anterior rhinoscopy; it requires posterior rhinoscopy or nasal endoscopy.<br><br><b>Educational Objective:</b> The Fossa of Rosen-Müller is located posterior to the torus tubarius in the nasopharynx and is the classic origin site for nasopharyngeal carcinoma."
+    },
+    {
+        id: "ent_phar_anat_mosad_04",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "Pyriform fossa is characterized by the following except:",
+        options: [
+            "Present behind and lateral to the larynx",
+            "It is bounded by thyroid cartilage laterally and ary-epiglottic fold medially",
+            "It is supplied by the internal branch of superior laryngeal nerve",
+            "It is a part of the oropharynx"
+        ],
+        correct: 3,
+        explanation: "<b>Overview:</b> The pyriform fossa (sinus) is a mucosal pouch reflecting laterally around the larynx.<br><br><b>Correct Answer (d):</b> The pyriform fossa is a subsite of the <b>hypopharynx</b> (laryngopharynx), not the oropharynx. <br><br><b>Incorrect Options:</b><br>- <b>a & b:</b> It lies on either side of the laryngeal orifice, bounded medially by the aryepiglottic fold and laterally by the thyroid cartilage and thyrohyoid membrane.<br>- <b>c:</b> The internal branch of the superior laryngeal nerve runs under its mucosa, making it vulnerable during removal of foreign bodies lodged here.<br><br><b>Educational Objective:</b> The pyriform fossa is a critical space in the hypopharynx where swallowed foreign bodies (e.g., fish bones) commonly lodge, risking injury to the underlying internal laryngeal nerve."
+    },
+    {
+        id: "ent_phar_anat_mosad_05",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "The superior constrictor muscle is related to:",
+        options: [
+            "The mandible",
+            "The hyoid bone",
+            "The thyroid cartilage",
+            "The cricoids cartilage"
+        ],
+        correct: 0,
+        explanation: "<b>Overview:</b> The pharyngeal constrictors overlap each other from below upwards. Their anterior attachments differentiate them.<br><br><b>Correct Answer (a):</b> The superior constrictor attaches anteriorly to the pterygomandibular raphe, which connects to the <b>mandible</b> (mylohyoid line) and the pterygoid hamulus.<br><br><b>Incorrect Options:</b><br>- <b>b:</b> The middle constrictor attaches to the hyoid bone.<br>- <b>c & d:</b> The inferior constrictor attaches to the thyroid and cricoid cartilages.<br><br><b>Educational Objective:</b> The superior constrictor muscle attaches anteriorly to the pterygomandibular raphe and mandible, forming the lateral wall of the oropharynx and the bed of the palatine tonsil."
+    },
+    {
+        id: "ent_phar_anat_mosad_06",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "The tonsil is supplied from the following arteries except:",
+        options: [
+            "Ascending pharyngeal",
+            "Facial",
+            "Lingual",
+            "Superior thyroid"
+        ],
+        correct: 3,
+        explanation: "<b>Overview:</b> The palatine tonsil has a rich blood supply derived primarily from branches of the external carotid artery.<br><br><b>Correct Answer (d):</b> The superior thyroid artery supplies the thyroid gland and larynx, but does NOT supply the palatine tonsil.<br><br><b>Incorrect Options:</b><br>The tonsil's arterial supply includes:<br>- <b>b:</b> Tonsillar branch of the Facial artery (main supply) and ascending palatine artery.<br>- <b>a:</b> Ascending pharyngeal artery (branch of ECA).<br>- <b>c:</b> Dorsal lingual branches of the Lingual artery.<br>- Descending palatine branch of the Maxillary artery.<br><br><b>Educational Objective:</b> The main arterial supply to the palatine tonsil is the tonsillar branch of the facial artery, with contributions from the lingual, ascending pharyngeal, and maxillary arteries, but not the superior thyroid artery."
+    },
+    {
+        id: "ent_phar_anat_mosad_07",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "Most pharyngeal muscles are supplied by:",
+        options: [
+            "Trigeminal nerve",
+            "Glossopharyngeal nerve",
+            "Vagus nerve",
+            "Hypoglossal nerve"
+        ],
+        correct: 2,
+        explanation: "<b>Overview:</b> Motor innervation of the pharynx is predominantly via the pharyngeal plexus.<br><br><b>Correct Answer (c):</b> All muscles of the pharynx are supplied by the cranial root of the accessory nerve via the <b>Vagus nerve (CN X)</b> through the pharyngeal plexus, with the sole exception of the stylopharyngeus muscle.<br><br><b>Incorrect Options:</b><br>- <b>a:</b> Supplies muscles of mastication, mylohyoid, and anterior belly of digastric.<br>- <b>b:</b> Supplies only ONE muscle of the pharynx: the stylopharyngeus.<br>- <b>d:</b> Supplies intrinsic and extrinsic muscles of the tongue (except palatoglossus).<br><br><b>Educational Objective:</b> The Vagus nerve (CN X) provides motor innervation to all pharyngeal muscles except the stylopharyngeus (supplied by CN IX)."
+    },
+    {
+        id: "ent_phar_anat_mosad_08",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "Waldeyer's ring is characterized by the following except:",
+        options: [
+            "It has efferent lymphatics",
+            "It is more active in adults than in children",
+            "It protects both the respiratory and the digestive tracts",
+            "The palatine tonsils are its largest part"
+        ],
+        correct: 1,
+        explanation: "<b>Overview:</b> Waldeyer's ring is a circular arrangement of mucosa-associated lymphoid tissue (MALT) located at the gateway of the respiratory and digestive tracts.<br><br><b>Correct Answer (b):</b> Waldeyer's ring is maximally active during early childhood (producing IgA against environmental pathogens) and typically undergoes physiological involution (atrophy) after puberty. It is NOT more active in adults.<br><br><b>Incorrect Options:</b><br>- <b>a:</b> True. Unlike lymph nodes, MALT structures in Waldeyer's ring have efferent lymphatics but NO afferent lymphatics.<br>- <b>c:</b> True. It sits at the aero-digestive crossroad.<br>- <b>d:</b> True. The palatine tonsils represent the largest aggregate of lymphoid tissue in the ring.<br><br><b>Educational Objective:</b> Lymphoid tissue in Waldeyer's ring hypertrophies in early childhood for immune processing and atrophies in adulthood; it features efferent lymphatics but lacks afferent lymphatic vessels."
+    },
+    {
+        id: "ent_phar_anat_mosad_09",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "The palatine tonsil is characterized by the following except:",
+        options: [
+            "It lies in the oropharynx between the palatoglossal and palatopharyngeal arches",
+            "It is supplied by the glossopharyngeal nerve",
+            "It is related to the superior constrictor muscle",
+            "Its medial surface is covered by fibrous capsule"
+        ],
+        correct: 3,
+        explanation: "<b>Overview:</b> The palatine tonsils are paired lymphoid organs situated in the tonsillar sinus of the oropharynx.<br><br><b>Correct Answer (d):</b> The <i>medial</i> (free) surface of the tonsil is covered by non-keratinizing stratified squamous epithelium containing tonsillar crypts. The fibrous capsule covers its <i>lateral</i> (deep) surface, separating it from the tonsillar bed.<br><br><b>Incorrect Options:</b><br>- <b>a:</b> True. It sits in the tonsillar fossa bordered anteriorly by the palatoglossal arch and posteriorly by the palatopharyngeal arch.<br>- <b>b:</b> True. Sensory supply is via the tonsillar branch of the glossopharyngeal nerve (CN IX).<br>- <b>c:</b> True. The superior constrictor forms the floor/bed of the tonsillar fossa.<br><br><b>Educational Objective:</b> The palatine tonsil is encapsulated on its lateral (deep) surface, while its medial surface is exposed to the oropharynx and covered by stratified squamous epithelium."
+    },
+    {
+        id: "ent_phar_anat_mosad_10",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "The nasopharynx can be seen by the following methods except:",
+        options: [
+            "Nasal endoscopy",
+            "Anterior rhinoscopy",
+            "Posterior rhinoscopy",
+            "Flexible nasopharyngoscopy"
+        ],
+        correct: 1,
+        explanation: "<b>Overview:</b> The nasopharynx is a deep space located behind the nasal choanae, making direct line-of-sight examination difficult.<br><br><b>Correct Answer (b):</b> Anterior rhinoscopy utilizes a nasal speculum to view the anterior nasal cavity. It cannot provide a view deep enough to inspect the nasopharynx due to the intervening nasal turbinates and septum.<br><br><b>Incorrect Options:</b><br>- <b>a & d:</b> Rigid nasal endoscopy and flexible nasopharyngoscopy are the gold standards for directly visualizing the nasopharyngeal mucosa.<br>- <b>c:</b> Posterior rhinoscopy involves placing a small angled mirror through the mouth behind the soft palate to view the nasopharynx from below.<br><br><b>Educational Objective:</b> Visualizing the nasopharynx requires specialized tools (endoscopes or angled mirrors) as routine anterior rhinoscopy only visualizes the anterior and middle nasal cavity."
+    },
+    {
+        id: "ent_phar_anat_mosad_11",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "The muscle which forms the bed of the tonsil is:",
+        options: [
+            "Superior constrictor",
+            "Middle constrictor",
+            "Inferior constrictor",
+            "Posterior belly of diagastric"
+        ],
+        correct: 0,
+        explanation: "<b>Overview:</b> The tonsillar bed (fossa) is the muscular recess housing the palatine tonsil.<br><br><b>Correct Answer (a):</b> The primary muscle forming the floor (bed) of the tonsillar fossa is the superior pharyngeal constrictor. The palatopharyngeus also contributes to the bed.<br><br><b>Incorrect Options:</b><br>- <b>b & c:</b> Located lower down in the oropharynx and hypopharynx.<br>- <b>d:</b> The posterior belly of the digastric is situated deeper in the neck and is not a part of the mucosal bed of the tonsil.<br><br><b>Educational Objective:</b> The lateral wall (bed) of the palatine tonsil is formed primarily by the superior pharyngeal constrictor muscle, separated from the tonsil by the fibrous tonsillar capsule."
+    },
+    {
+        id: "ent_phar_anat_mosad_12",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "The anterior belly of diagastric muscle is supplied by:",
+        options: [
+            "Facial nerve",
+            "Trigeminal nerve",
+            "Glossopharyngeal nerve",
+            "Vagus nerve"
+        ],
+        correct: 1,
+        explanation: "<b>Overview:</b> The digastric muscle has two bellies with different embryological origins, and thus different nerve supplies.<br><br><b>Correct Answer (b):</b> The anterior belly arises from the 1st branchial arch and is therefore innervated by the nerve to the mylohyoid, a branch of the mandibular division of the <b>Trigeminal nerve (V3)</b>.<br><br><b>Incorrect Options:</b><br>- <b>a:</b> Supplies the posterior belly.<br>- <b>c & d:</b> Do not supply the digastric muscle.<br><br><b>Educational Objective:</b> Due to its 1st branchial arch origin, the anterior belly of the digastric muscle is innervated by the mandibular division of the trigeminal nerve (V3)."
+    },
+    {
+        id: "ent_phar_anat_mosad_13",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "The posterior belly of diagastric muscle is supplied by:",
+        options: [
+            "Facial nerve",
+            "Trigeminal nerve",
+            "Glossopharyngeal nerve",
+            "Vagus nerve"
+        ],
+        correct: 0,
+        explanation: "<b>Overview:</b> The posterior belly of the digastric muscle elevates the hyoid bone and opens the mouth.<br><br><b>Correct Answer (a):</b> It develops from the 2nd branchial arch and is therefore innervated by the <b>Facial nerve (CN VII)</b>.<br><br><b>Incorrect Options:</b><br>- <b>b:</b> Innervates the anterior belly (1st arch derivative).<br>- <b>c & d:</b> Unrelated to the digastric muscle.<br><br><b>Educational Objective:</b> The posterior belly of the digastric muscle originates from the 2nd branchial arch and is innervated by the facial nerve (CN VII)."
+    },
+    {
+        id: "ent_phar_anat_mosad_14",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "Not a part of Waldeyer's ring:",
+        options: [
+            "Nasopharyngeal lymphoid tissues",
+            "Buccal Lymphoid tissues",
+            "Palatine tonsils",
+            "Lingual tonsils"
+        ],
+        correct: 1,
+        explanation: "<b>Overview:</b> Waldeyer's tonsillar ring constitutes the MALT surrounding the opening of the aero-digestive tract.<br><br><b>Correct Answer (b):</b> There are no distinct 'buccal' tonsils or organized buccal lymphoid tissues forming a part of this ring.<br><br><b>Incorrect Options:</b><br>The 4 main components of Waldeyer's ring are:<br>- <b>a:</b> Pharyngeal tonsils (adenoids) located postero-superiorly.<br>- <b>c:</b> Palatine tonsils located laterally.<br>- <b>d:</b> Lingual tonsils located anteriorly at the tongue base.<br>- Tubal tonsils (around the Eustachian tube opening).<br><br><b>Educational Objective:</b> Waldeyer's ring is composed of the pharyngeal (adenoid), tubal, palatine, and lingual tonsils."
+    },
+    {
+        id: "ent_phar_anat_mosad_15",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "The mucosa of the palate received sensory innervations from:",
+        options: [
+            "Trigeminal nerve",
+            "Vagus nerve",
+            "Glossopharyngeal nerve",
+            "Hypoglossal nerve"
+        ],
+        correct: 0,
+        explanation: "<b>Overview:</b> Sensory innervation of the palate is required for the gag reflex and general sensation.<br><br><b>Correct Answer (a):</b> The sensory innervation of both the hard and soft palate is supplied by branches of the maxillary division of the <b>Trigeminal nerve (V2)</b>, specifically the greater and lesser palatine nerves.<br><br><b>Incorrect Options:</b><br>- <b>b:</b> Vagus supplies motor fibers to the palate (except tensor veli palatini), not primary sensory.<br>- <b>c:</b> Glossopharyngeal supplies sensation to the posterior third of the tongue and oropharynx.<br>- <b>d:</b> Hypoglossal is a pure motor nerve to the tongue.<br><br><b>Educational Objective:</b> General sensory innervation to the mucosa of the palate is provided by the maxillary division of the trigeminal nerve (V2)."
+    },
+    {
+        id: "ent_phar_anat_mosad_16",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "The only muscle which is supplied by the glossopharyngeal nerve is:",
+        options: [
+            "Stylohyoid",
+            "Stylopharyngeus",
+            "Salpingopharyngeus",
+            "Cricopharyngeus"
+        ],
+        correct: 1,
+        explanation: "<b>Overview:</b> The glossopharyngeal nerve (CN IX) provides extensive sensory innervation but very limited motor innervation.<br><br><b>Correct Answer (b):</b> The <b>stylopharyngeus</b> is derived from the 3rd branchial arch and is the ONLY muscle innervated by the glossopharyngeal nerve.<br><br><b>Incorrect Options:</b><br>- <b>a:</b> Stylohyoid is supplied by the facial nerve (CN VII).<br>- <b>c:</b> Salpingopharyngeus is supplied by the vagus nerve (CN X) via the pharyngeal plexus.<br>- <b>d:</b> Cricopharyngeus is supplied by the vagus nerve (CN X).<br><br><b>Educational Objective:</b> The stylopharyngeus muscle is unique as it is the sole motor target of the glossopharyngeal nerve (CN IX)."
+    },
+    {
+        id: "ent_phar_anat_mosad_17",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "The mucosa of the nasopharynx is:",
+        options: [
+            "Stratified squamous epithelium",
+            "Columnar ciliated epithelium",
+            "Transitional epithelium",
+            "Flat cuboidal epithelium"
+        ],
+        correct: 1,
+        explanation: "<b>Overview:</b> The histological lining of the pharynx changes based on its function (respiratory vs. digestive).<br><br><b>Correct Answer (b):</b> The nasopharynx is a continuation of the respiratory tract. Therefore, it is lined primarily by respiratory epithelium: pseudostratified <b>columnar ciliated epithelium</b> with goblet cells.<br><br><b>Incorrect Options:</b><br>- <b>a:</b> Non-keratinized stratified squamous epithelium lines the oro- and hypopharynx to protect against abrasive food boluses.<br>- <b>c & d:</b> Not typical linings for the upper airway.<br><br><b>Educational Objective:</b> The nasopharynx is lined by ciliated columnar epithelium (respiratory mucosa), while the oropharynx and hypopharynx are lined by stratified squamous epithelium."
+    },
+    {
+        id: "ent_phar_anat_mosad_18",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "The sensory innervation of the nasaopharynx is Mainly via:",
+        options: [
+            "Maxillary of trigeminal nerve",
+            "Glossopharyngeal nerve",
+            "Auriculotemporal of mandibular nerve",
+            "Vagus nerve"
+        ],
+        correct: 0,
+        explanation: "<b>Overview:</b> Sensory innervation of the pharynx is segmented cranio-caudally.<br><br><b>Correct Answer (a):</b> The upper portion of the pharynx (nasopharynx) receives its sensory innervation primarily from the <b>Maxillary nerve (V2)</b>, mainly via the pharyngeal branch of the pterygopalatine ganglion.<br><br><b>Incorrect Options:</b><br>- <b>b:</b> Supplies the oropharynx.<br>- <b>c:</b> Auriculotemporal supplies the TMJ and skin of the temporal region.<br>- <b>d:</b> Vagus supplies the hypopharynx and larynx.<br><br><b>Educational Objective:</b> Sensory innervation of the pharynx is divided: Nasopharynx (CN V2), Oropharynx (CN IX), and Hypopharynx (CN X)."
+    },
+    {
+        id: "ent_phar_anat_mosad_19",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "The sensory innervation of the oropharynx is Mainly via:",
+        options: [
+            "Maxillary of trigeminal nerve",
+            "Glossopharyngeal nerve",
+            "Auriculotemporal of mandibular nerve",
+            "Vagus nerve"
+        ],
+        correct: 1,
+        explanation: "<b>Overview:</b> The oropharynx contains the palatine tonsils, base of tongue, and soft palate.<br><br><b>Correct Answer (b):</b> The <b>Glossopharyngeal nerve (CN IX)</b> provides the main sensory innervation to the mucosa of the oropharynx (including the afferent limb of the gag reflex).<br><br><b>Incorrect Options:</b><br>- <b>a:</b> Supplies the nasopharynx.<br>- <b>c:</b> Unrelated to the pharynx.<br>- <b>d:</b> Supplies the hypopharynx and provides the efferent (motor) limb of the gag reflex.<br><br><b>Educational Objective:</b> The glossopharyngeal nerve (CN IX) provides sensory innervation to the oropharynx and acts as the afferent limb of the gag reflex."
+    },
+    {
+        id: "ent_phar_anat_mosad_20",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "The sensory innervation of the hypopharynx is Mainly via:",
+        options: [
+            "Maxillary of trigeminal nerve",
+            "Glossopharyngeal nerve",
+            "Auriculotemporal of mandibular nerve",
+            "Vagus nerve"
+        ],
+        correct: 3,
+        explanation: "<b>Overview:</b> The hypopharynx (laryngopharynx) is the lowest segment of the pharynx.<br><br><b>Correct Answer (d):</b> Sensory innervation to the hypopharynx is provided by the <b>Vagus nerve (CN X)</b>, specifically via the internal branch of the superior laryngeal nerve.<br><br><b>Incorrect Options:</b><br>- <b>a:</b> Sensory to nasopharynx.<br>- <b>b:</b> Sensory to oropharynx.<br>- <b>c:</b> Sensory to TMJ and lateral scalp.<br><br><b>Educational Objective:</b> The Vagus nerve (CN X), via the internal laryngeal nerve, provides critical sensory innervation to the hypopharynx, protecting the airway during swallowing."
+    },
+    {
+        id: "ent_phar_anat_mosad_21",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "The anterior tonsillar pillar is formed of the following muscle with overlying mucosa:",
+        options: [
+            "Palatopharyngeus",
+            "Palatoglossus",
+            "Stylopharyngeus",
+            "Salpingopharyngeus"
+        ],
+        correct: 1,
+        explanation: "<b>Overview:</b> The palatine tonsil sits in a fossa bounded by two mucosal pillars (arches).<br><br><b>Correct Answer (b):</b> The anterior tonsillar pillar is formed by the <b>palatoglossus</b> muscle covered by mucous membrane.<br><br><b>Incorrect Options:</b><br>- <b>a:</b> The palatopharyngeus muscle forms the <i>posterior</i> tonsillar pillar.<br>- <b>c & d:</b> These are longitudinal muscles of the pharynx that elevate it during swallowing but do not form the tonsillar pillars.<br><br><b>Educational Objective:</b> The tonsillar fossa is bounded anteriorly by the palatoglossal arch (palatoglossus muscle) and posteriorly by the palatopharyngeal arch (palatopharyngeus muscle)."
+    },
+    {
+        id: "ent_phar_anat_mosad_22",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "The cricoid cartilage is situated at the following level:",
+        options: [
+            "The 4th cervical vertebra",
+            "The 5th cervical vertebra",
+            "The 6th cervical vertebra",
+            "The 7th cervical vertebra"
+        ],
+        correct: 2,
+        explanation: "<b>Overview:</b> Vertebral levels are essential surgical and clinical landmarks in the neck.<br><br><b>Correct Answer (c):</b> The lower border of the cricoid cartilage aligns with the level of the <b>6th cervical vertebra (C6)</b>.<br><br><b>Incorrect Options:</b><br>- <b>a:</b> C4 corresponds to the bifurcation of the common carotid artery and the upper border of the thyroid cartilage.<br>- <b>b & d:</b> Incorrect anatomical correlations for the cricoid.<br><br><b>Educational Objective:</b> The C6 vertebral level corresponds to the cricoid cartilage, representing the narrowest part of the pediatric airway and the junction between the pharynx/larynx and esophagus/trachea."
+    },
+    {
+        id: "ent_phar_anat_mosad_23",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "The specific lymph nodes of the palatine tonsil are:",
+        options: [
+            "Submandibular lymph nodes",
+            "Jugulodiagastric lymph nodes",
+            "Occipital lymph nodes",
+            "Supraclavicular lymph nodes"
+        ],
+        correct: 1,
+        explanation: "<b>Overview:</b> Lymphatic drainage dictates the pattern of lymphadenopathy seen in regional infections or malignancies.<br><br><b>Correct Answer (b):</b> The palatine tonsils drain primarily to the upper deep cervical nodes, specifically the <b>jugulodigastric node</b> (often called the 'tonsillar node'), located just below the angle of the mandible.<br><br><b>Incorrect Options:</b><br>- <b>a:</b> Submandibular nodes drain the oral cavity and floor of mouth.<br>- <b>c:</b> Occipital nodes drain the posterior scalp.<br>- <b>d:</b> Supraclavicular nodes drain thoracic/abdominal viscera (Virchow's node) or lower neck structures.<br><br><b>Educational Objective:</b> Acute tonsillitis typically presents with tender cervical lymphadenopathy prominently involving the jugulodigastric (tonsillar) lymph node."
+    },
+    {
+        id: "ent_phar_anat_mosad_24",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "The mucosa of the medial surface of the palatine tonsil is:",
+        options: [
+            "Columnar ciliated with invaginations called crypts",
+            "Stratified squamous with invaginations called crypts",
+            "Mixture of Columnar ciliated and stratified with invagination called crypts",
+            "Covered by a fibrous capsule"
+        ],
+        correct: 1,
+        explanation: "<b>Overview:</b> The histological surface of tonsils dictates their susceptibility to certain pathologies, like debris accumulation.<br><br><b>Correct Answer (b):</b> Because it lies in the oropharynx, the medial (free) surface of the palatine tonsil is covered by <b>non-keratinized stratified squamous epithelium</b>. This epithelium invaginates deeply to form 15-20 tonsillar crypts.<br><br><b>Incorrect Options:</b><br>- <b>a:</b> Ciliated columnar epithelium (respiratory) covers the pharyngeal tonsils (adenoids).<br>- <b>d:</b> The fibrous capsule is located on the <i>lateral</i> (deep) surface, not the medial surface.<br><br><b>Educational Objective:</b> Palatine tonsils are lined by stratified squamous epithelium that forms deep crypts, which can collect food debris and bacteria, forming tonsilloliths (tonsil stones)."
+    },
+    {
+        id: "ent_phar_anat_mosad_25",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "The palatine tonsil receives its arterial supply from all of the following except:",
+        options: [
+            "Facial",
+            "Ascending palatine",
+            "Sphenopalatine",
+            "Dorsal lingual"
+        ],
+        correct: 2,
+        explanation: "<b>Overview:</b> The tonsil is highly vascular, supplied by 5 main branches from the external carotid system.<br><br><b>Correct Answer (c):</b> The <b>Sphenopalatine artery</b> is the artery of epistaxis, supplying the posterior nasal cavity. It does NOT supply the palatine tonsil.<br><br><b>Incorrect Options:</b><br>The tonsil is supplied by:<br>- Tonsillar branch of Facial artery (main supply).<br>- Ascending palatine artery (branch of Facial).<br>- Dorsal lingual branches (from Lingual).<br>- Ascending pharyngeal artery.<br>- Descending palatine artery (from Maxillary).<br><br><b>Educational Objective:</b> The arterial supply of the tonsil includes branches of the facial, lingual, ascending pharyngeal, and maxillary arteries, but strictly excludes the sphenopalatine artery."
+    },
+    {
+        id: "ent_phar_anat_mosad_26",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "The vallecula is:",
+        options: [
+            "Part of tongue base",
+            "Lower pole of the palatine tonsil",
+            "Part of pyriform fossa",
+            "Part of soft palate above the uvula"
+        ],
+        correct: 0,
+        explanation: "<b>Overview:</b> The valleculae (meaning 'little valleys') are important landmarks in airway management and endoscopy.<br><br><b>Correct Answer (a):</b> The valleculae are mucosal depressions located between the <b>base of the tongue</b> (anteriorly) and the lingual surface of the epiglottis (posteriorly). They are classified anatomically as part of the oropharynx (tongue base).<br><br><b>Incorrect Options:</b><br>- <b>b, c, & d:</b> The vallecula is structurally unrelated to the palatine tonsils, soft palate, or pyriform fossa.<br><br><b>Educational Objective:</b> During endotracheal intubation using a Macintosh (curved) blade, the tip of the blade is placed into the vallecula to elevate the epiglottis and expose the vocal cords."
+    },
+    {
+        id: "ent_phar_anat_mosad_27",
+        subject: "ENT",
+        branch: "pharynx",
+        subtype: "anatomy",
+        source: "Dr mosad's MCQs",
+        question: "The lower end of Eustachian tube opens in:",
+        options: [
+            "Lateral wall of nasal cavity",
+            "Lateral wall of nasopharynx",
+            "Posterior wall of nasopharynx",
+            "Roof of nasal cavity"
+        ],
+        correct: 1,
+        explanation: "<b>Overview:</b> The Eustachian (pharyngotympanic) tube connects the middle ear to the upper respiratory tract.<br><br><b>Correct Answer (b):</b> The lower (pharyngeal) opening of the Eustachian tube is located on the <b>lateral wall of the nasopharynx</b>, just posterior to the inferior nasal concha.<br><br><b>Incorrect Options:</b><br>- <b>a & d:</b> It opens into the pharynx, not directly into the nasal cavity.<br>- <b>c:</b> It opens laterally, while the posterior wall houses the adenoids and skull base.<br><br><b>Educational Objective:</b> The Eustachian tube drains into the lateral wall of the nasopharynx, which explains why nasopharyngeal masses (like enlarged adenoids or carcinoma) can obstruct the tube, leading to middle ear effusion."
+    }
+);
+
