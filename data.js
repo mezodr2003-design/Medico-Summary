@@ -691,7 +691,6 @@ const questionsDatabase = [
         correct: 2,
         explanation: "General Overview: The lymphatic drainage pathways dictate the initial spread of urologic malignancies. Correct Answer (C): Because the testes originate embryologically in the posterior abdominal wall before descending, their lymphatic and venous drainage ascends alongside the gonadal vessels directly to the para-aortic (retroperitoneal) lymph nodes. Incorrect Options: The superficial and deep inguinal nodes drain the scrotal skin and penis, not the testicles (unless the scrotal skin is invaded or there is a history of scrotal surgery). Educational Objective: Trace the lymphatic drainage of the testes directly to the para-aortic lymph nodes based on their embryologic descent."
     }
-];
 questionsDatabase.push(
     {
         id: "ent_phar_anat_mosad_01",
