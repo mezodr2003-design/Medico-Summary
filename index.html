@@ -507,7 +507,7 @@
 
             const expBox = document.getElementById('explanation-box');
             if (state.answered && testMode === 'tutor') {
-                document.getElementById('exp-text').innerText = q.explanation;
+document.getElementById('exp-text').innerHTML = q.explanation;
                 expBox.classList.remove('hidden');
             } else {
                 expBox.classList.add('hidden');
