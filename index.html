@@ -11,8 +11,9 @@
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        // تم إضافة deleteDoc و doc لمسح الملفات المكررة
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // إضافة مكتبات المصادقة (Authentication)
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyCPHgq_0Nm13ZVJ-IKHB5d0aoichUi9hek",
@@ -25,9 +26,12 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app); // تشغيل المصادقة
 
         window.db = db;
+        window.firebaseAuth = auth;
         window.firestoreTools = { collection, addDoc, getDocs, deleteDoc, doc };
+        window.authTools = { signInWithEmailAndPassword, signOut, onAuthStateChanged }; // تصدير أدوات المصادقة
     </script>
 
     <style>
@@ -249,7 +253,6 @@
                     </button>
                 </div>
 
-                <!-- زرار مسح المكرر الجديد -->
                 <div class="bg-slate-900 border border-rose-900/50 p-4 rounded-xl mb-2">
                     <h4 class="font-bold text-sm text-rose-500 mb-1"><i class="fa-solid fa-broom"></i> Clean Duplicate Questions</h4>
                     <p class="text-xs text-slate-400 mb-3">Checks for 4 exact matches: Subject + Branch + Subtype + Question. Keeps 1, deletes the rest.</p>
@@ -260,12 +263,26 @@
             </div>
         </div>
 
+        <!-- NEW: Login Modal for Firebase Auth -->
+        <div id="login-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-slate-800 border border-amber-500/40 rounded-2xl p-6 w-full max-w-sm shadow-2xl space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                    <h3 class="text-base font-bold text-amber-500 flex items-center gap-2"><i class="fa-solid fa-lock"></i> Admin Login</h3>
+                    <button onclick="closeLoginModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                <div class="space-y-3">
+                    <input type="email" id="admin-email" placeholder="Admin Email" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl text-sm focus:outline-none focus:border-amber-500">
+                    <input type="password" id="admin-password" placeholder="Password" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl text-sm focus:outline-none focus:border-amber-500">
+                    <button id="login-submit-btn" onclick="submitLogin()" class="w-full bg-amber-600 hover:bg-amber-500 font-bold py-3 rounded-xl text-white transition">Login</button>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <script src="data.js" onerror="console.log('No local data.js found.')"></script>
 
     <script>
-        const ADMIN_SECRET = [109, 101, 100, 50, 48, 50, 54];
         let isAdmin = false;
         let allQuestions = []; 
         let userStats = JSON.parse(localStorage.getItem('medico_stats')) || { incorrect: [], flagged: [] };
@@ -315,7 +332,36 @@
             } return false;
         }
 
-        function initApp() { const savedTheme = localStorage.getItem('medico_theme') || 'dark'; setTheme(savedTheme); initCloudSync(); restoreSession(); }
+        function initApp() { 
+            const savedTheme = localStorage.getItem('medico_theme') || 'dark'; 
+            setTheme(savedTheme); 
+            initCloudSync(); 
+            restoreSession(); 
+            
+            // NEW: Auth State Observer
+            const checkAuth = setInterval(() => {
+                if (window.authTools && window.firebaseAuth) {
+                    clearInterval(checkAuth);
+                    window.authTools.onAuthStateChanged(window.firebaseAuth, (user) => {
+                        if (user) {
+                            isAdmin = true;
+                            document.getElementById('admin-btn-text').innerText = "Admin Active (Logout)";
+                            document.getElementById('cloud-tools-btn').classList.remove('hidden');
+                            if(!document.getElementById('quiz-screen').classList.contains('hidden')) {
+                                document.getElementById('edit-q-btn').classList.remove('hidden');
+                                document.getElementById('edit-q-btn').classList.add('flex');
+                            }
+                        } else {
+                            isAdmin = false;
+                            document.getElementById('admin-btn-text').innerText = "Admin Access";
+                            document.getElementById('cloud-tools-btn').classList.add('hidden');
+                            document.getElementById('edit-q-btn').classList.add('hidden');
+                            document.getElementById('edit-q-btn').classList.remove('flex');
+                        }
+                    });
+                }
+            }, 200);
+        }
 
         function populateFilters() {
             const subjects = [...new Set(allQuestions.map(q => q.subject))].filter(Boolean); const subjSelect = document.getElementById('filter-subject'); subjSelect.innerHTML = '<option value="all">All Subjects</option>';
@@ -356,6 +402,10 @@
             document.getElementById('dashboard-screen').classList.add('hidden'); document.getElementById('quiz-screen').classList.remove('hidden'); document.getElementById('quiz-screen').classList.add('flex');
             if (testMode === 'timed') { document.getElementById('quiz-header-controls').classList.remove('hidden'); document.getElementById('quiz-header-controls').classList.add('flex'); timeRemaining = activeBlock.length * 90; document.getElementById('timer-display').classList.remove('hidden'); document.getElementById('timer-display').classList.add('flex'); timerInterval = setInterval(updateTimer, 1000); } 
             else { document.getElementById('quiz-header-controls').classList.remove('hidden'); document.getElementById('quiz-header-controls').classList.add('flex'); document.getElementById('timer-display').classList.add('hidden'); document.getElementById('timer-display').classList.remove('flex'); }
+            
+            // Show edit button if Admin
+            if(isAdmin) { document.getElementById('edit-q-btn').classList.remove('hidden'); document.getElementById('edit-q-btn').classList.add('flex'); }
+            
             renderMatrix(); loadQuestion(); saveSession();
         }
 
@@ -397,15 +447,52 @@
         function updateTimer() { if (timeRemaining <= 0) { clearInterval(timerInterval); alert("Time is up! Switching to review mode."); testMode = 'tutor'; loadQuestion(); return; } timeRemaining--; const hrs = Math.floor(timeRemaining / 3600).toString().padStart(2, '0'); const mins = Math.floor((timeRemaining % 3600) / 60).toString().padStart(2, '0'); const secs = (timeRemaining % 60).toString().padStart(2, '0'); document.getElementById('time-left').innerText = `${hrs}:${mins}:${secs}`; saveSession(); }
         function endQuizEarly() { if(confirm("Are you sure you want to exit this block?")) { goHome(); } }
         function goHome() { clearInterval(timerInterval); document.getElementById('quiz-screen').classList.add('hidden'); document.getElementById('quiz-screen').classList.remove('flex'); document.getElementById('quiz-header-controls').classList.add('hidden'); document.getElementById('quiz-header-controls').classList.remove('flex'); document.getElementById('dashboard-screen').classList.remove('hidden'); sessionStorage.removeItem('medico_session'); updateAvailableCount(); }
+        
         function exportToPDF() { const printArea = document.getElementById('print-area'); const titleSubject = document.getElementById('filter-subject').value === 'all' ? 'Mixed Subjects' : document.getElementById('filter-subject').value; const titleBranch = document.getElementById('filter-branch').value === 'all' ? 'Mixed Branches' : document.getElementById('filter-branch').value; let htmlContent = `<style>@media print { @page { size: A4; margin: 0; } body { margin: 0; background-color: #fdfbf2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .print-page-container { width: 100%; min-height: 297mm; display: flex; flex-direction: column; page-break-after: always; padding: 20mm; box-sizing: border-box; background-color: #fdfbf2 !important; } } .print-page-container { width: 100%; min-height: 100vh; display: flex; flex-direction: column; padding: 40px; box-sizing: border-box; background-color: #fdfbf2; margin-bottom: 20px; }</style>`; const Q_PER_PAGE = 4; for (let i = 0; i < activeBlock.length; i += Q_PER_PAGE) { const chunk = activeBlock.slice(i, i + Q_PER_PAGE); htmlContent += `<div class="print-page-container" dir="ltr">`; if (i === 0) { htmlContent += `<h2 style="color: #b8860b; font-size: 22px; font-weight: bold; margin-bottom: 30px; font-family: Arial, sans-serif;">Section: ${titleSubject} - ${titleBranch}</h2>`; } htmlContent += `<div style="flex-grow: 1; font-family: Arial, sans-serif;">`; chunk.forEach((q, chunkIdx) => { const globalIndex = i + chunkIdx; htmlContent += `<div style="margin-bottom: 28px;"><div style="font-size: 16px; margin: 0 0 10px 0; line-height: 1.5; display: flex; align-items: flex-start;"><span style="color: #b8860b; font-weight: bold; min-width: 28px;">${globalIndex + 1}.</span><span style="color: #701a75; font-weight: bold; flex: 1;">${q.question}&nbsp;<sup style="color: #000; font-size: 10px; font-weight: normal;">${globalIndex + 1}</sup></span></div><div style="margin-left: 28px;">`; q.options.forEach((opt, optIdx) => { const letter = String.fromCharCode(97 + optIdx); htmlContent += `<div style="margin-bottom: 6px; font-size: 15px; color: #000;">${letter}. ${opt}</div>`; }); htmlContent += `</div></div>`; }); htmlContent += `</div><div style="margin-top: auto; border-top: 1px solid #000; padding-top: 15px; font-family: Arial, sans-serif; font-size: 12px; line-height: 1.6; color: #000;">`; chunk.forEach((q, chunkIdx) => { const globalIndex = i + chunkIdx; const correctOptText = q.options[q.correct]; htmlContent += `<div style="margin-bottom: 8px;"><sup style="font-size: 10px;">${globalIndex + 1}</sup> <b>Answer:</b> ${correctOptText}</div>`; }); htmlContent += `</div></div>`; } printArea.innerHTML = htmlContent; setTimeout(() => { window.print(); }, 500); }
-        function requestAdminAccess() { if(isAdmin) { alert("Admin mode is already active!"); return; } const pwd = prompt("Enter Admin Password:"); if (pwd !== null) { const enteredSecret = pwd.split('').map(c => c.charCodeAt(0)).join(','); const correctSecret = ADMIN_SECRET.join(','); if (enteredSecret === correctSecret) { isAdmin = true; document.getElementById('admin-btn-text').innerText = "Admin Active"; document.getElementById('edit-q-btn').classList.remove('hidden'); document.getElementById('edit-q-btn').classList.add('flex'); document.getElementById('cloud-tools-btn').classList.remove('hidden'); alert("Admin Mode Activated! Cloud Database tools are now unlocked."); } else { alert("Incorrect Password!"); } } }
+        
+        // --- NEW: Firebase Auth Logic ---
+        function requestAdminAccess() { 
+            if(isAdmin) { 
+                if(confirm("You are currently logged in as Admin. Do you want to securely logout?")) {
+                    window.authTools.signOut(window.firebaseAuth).then(() => {
+                        alert("Logged out successfully.");
+                    });
+                }
+                return; 
+            } 
+            document.getElementById('login-modal').classList.remove('hidden');
+        }
+
+        function closeLoginModal() {
+            document.getElementById('login-modal').classList.add('hidden');
+        }
+
+        async function submitLogin() {
+            const email = document.getElementById('admin-email').value;
+            const password = document.getElementById('admin-password').value;
+            const btn = document.getElementById('login-submit-btn');
+            
+            if(!email || !password) { alert("Please enter both email and password."); return; }
+            
+            btn.disabled = true; btn.innerText = "Authenticating...";
+            
+            try {
+                await window.authTools.signInWithEmailAndPassword(window.firebaseAuth, email, password);
+                closeLoginModal();
+                alert("Login Successful! Cloud Database tools are unlocked.");
+            } catch(err) {
+                alert("Login Failed: " + err.message);
+            }
+            
+            btn.disabled = false; btn.innerText = "Login";
+        }
+        
         function openEditModal() { const q = activeBlock[currentIdx]; document.getElementById('edit-q-text').value = q.question; document.getElementById('edit-exp-text').value = q.explanation; const optsContainer = document.getElementById('edit-options-container'); optsContainer.innerHTML = '<label class="text-xs font-semibold text-slate-400">Options & Correct Answer (Select the radio):</label>'; q.options.forEach((opt, idx) => { const optDiv = document.createElement('div'); optDiv.className = "flex items-center gap-2"; const isCorrect = idx === q.correct ? 'checked' : ''; optDiv.innerHTML = `<input type="radio" name="edit-correct" value="${idx}" ${isCorrect} class="w-4 h-4 text-amber-500 bg-slate-900 border-slate-700 accent-amber-500"><input type="text" id="edit-opt-${idx}" value="${opt}" class="w-full bg-slate-900 border border-slate-700 p-2 rounded-lg text-sm focus:outline-none focus:border-amber-500">`; optsContainer.appendChild(optDiv); }); document.getElementById('edit-modal').classList.remove('hidden'); }
         function closeEditModal() { document.getElementById('edit-modal').classList.add('hidden'); }
         function saveQuestionEdits() { const newQ = document.getElementById('edit-q-text').value; const newExp = document.getElementById('edit-exp-text').value; const selectedCorrect = parseInt(document.querySelector('input[name="edit-correct"]:checked').value); const newOptions = []; activeBlock[currentIdx].options.forEach((_, idx) => { newOptions.push(document.getElementById(`edit-opt-${idx}`).value); }); activeBlock[currentIdx].question = newQ; activeBlock[currentIdx].explanation = newExp; activeBlock[currentIdx].options = newOptions; activeBlock[currentIdx].correct = selectedCorrect; blockState[currentIdx] = { answered: false, selected: null, correct: false }; loadQuestion(); closeEditModal(); }
         function openCloudAdmin() { document.getElementById('cloud-admin-modal').classList.remove('hidden'); }
         function closeCloudAdmin() { document.getElementById('cloud-admin-modal').classList.add('hidden'); }
 
-        // --- NEW: UPLOAD LOGIC WITH BUTTON DISABLE ---
         async function uploadPastedJSON() {
             const btn = document.getElementById('paste-upload-btn');
             const textData = document.getElementById('bulk-json-text').value;
@@ -420,7 +507,7 @@
                 for (let q of questionsArray) { await addDoc(collection(window.db, "questions"), q); count++; }
                 alert(`Success! Uploaded ${count} questions directly to the Cloud Database.`);
                 document.getElementById('bulk-json-text').value = ''; closeCloudAdmin(); initCloudSync(); 
-            } catch (err) { alert("Error parsing or uploading JSON: " + err.message); }
+            } catch (err) { alert("Error parsing or uploading JSON (You might not have permission): " + err.message); }
             btn.disabled = false; btn.innerText = "Upload Pasted Data";
         }
 
@@ -441,13 +528,12 @@
                     for (let q of questionsArray) { await addDoc(collection(window.db, "questions"), q); count++; }
                     alert(`Success! Uploaded ${count} questions to the Cloud Database.`);
                     fileInput.value = ''; closeCloudAdmin(); initCloudSync(); 
-                } catch (err) { alert("Error uploading JSON file: " + err.message); }
+                } catch (err) { alert("Error uploading JSON file (You might not have permission): " + err.message); }
                 btn.disabled = false; btn.innerText = "Upload File";
             };
             reader.readAsText(file);
         }
 
-        // --- NEW: REMOVE DUPLICATES LOGIC ---
         async function removeDuplicates() {
             const btn = document.getElementById('clean-dup-btn');
             btn.disabled = true; btn.innerText = "Scanning database for duplicates...";
@@ -460,7 +546,6 @@
 
                 querySnapshot.forEach((document) => {
                     const data = document.data();
-                    // تطابق الـ 4 أشياء (المادة + الفرع + التخصص + نص السؤال)
                     const uniqueKey = `${data.subject || ''}|${data.branch || ''}|${data.subtype || ''}|${data.question || ''}`.trim().toLowerCase();
                     
                     if (seen.has(uniqueKey)) {
@@ -485,7 +570,7 @@
                     }
                 }
             } catch(err) {
-                alert("Error scanning database: " + err.message);
+                alert("Error scanning database (You might not have permission): " + err.message);
             }
             
             btn.disabled = false; btn.innerText = "Scan & Remove Duplicates";
