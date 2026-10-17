@@ -163,7 +163,7 @@
                     </div>
                 </div>
 
-                <!-- 4 Checkbox Filters -->
+                <!-- Checkbox Filters -->
                 <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700 transition-colors">
                     <label class="block text-xs font-semibold text-slate-400 mb-3">Question Pool Status</label>
                     <div class="flex flex-wrap gap-4">
@@ -232,7 +232,7 @@
             </div>
         </div>
 
-        <!-- Student Login/Signup Modal -->
+        <!-- Student Login/Signup Modal (Updated to text input) -->
         <div id="student-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div class="bg-slate-800 border border-indigo-500/40 rounded-2xl p-6 w-full max-w-sm shadow-2xl space-y-4">
                 <div class="flex justify-between items-center border-b border-slate-700 pb-3">
@@ -241,7 +241,7 @@
                 </div>
                 <p class="text-xs text-slate-400 text-center">Sign up or login to save your progress.</p>
                 <div class="space-y-3">
-                    <input type="email" id="student-email" placeholder="Username (e.g. ahmed@medico.com)" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
+                    <input type="text" id="student-email" placeholder="Username (e.g. ahmed123)" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
                     <input type="password" id="student-password" placeholder="Password (Min 6 chars)" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
                     <div class="flex gap-2 pt-2">
                         <button id="student-login-btn" onclick="studentLogin()" class="w-1/2 bg-indigo-600 hover:bg-indigo-500 font-bold py-2.5 rounded-xl text-white transition text-sm">Login</button>
@@ -307,7 +307,7 @@
         </div>
     </main>
 
-    <!-- Sadaqah Jariyah Footer (In English) -->
+    <!-- Sadaqah Jariyah Footer -->
     <footer class="bg-slate-800/80 border-t border-slate-700 py-6 mt-auto text-center text-sm text-slate-400 transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-4 space-y-2">
             <p class="font-medium text-slate-300">
@@ -322,8 +322,10 @@
     <script src="data.js" onerror="console.log('No local data.js found.')"></script>
 
     <script>
-        // Admin Configuration
-        const ADMIN_EMAILS = ["naheha1614@ensproxy.com"];
+        // Admin Configuration - Add trusted friends' emails here if needed
+        const ADMIN_EMAILS = [
+            "naheha1614@ensproxy.com"
+        ];
         
         let isAdmin = false;
         let allQuestions = []; 
