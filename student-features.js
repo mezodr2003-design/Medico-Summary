@@ -5,12 +5,15 @@ function openStudentModal() { document.getElementById('student-modal').classList
 function closeStudentModal() { document.getElementById('student-modal').classList.add('hidden'); }
 
 async function studentSignup() {
-    const email = document.getElementById('student-email').value;
+    let rawInput = document.getElementById('student-email').value.trim();
     const password = document.getElementById('student-password').value;
     const btn = document.getElementById('student-signup-btn');
     
-    if(!email || password.length < 6) return alert("Please enter a valid email and a password (min 6 chars).");
+    if(!rawInput || password.length < 6) return alert("Please enter a username and a password (min 6 chars).");
     
+    // Convert simple username to virtual email format behind the scenes
+    const email = rawInput.includes('@') ? rawInput : `${rawInput}@medico.com`;
+
     try {
         btn.innerText = "Creating Account...";
         await window.authTools.createUserWithEmailAndPassword(window.firebaseAuth, email, password);
@@ -24,12 +27,15 @@ async function studentSignup() {
 }
 
 async function studentLogin() {
-    const email = document.getElementById('student-email').value;
+    let rawInput = document.getElementById('student-email').value.trim();
     const password = document.getElementById('student-password').value;
     const btn = document.getElementById('student-login-btn');
     
-    if(!email || !password) return alert("Please enter your email/username and password.");
+    if(!rawInput || !password) return alert("Please enter your username and password.");
     
+    // Convert simple username to virtual email format behind the scenes
+    const email = rawInput.includes('@') ? rawInput : `${rawInput}@medico.com`;
+
     try {
         btn.innerText = "Logging in...";
         await window.authTools.signInWithEmailAndPassword(window.firebaseAuth, email, password);
@@ -71,7 +77,7 @@ async function fetchStudentProgressFromCloud(user) {
             localStorage.setItem('medico_stats', JSON.stringify(userStats));
             
             if (typeof updateAvailableCount === 'function') updateAvailableCount();
-            console.log("✅ Cloud progress loaded successfully!");
+            console.log("Cloud progress loaded successfully!");
         }
     } catch (error) {
         console.error("Error fetching progress from cloud", error);
@@ -115,11 +121,11 @@ async function saveProgressToFirebase() {
 
         await setDoc(userRef, updateData, { merge: true });
 
-        console.log("✅ Auto-save: Progress saved to the cloud.");
+        console.log("Auto-save: Progress saved to the cloud.");
         pendingProgress = { correct: [], incorrect: [], flagged: [] };
 
     } catch (error) {
-        console.error("❌ Auto-save error:", error);
+        console.error("Auto-save error:", error);
     }
 }
 
