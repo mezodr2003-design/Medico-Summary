@@ -12,7 +12,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        // إضافة مكتبات المصادقة (Authentication)
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -26,12 +25,12 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const auth = getAuth(app); // تشغيل المصادقة
+        const auth = getAuth(app);
 
         window.db = db;
         window.firebaseAuth = auth;
         window.firestoreTools = { collection, addDoc, getDocs, deleteDoc, doc };
-        window.authTools = { signInWithEmailAndPassword, signOut, onAuthStateChanged }; // تصدير أدوات المصادقة
+        window.authTools = { signInWithEmailAndPassword, signOut, onAuthStateChanged };
     </script>
 
     <style>
@@ -124,6 +123,7 @@
 
             <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl space-y-6 transition-colors duration-300">
                 <div><h2 class="text-2xl font-bold">Create Test Block</h2><p class="text-sm text-slate-400 mt-1">Configure your practice session.</p></div>
+                
                 <div class="grid grid-cols-2 gap-3 border-b border-slate-700 pb-6">
                     <label class="relative flex p-4 rounded-xl border border-slate-600 cursor-pointer hover:bg-slate-700/50 transition">
                         <input type="radio" name="test-mode" value="tutor" checked class="mt-1 accent-blue-500">
@@ -134,6 +134,7 @@
                         <div class="ml-3"><span class="block font-semibold">Timed Mode</span><span class="block text-xs text-slate-400">1.5 mins per question</span></div>
                     </label>
                 </div>
+                
                 <div class="space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
@@ -154,21 +155,31 @@
                         </div>
                     </div>
                 </div>
-                <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700 space-y-3 transition-colors">
-                    <label class="block text-xs font-semibold text-slate-400">Question Pool</label>
-                    <div class="flex flex-wrap gap-2">
-                        <label class="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-lg border border-slate-600 cursor-pointer">
-                            <input type="radio" name="pool-type" value="all" onchange="updateAvailableCount()" checked class="accent-blue-500"> <span class="text-sm">All Questions</span>
+
+                <!-- NEW: Question Filter Options (Checkboxes) -->
+                <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700 transition-colors">
+                    <label class="block text-xs font-semibold text-slate-400 mb-3">Question Pool Status</label>
+                    <div class="flex flex-wrap gap-4">
+                        <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+                            <input type="checkbox" id="chk-unused" onchange="updateAvailableCount()" checked class="w-4 h-4 text-blue-500 rounded bg-slate-700 border-slate-600 accent-blue-500">
+                            <span class="text-sm">Unused</span>
                         </label>
-                        <label class="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-lg border border-red-900/50 text-red-400 font-medium cursor-pointer">
-                            <input type="radio" name="pool-type" value="incorrect" onchange="updateAvailableCount()" class="accent-red-500"> <span class="text-sm">Incorrect Only</span>
+                        <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+                            <input type="checkbox" id="chk-correct" onchange="updateAvailableCount()" class="w-4 h-4 text-green-500 rounded bg-slate-700 border-slate-600 accent-emerald-500">
+                            <span class="text-sm">Correct</span>
                         </label>
-                        <label class="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-lg border border-amber-900/50 text-amber-500 font-medium cursor-pointer">
-                            <input type="radio" name="pool-type" value="flagged" onchange="updateAvailableCount()" class="accent-amber-500"> <span class="text-sm">Flagged Only</span>
+                        <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+                            <input type="checkbox" id="chk-incorrect" onchange="updateAvailableCount()" class="w-4 h-4 text-red-500 rounded bg-slate-700 border-slate-600 accent-rose-500">
+                            <span class="text-sm">Incorrect</span>
+                        </label>
+                        <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+                            <input type="checkbox" id="chk-flagged" onchange="updateAvailableCount()" class="w-4 h-4 text-yellow-500 rounded bg-slate-700 border-slate-600 accent-amber-500">
+                            <span class="text-sm">Flagged</span>
                         </label>
                     </div>
                 </div>
-                <div class="flex justify-between items-center pt-4">
+
+                <div class="flex justify-between items-center pt-4 border-t border-slate-700 mt-2">
                     <span id="available-count" class="text-sm font-semibold text-blue-500">Syncing with Cloud...</span>
                     <button onclick="startQuiz()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-8 rounded-lg transition shadow-lg">Generate Test</button>
                 </div>
@@ -214,6 +225,7 @@
             </div>
         </div>
 
+        <!-- Modals -->
         <div id="edit-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div class="bg-slate-800 border border-amber-500/40 rounded-2xl p-6 w-full max-w-3xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
                 <div class="flex justify-between items-center border-b border-slate-700 pb-3">
@@ -229,41 +241,30 @@
             </div>
         </div>
 
-        <!-- Cloud Admin Modal -->
         <div id="cloud-admin-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div class="bg-slate-800 border border-indigo-500/40 rounded-2xl p-6 w-full max-w-3xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
                 <div class="flex justify-between items-center border-b border-slate-700 pb-3">
                     <h3 class="text-base font-bold text-indigo-400 flex items-center gap-2"><i class="fa-solid fa-cloud-arrow-up"></i> Cloud Database Dashboard</h3>
                     <button onclick="closeCloudAdmin()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
                 </div>
-                
                 <div class="bg-slate-900 border border-slate-700 p-4 rounded-xl mb-4">
                     <h4 class="font-bold text-sm text-emerald-400 mb-2">1. Paste JSON Directly</h4>
                     <textarea id="bulk-json-text" class="w-full bg-slate-800 border border-slate-600 p-3 rounded-lg text-sm text-slate-300 h-32 font-mono mb-3 focus:border-emerald-500 focus:outline-none" placeholder="Paste the JSON code here..."></textarea>
-                    <button id="paste-upload-btn" onclick="uploadPastedJSON()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl transition">
-                        Upload Pasted Data
-                    </button>
+                    <button id="paste-upload-btn" onclick="uploadPastedJSON()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl transition"> Upload Pasted Data </button>
                 </div>
-
                 <div class="bg-slate-900 border border-slate-700 p-4 rounded-xl mb-4">
                     <h4 class="font-bold text-sm text-indigo-400 mb-2">2. Or Upload JSON File</h4>
                     <input type="file" id="bulk-file-input" accept=".json" class="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 mb-3"/>
-                    <button id="file-upload-btn" onclick="uploadBulkJSON()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl transition">
-                        Upload File
-                    </button>
+                    <button id="file-upload-btn" onclick="uploadBulkJSON()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl transition"> Upload File </button>
                 </div>
-
                 <div class="bg-slate-900 border border-rose-900/50 p-4 rounded-xl mb-2">
                     <h4 class="font-bold text-sm text-rose-500 mb-1"><i class="fa-solid fa-broom"></i> Clean Duplicate Questions</h4>
                     <p class="text-xs text-slate-400 mb-3">Checks for 4 exact matches: Subject + Branch + Subtype + Question. Keeps 1, deletes the rest.</p>
-                    <button id="clean-dup-btn" onclick="removeDuplicates()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-xl transition">
-                        Scan & Remove Duplicates
-                    </button>
+                    <button id="clean-dup-btn" onclick="removeDuplicates()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-xl transition"> Scan & Remove Duplicates </button>
                 </div>
             </div>
         </div>
 
-        <!-- NEW: Login Modal for Firebase Auth -->
         <div id="login-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div class="bg-slate-800 border border-amber-500/40 rounded-2xl p-6 w-full max-w-sm shadow-2xl space-y-4">
                 <div class="flex justify-between items-center border-b border-slate-700 pb-3">
@@ -277,7 +278,6 @@
                 </div>
             </div>
         </div>
-
     </main>
 
     <script src="data.js" onerror="console.log('No local data.js found.')"></script>
@@ -285,7 +285,10 @@
     <script>
         let isAdmin = false;
         let allQuestions = []; 
-        let userStats = JSON.parse(localStorage.getItem('medico_stats')) || { incorrect: [], flagged: [] };
+        // UPDATED: Added "correct" array to userStats
+        let userStats = JSON.parse(localStorage.getItem('medico_stats')) || { correct: [], incorrect: [], flagged: [] };
+        if(!userStats.correct) userStats.correct = []; // For backward compatibility with older local storage
+        
         let activeBlock = []; let currentIdx = 0; let blockState = []; let testMode = 'tutor'; let timerInterval; let timeRemaining = 0;
 
         function setTheme(mode) {
@@ -338,7 +341,6 @@
             initCloudSync(); 
             restoreSession(); 
             
-            // NEW: Auth State Observer
             const checkAuth = setInterval(() => {
                 if (window.authTools && window.firebaseAuth) {
                     clearInterval(checkAuth);
@@ -385,12 +387,37 @@
             } updateAvailableCount();
         }
 
+        // UPDATED: Now supports the 4 Checkboxes instead of Radio buttons
         function getFilteredQuestions() {
-            const subj = document.getElementById('filter-subject').value; const branch = document.getElementById('filter-branch').value; const subtype = document.getElementById('filter-subtype').value; const source = document.getElementById('filter-source').value; const pool = document.querySelector('input[name="pool-type"]:checked').value;
+            const subj = document.getElementById('filter-subject').value; 
+            const branch = document.getElementById('filter-branch').value; 
+            const subtype = document.getElementById('filter-subtype').value; 
+            const source = document.getElementById('filter-source').value; 
+            
+            const wantsUnused = document.getElementById('chk-unused').checked;
+            const wantsCorrect = document.getElementById('chk-correct').checked;
+            const wantsIncorrect = document.getElementById('chk-incorrect').checked;
+            const wantsFlagged = document.getElementById('chk-flagged').checked;
+
             return allQuestions.filter(q => {
-                const matchSubj = subj === 'all' || q.subject === subj; const matchBranch = branch === 'all' || q.branch === branch; const matchSubtype = subtype === 'all' || q.subtype === subtype; const matchSource = source === 'all' || q.source === source;
-                let matchPool = true; if (pool === 'incorrect') matchPool = userStats.incorrect.includes(q.id); if (pool === 'flagged') matchPool = userStats.flagged.includes(q.id);
-                return matchSubj && matchBranch && matchSubtype && matchSource && matchPool;
+                const matchSubj = subj === 'all' || q.subject === subj; 
+                const matchBranch = branch === 'all' || q.branch === branch; 
+                const matchSubtype = subtype === 'all' || q.subtype === subtype; 
+                const matchSource = source === 'all' || q.source === source;
+                
+                if (!(matchSubj && matchBranch && matchSubtype && matchSource)) return false;
+
+                let isCorrect = userStats.correct.includes(q.id);
+                let isIncorrect = userStats.incorrect.includes(q.id);
+                let isFlagged = userStats.flagged.includes(q.id);
+                let isUnused = !isCorrect && !isIncorrect;
+
+                if (wantsUnused && isUnused) return true;
+                if (wantsCorrect && isCorrect) return true;
+                if (wantsIncorrect && isIncorrect) return true;
+                if (wantsFlagged && isFlagged) return true;
+
+                return false;
             });
         }
 
@@ -403,7 +430,6 @@
             if (testMode === 'timed') { document.getElementById('quiz-header-controls').classList.remove('hidden'); document.getElementById('quiz-header-controls').classList.add('flex'); timeRemaining = activeBlock.length * 90; document.getElementById('timer-display').classList.remove('hidden'); document.getElementById('timer-display').classList.add('flex'); timerInterval = setInterval(updateTimer, 1000); } 
             else { document.getElementById('quiz-header-controls').classList.remove('hidden'); document.getElementById('quiz-header-controls').classList.add('flex'); document.getElementById('timer-display').classList.add('hidden'); document.getElementById('timer-display').classList.remove('flex'); }
             
-            // Show edit button if Admin
             if(isAdmin) { document.getElementById('edit-q-btn').classList.remove('hidden'); document.getElementById('edit-q-btn').classList.add('flex'); }
             
             renderMatrix(); loadQuestion(); saveSession();
@@ -433,10 +459,27 @@
             updateMatrixUI(); saveSession();
         }
 
+        // UPDATED: Now records "Correct" answers and triggers the Auto-save from student-features.js
         function submitAnswer(selectedIndex) {
             const q = activeBlock[currentIdx]; const isCorrect = (selectedIndex === q.correct); blockState[currentIdx] = { answered: true, selected: selectedIndex, correct: isCorrect };
-            if (!isCorrect && !userStats.incorrect.includes(q.id)) { userStats.incorrect.push(q.id); } else if (isCorrect) { userStats.incorrect = userStats.incorrect.filter(id => id !== q.id); }
-            saveStats(); loadQuestion(); updateMatrixUI();
+            
+            // Update stats properly
+            if (isCorrect) {
+                if (!userStats.correct.includes(q.id)) userStats.correct.push(q.id);
+                userStats.incorrect = userStats.incorrect.filter(id => id !== q.id); // Remove from incorrect if they got it right this time
+            } else {
+                if (!userStats.incorrect.includes(q.id)) userStats.incorrect.push(q.id);
+                userStats.correct = userStats.correct.filter(id => id !== q.id); // Remove from correct if they got it wrong this time
+            }
+            
+            saveStats(); 
+            
+            // Trigger auto-save if student-features.js is loaded
+            if (typeof onStudentAnswer === 'function') {
+                onStudentAnswer(q.id, isCorrect, userStats.flagged.includes(q.id));
+            }
+
+            loadQuestion(); updateMatrixUI();
         }
 
         function toggleFlag() { const qId = activeBlock[currentIdx].id; const idx = userStats.flagged.indexOf(qId); if (idx > -1) { userStats.flagged.splice(idx, 1); } else { userStats.flagged.push(qId); } saveStats(); loadQuestion(); }
@@ -450,7 +493,6 @@
         
         function exportToPDF() { const printArea = document.getElementById('print-area'); const titleSubject = document.getElementById('filter-subject').value === 'all' ? 'Mixed Subjects' : document.getElementById('filter-subject').value; const titleBranch = document.getElementById('filter-branch').value === 'all' ? 'Mixed Branches' : document.getElementById('filter-branch').value; let htmlContent = `<style>@media print { @page { size: A4; margin: 0; } body { margin: 0; background-color: #fdfbf2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .print-page-container { width: 100%; min-height: 297mm; display: flex; flex-direction: column; page-break-after: always; padding: 20mm; box-sizing: border-box; background-color: #fdfbf2 !important; } } .print-page-container { width: 100%; min-height: 100vh; display: flex; flex-direction: column; padding: 40px; box-sizing: border-box; background-color: #fdfbf2; margin-bottom: 20px; }</style>`; const Q_PER_PAGE = 4; for (let i = 0; i < activeBlock.length; i += Q_PER_PAGE) { const chunk = activeBlock.slice(i, i + Q_PER_PAGE); htmlContent += `<div class="print-page-container" dir="ltr">`; if (i === 0) { htmlContent += `<h2 style="color: #b8860b; font-size: 22px; font-weight: bold; margin-bottom: 30px; font-family: Arial, sans-serif;">Section: ${titleSubject} - ${titleBranch}</h2>`; } htmlContent += `<div style="flex-grow: 1; font-family: Arial, sans-serif;">`; chunk.forEach((q, chunkIdx) => { const globalIndex = i + chunkIdx; htmlContent += `<div style="margin-bottom: 28px;"><div style="font-size: 16px; margin: 0 0 10px 0; line-height: 1.5; display: flex; align-items: flex-start;"><span style="color: #b8860b; font-weight: bold; min-width: 28px;">${globalIndex + 1}.</span><span style="color: #701a75; font-weight: bold; flex: 1;">${q.question}&nbsp;<sup style="color: #000; font-size: 10px; font-weight: normal;">${globalIndex + 1}</sup></span></div><div style="margin-left: 28px;">`; q.options.forEach((opt, optIdx) => { const letter = String.fromCharCode(97 + optIdx); htmlContent += `<div style="margin-bottom: 6px; font-size: 15px; color: #000;">${letter}. ${opt}</div>`; }); htmlContent += `</div></div>`; }); htmlContent += `</div><div style="margin-top: auto; border-top: 1px solid #000; padding-top: 15px; font-family: Arial, sans-serif; font-size: 12px; line-height: 1.6; color: #000;">`; chunk.forEach((q, chunkIdx) => { const globalIndex = i + chunkIdx; const correctOptText = q.options[q.correct]; htmlContent += `<div style="margin-bottom: 8px;"><sup style="font-size: 10px;">${globalIndex + 1}</sup> <b>Answer:</b> ${correctOptText}</div>`; }); htmlContent += `</div></div>`; } printArea.innerHTML = htmlContent; setTimeout(() => { window.print(); }, 500); }
         
-        // --- NEW: Firebase Auth Logic ---
         function requestAdminAccess() { 
             if(isAdmin) { 
                 if(confirm("You are currently logged in as Admin. Do you want to securely logout?")) {
@@ -463,9 +505,7 @@
             document.getElementById('login-modal').classList.remove('hidden');
         }
 
-        function closeLoginModal() {
-            document.getElementById('login-modal').classList.add('hidden');
-        }
+        function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
 
         async function submitLogin() {
             const email = document.getElementById('admin-email').value;
@@ -548,11 +588,7 @@
                     const data = document.data();
                     const uniqueKey = `${data.subject || ''}|${data.branch || ''}|${data.subtype || ''}|${data.question || ''}`.trim().toLowerCase();
                     
-                    if (seen.has(uniqueKey)) {
-                        duplicates.push(document.id);
-                    } else {
-                        seen.add(uniqueKey);
-                    }
+                    if (seen.has(uniqueKey)) { duplicates.push(document.id); } else { seen.add(uniqueKey); }
                 });
 
                 if (duplicates.length === 0) {
@@ -569,14 +605,14 @@
                         initCloudSync(); 
                     }
                 }
-            } catch(err) {
-                alert("Error scanning database (You might not have permission): " + err.message);
-            }
-            
+            } catch(err) { alert("Error scanning database (You might not have permission): " + err.message); }
             btn.disabled = false; btn.innerText = "Scan & Remove Duplicates";
         }
 
         window.onload = initApp;
     </script>
+    
+    <!-- NEW: Linking the external features file -->
+    <script src="student-features.js"></script>
 </body>
 </html>
