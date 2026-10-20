@@ -6,5 +6,6 @@ window.ALLOWED_ADMIN_EMAILS = [
     "fatemamuhamad@medico.com",
     "hanaahmedfarouk4@gmail.com",
     "rogina@medico.com",
-    "ahmed267@medico.com"
+    "ahmed267@medico.com",
+    "AmeeraAhmed@medico.com"
 ];
