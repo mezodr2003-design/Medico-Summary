@@ -102,18 +102,18 @@
             <form id="upload-form" onsubmit="handleResourceSubmit(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1">Resource Title *</label>
-                    <input type="text" id="res-title" required placeholder="e.g. Urology Summary" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
+                    <input type="text" id="res-title" required placeholder="e.g. Otosclerosis HY points" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-semibold text-slate-400 mb-1">Subject *</label>
-                        <input type="text" id="res-subject" required list="existing-subjects" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
+                        <input type="text" id="res-subject" required list="existing-subjects" placeholder="e.g. ENT" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
                         <datalist id="existing-subjects"></datalist>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-400 mb-1">Branch (Optional)</label>
-                        <input type="text" id="res-branch" list="existing-branches" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
+                        <input type="text" id="res-branch" list="existing-branches" placeholder="e.g. Otology" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
                         <datalist id="existing-branches"></datalist>
                     </div>
                 </div>
@@ -134,7 +134,7 @@
                 </div>
 
                 <div id="upload-status" class="hidden text-center text-xs text-indigo-400 font-semibold py-1">
-                    <i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Uploading file... please wait
+                    <i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Uploading resource directly...
                 </div>
 
                 <button type="submit" id="submit-upload-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 font-bold py-3 rounded-xl text-white transition shadow-lg">Upload & Save to Library</button>
@@ -259,24 +259,56 @@
             statusBox.classList.remove('hidden');
 
             try {
+                let fileUrl = '';
                 const CLOUDINARY_CLOUD_NAME = "naw1ae8k";
                 const CLOUDINARY_UPLOAD_PRESET = "medico_preset";
 
-                const resourceType = file.type.includes('pdf') || file.type.includes('word') || file.type.includes('document') ? 'raw' : 'auto';
+                // المحاولة الأولى: الرفع المباشر عبر Cloudinary
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+                    const isPdf = file.type.includes('pdf') || file.name.toLowerCase().endsWith('.pdf');
+                    const endpoint = isPdf ? 'image' : 'auto'; // Cloudinary handles PDFs best as image resources or raw
 
-                const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`, {
-                    method: 'POST',
-                    body: formData
-                });
+                    let response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${endpoint}/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
 
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.error ? data.error.message : "Upload failed.");
-                
-                const fileUrl = data.secure_url;
+                    if(!response.ok) {
+                        response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/raw/upload`, {
+                            method: 'POST',
+                            body: formData
+                        });
+                    }
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        fileUrl = data.secure_url;
+                    }
+                } catch(cErr) {
+                    console.log("Cloudinary attempt failed, switching to backup storage...", cErr);
+                }
+
+                // المحاولة الثانية السريعة تلقائياً (Backup Cloud Upload) إذا فشلت الأولى
+                if (!fileUrl) {
+                    const formDataBackup = new FormData();
+                    formDataBackup.append('reqtype', 'fileupload');
+                    formDataBackup.append('fileToUpload', file);
+
+                    const resBackup = await fetch('https://catbox.moe/user/api.php', {
+                        method: 'POST',
+                        body: formDataBackup
+                    });
+
+                    if (resBackup.ok) {
+                        fileUrl = (await resBackup.text()).trim();
+                    }
+                }
+
+                if (!fileUrl) throw new Error("Could not process direct upload. Please check network connection.");
 
                 const title = document.getElementById('res-title').value.trim();
                 const subject = document.getElementById('res-subject').value.trim();
@@ -291,12 +323,12 @@
                     timestamp: serverTimestamp()
                 });
 
-                alert("تم الرفع والحفظ بنجاح على السحابة!");
+                alert("تم الرفع والحفظ بنجاح!");
                 document.getElementById('upload-form').reset();
                 closeUploadModal();
                 fetchResources();
             } catch(err) {
-                alert("Upload Error: " + err.message + "\n\nTip: If uploading PDF fails, enable PDF Delivery in Cloudinary Security Settings.");
+                alert("Upload Status: " + err.message);
             } finally {
                 submitBtn.disabled = false;
                 statusBox.classList.add('hidden');
