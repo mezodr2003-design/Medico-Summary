@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medico Library - Notion Style Resources</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e293b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Medico Library">
+    <link rel="apple-touch-icon" href="logo.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyCPHgq_0Nm13ZVJ-IKHB5d0aoichUi9hek",
+          authDomain: "medico-summary-67b63.firebaseapp.com",
+          projectId: "medico-summary-67b63",
+          storageBucket: "medico-summary-67b63.firebasestorage.app",
+          messagingSenderId: "964215872773",
+          appId: "1:964215872773:web:0bffbd6dbf2f8bad782b6c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+        const auth = getAuth(app);
+
+        window.db = db;
+        window.storage = storage;
+        window.firebaseAuth = auth;
+        window.firestoreTools = { collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp, query, orderBy };
+        window.storageTools = { ref, uploadBytesResumable, getDownloadURL, deleteObject };
+    </script>
+
+    <style>
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        .notion-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+        .tag-pdf { background-color: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .tag-image { background-color: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .tag-table { background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .tag-doc { background-color: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+        
+        .tree-toggle-icon { transition: transform 0.2s ease; }
+        .tree-toggle-icon.open { transform: rotate(90deg); }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-200 min-h-screen font-sans antialiased flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 h-14 flex justify-between items-center">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='index.html'">
+                <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-full object-cover border border-slate-600 shadow-md" onerror="this.src='https://via.placeholder.com/40'">
+                <div>
+                    <h1 class="font-bold tracking-wide text-base">Medico Resource Library</h1>
+                    <p class="text-[10px] text-slate-400">Notion-Style Medical Hub</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="admin-upload-btn" onclick="openUploadModal()" class="hidden text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-2 rounded-lg transition items-center gap-2 shadow">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload Resource
+                </button>
+                <a href="index.html" class="text-xs bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 px-3 py-2 rounded-lg transition font-semibold flex items-center gap-2">
+                    <i class="fa-solid fa-graduation-cap text-blue-400"></i> Back to QBank
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl mx-auto w-full p-4 md:p-6 space-y-6">
+        
+        <!-- Top Control Bar (Search & Filters) -->
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-xl flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="relative w-full md:w-96">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-sm"></i>
+                <input type="text" id="library-search" oninput="filterResources()" placeholder="Search resources, topics, or keywords..." class="w-full bg-slate-900 border border-slate-700 pl-9 pr-4 py-2 rounded-xl text-sm outline-none focus:border-indigo-500 transition">
+            </div>
+
+            <!-- View Mode Switch & Category Filter -->
+            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-between md:justify-end">
+                <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-700 text-xs">
+                    <button id="type-filter-all" onclick="setTypeFilter('all')" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white font-medium transition">All</button>
+                    <button id="type-filter-pdf" onclick="setTypeFilter('pdf')" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition">PDFs</button>
+                    <button id="type-filter-image" onclick="setTypeFilter('image')" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition">Images</button>
+                    <button id="type-filter-table" onclick="setTypeFilter('table')" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition">Tables</button>
+                    <button id="type-filter-doc" onclick="setTypeFilter('doc')" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition">Word</button>
+                </div>
+
+                <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-700 text-xs">
+                    <button id="view-tree-btn" onclick="setViewMode('tree')" class="px-3 py-1.5 rounded-lg bg-slate-700 text-white font-medium transition flex items-center gap-1.5"><i class="fa-solid fa-folder-tree"></i> Tree</button>
+                    <button id="view-table-btn" onclick="setViewMode('table')" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-1.5"><i class="fa-solid fa-table-list"></i> Table</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notion Accordion Tree View Container -->
+        <div id="resources-tree-container" class="space-y-4">
+            <p class="text-center text-slate-400 py-12 text-sm"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading Notion Resource Library...</p>
+        </div>
+
+        <!-- Notion Database Table View Container -->
+        <div id="resources-table-container" class="hidden bg-slate-800 border border-slate-700 rounded-xl shadow-xl overflow-x-auto">
+            <table class="w-full text-left text-sm text-slate-300">
+                <thead class="bg-slate-900/80 text-xs uppercase text-slate-400 border-b border-slate-700">
+                    <tr>
+                        <th class="p-4">Resource Name</th>
+                        <th class="p-4">Subject</th>
+                        <th class="p-4">Branch</th>
+                        <th class="p-4">Type</th>
+                        <th class="p-4">Uploaded By</th>
+                        <th class="p-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="table-view-body" class="divide-y divide-slate-700/60"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Admin Upload Modal -->
+    <div id="upload-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-indigo-500/40 rounded-2xl p-6 w-full max-w-lg shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h3 class="text-base font-bold text-indigo-400 flex items-center gap-2"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Resource to Library</h3>
+                <button onclick="closeUploadModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <form id="upload-form" onsubmit="handleFileUpload(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Resource Title *</label>
+                    <input type="text" id="res-title" required placeholder="e.g. Andrology High-Yield Summary 2026" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Subject *</label>
+                        <input type="text" id="res-subject" required placeholder="e.g. Urology" list="existing-subjects" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
+                        <datalist id="existing-subjects"></datalist>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Branch (Optional)</label>
+                        <input type="text" id="res-branch" placeholder="e.g. Andrology (Or leave blank)" list="existing-branches" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
+                        <datalist id="existing-branches"></datalist>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Resource Category / Type *</label>
+                    <select id="res-type" required class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
+                        <option value="pdf">📄 PDF / Summary</option>
+                        <option value="image">🖼️ Image / Diagram / X-Ray</option>
+                        <option value="table">📊 Table / Flowchart</option>
+                        <option value="doc">📝 Word Document</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Select File *</label>
+                    <input type="file" id="res-file" required class="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 transition"/>
+                </div>
+
+                <div id="upload-progress-container" class="hidden space-y-1">
+                    <div class="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
+                        <div id="upload-progress-bar" class="bg-indigo-500 h-2 w-0 transition-all duration-300"></div>
+                    </div>
+                    <p id="upload-status-text" class="text-xs text-indigo-400 text-center">Uploading... 0%</p>
+                </div>
+
+                <button type="submit" id="submit-upload-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 font-bold py-3 rounded-xl text-white transition shadow-lg">Upload to Cloud Storage</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Image Lightbox Modal -->
+    <div id="lightbox-modal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4" onclick="closeLightbox()">
+        <div class="relative max-w-4xl max-h-[90vh]" onclick="event.stopPropagation()">
+            <button onclick="closeLightbox()" class="absolute -top-10 right-0 text-white hover:text-amber-400 text-2xl font-bold"><i class="fa-solid fa-xmark"></i></button>
+            <img id="lightbox-img" src="" alt="Preview" class="max-w-full max-h-[85vh] rounded-lg shadow-2xl object-contain border border-slate-700">
+            <div class="mt-3 flex justify-between items-center text-xs text-slate-300">
+                <span id="lightbox-title" class="font-semibold"></span>
+                <a id="lightbox-download" href="" target="_blank" download class="bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-lg text-white font-bold transition flex items-center gap-1.5"><i class="fa-solid fa-download"></i> Download Image</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800/80 border-t border-slate-700 py-6 mt-auto text-center text-sm text-slate-400">
+        <p class="font-medium text-slate-300">🤍 Dedicated as an ongoing charity (Sadaqah Jariyah) for the soul of my aunt.</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="admins.js" onerror="console.log('No admins.js found.')"></script>
+
+    <script>
+        const SUPER_ADMIN_EMAIL = window.SUPER_ADMIN_EMAIL || "naheha1614@ensproxy.com";
+        const ADMIN_EMAILS = window.ALLOWED_ADMIN_EMAILS || [SUPER_ADMIN_EMAIL];
+
+        let rawResources = [];
+        let currentTypeFilter = 'all';
+        let currentViewMode = 'tree';
+        let isAdmin = false;
+
+        function initLibrary() {
+            const checkFirebase = setInterval(async () => {
+                if (window.db && window.firestoreTools && window.firebaseAuth) {
+                    clearInterval(checkFirebase);
+                    
+                    window.firebaseAuth.onAuthStateChanged(user => {
+                        const adminBtn = document.getElementById('admin-upload-btn');
+                        if (user && ADMIN_EMAILS.includes(user.email)) {
+                            isAdmin = true;
+                            adminBtn.classList.remove('hidden');
+                            adminBtn.classList.add('flex');
+                        } else {
+                            isAdmin = false;
+                            adminBtn.classList.add('hidden');
+                        }
+                        fetchResources();
+                    });
+                }
+            }, 200);
+        }
+
+        async function fetchResources() {
+            try {
+                const { collection, getDocs, query, orderBy } = window.firestoreTools;
+                const q = query(collection(window.db, "resources"), orderBy("timestamp", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                rawResources = [];
+                querySnapshot.forEach(doc => {
+                    rawResources.push({ id: doc.id, ...doc.data() });
+                });
+
+                populateDatalists();
+                renderResources();
+            } catch (err) {
+                console.error("Error loading resources:", err);
+                document.getElementById('resources-tree-container').innerHTML = `<p class="text-center text-rose-400 py-8">Failed to load resources from cloud database.</p>`;
+            }
+        }
+
+        function populateDatalists() {
+            const subjects = [...new Set(rawResources.map(r => r.subject))].filter(Boolean);
+            const branches = [...new Set(rawResources.map(r => r.branch))].filter(Boolean);
+            
+            const subjList = document.getElementById('existing-subjects');
+            const branchList = document.getElementById('existing-branches');
+            
+            subjList.innerHTML = subjects.map(s => `<option value="${s}">`).join('');
+            branchList.innerHTML = branches.map(b => `<option value="${b}">`).join('');
+        }
+
+        function getFilteredResources() {
+            const searchTerm = document.getElementById('library-search').value.toLowerCase().trim();
+            
+            return rawResources.filter(r => {
+                const matchType = currentTypeFilter === 'all' || r.type === currentTypeFilter;
+                const matchSearch = !searchTerm || 
+                    (r.title && r.title.toLowerCase().includes(searchTerm)) ||
+                    (r.subject && r.subject.toLowerCase().includes(searchTerm)) ||
+                    (r.branch && r.branch.toLowerCase().includes(searchTerm));
+                
+                return matchType && matchSearch;
+            });
+        }
+
+        function renderResources() {
+            const filtered = getFilteredResources();
+            
+            if (currentViewMode === 'tree') {
+                renderTreeView(filtered);
+            } else {
+                renderTableView(filtered);
+            }
+        }
+
+        function renderTreeView(resources) {
+            const container = document.getElementById('resources-tree-container');
+            if (resources.length === 0) {
+                container.innerHTML = `<div class="bg-slate-800 border border-slate-700 rounded-xl p-8 text-center text-slate-400">No resources found matching your search criteria.</div>`;
+                return;
+            }
+
+            // Group by Subject -> Branch -> Type
+            const tree = {};
+            resources.forEach(res => {
+                const subj = res.subject || "General";
+                const branch = res.branch || "General / Main";
+                const type = res.type || "pdf";
+
+                if (!tree[subj]) tree[subj] = { count: 0, branches: {} };
+                if (!tree[subj].branches[branch]) tree[subj].branches[branch] = { count: 0, types: {} };
+                if (!tree[subj].branches[branch].types[type]) tree[subj].branches[branch].types[type] = [];
+
+                tree[subj].branches[branch].types[type].push(res);
+                tree[subj].count++;
+                tree[subj].branches[branch].count++;
+            });
+
+            let html = '';
+            Object.keys(tree).forEach((subj, sIdx) => {
+                const subjData = tree[subj];
+                html += `
+                    <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-lg">
+                        <!-- Subject Accordion Header -->
+                        <div onclick="toggleAccordion('subj-${sIdx}')" class="p-4 bg-slate-800 hover:bg-slate-750 flex items-center justify-between cursor-pointer select-none transition border-b border-slate-700/60">
+                            <div class="flex items-center gap-3">
+                                <i id="icon-subj-${sIdx}" class="fa-solid fa-chevron-right text-indigo-400 text-xs tree-toggle-icon"></i>
+                                <span class="font-bold text-base text-slate-100"><i class="fa-solid fa-book text-indigo-400 mr-2"></i> ${subj}</span>
+                            </div>
+                            <span class="text-xs bg-slate-900 border border-slate-700 px-2.5 py-1 rounded-full text-slate-400 font-semibold">${subjData.count} Files</span>
+                        </div>
+
+                        <!-- Branches Body -->
+                        <div id="body-subj-${sIdx}" class="hidden p-4 space-y-4 bg-slate-900/40">
+                `;
+
+                Object.keys(subjData.branches).forEach((branch, bIdx) => {
+                    const branchData = subjData.branches[branch];
+                    html += `
+                        <div class="pl-2 sm:pl-4 border-l-2 border-indigo-500/30 space-y-3">
+                            <div onclick="toggleAccordion('branch-${sIdx}-${bIdx}')" class="flex items-center justify-between cursor-pointer select-none py-1">
+                                <div class="flex items-center gap-2">
+                                    <i id="icon-branch-${sIdx}-${bIdx}" class="fa-solid fa-chevron-right text-slate-400 text-[10px] tree-toggle-icon"></i>
+                                    <span class="font-semibold text-sm text-slate-200"><i class="fa-solid fa-folder-open text-amber-500 mr-1.5"></i> ${branch}</span>
+                                </div>
+                                <span class="text-[11px] text-slate-400 font-medium">${branchData.count} Items</span>
+                            </div>
+
+                            <!-- File Types Body -->
+                            <div id="body-branch-${sIdx}-${bIdx}" class="hidden pl-3 sm:pl-6 space-y-3 pt-1">
+                    `;
+
+                    Object.keys(branchData.types).forEach(type => {
+                        const items = branchData.types[type];
+                        const typeBadge = getTypeBadge(type);
+                        
+                        html += `
+                            <div class="space-y-2">
+                                <div class="text-xs font-semibold text-slate-400 flex items-center gap-2 border-b border-slate-800 pb-1">
+                                    ${typeBadge} (${items.length})
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
+                        `;
+
+                        items.forEach(item => {
+                            html += renderResourceCard(item);
+                        });
+
+                        html += `</div></div>`;
+                    });
+
+                    html += `</div></div>`;
+                });
+
+                html += `</div></div>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function renderResourceCard(item) {
+            const isImage = item.type === 'image';
+            const icon = getTypeIcon(item.type);
+            
+            return `
+                <div class="bg-slate-800 border border-slate-700 hover:border-indigo-500/50 p-3 rounded-xl transition shadow flex flex-col justify-between group">
+                    <div>
+                        <div class="flex justify-between items-start gap-2 mb-2">
+                            <span class="text-lg text-indigo-400">${icon}</span>
+                            ${isAdmin ? `<button onclick="deleteResource('${item.id}', '${item.storagePath || ''}')" class="text-slate-500 hover:text-rose-400 text-xs transition p-1"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                        </div>
+                        <h4 class="font-bold text-sm text-slate-200 group-hover:text-indigo-300 transition line-clamp-2">${item.title}</h4>
+                        <p class="text-[11px] text-slate-400 mt-1">Uploaded by ${item.uploadedBy || 'Admin'}</p>
+                    </div>
+
+                    <div class="mt-4 pt-2 border-t border-slate-700/60 flex gap-2">
+                        ${isImage ? 
+                            `<button onclick="openLightbox('${item.fileUrl}', '${item.title.replace(/'/g, "\\'")}')" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold py-1.5 rounded-lg transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-eye"></i> Preview</button>` : 
+                            `<a href="${item.fileUrl}" target="_blank" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold py-1.5 rounded-lg transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-eye"></i> View File</a>`
+                        }
+                        <a href="${item.fileUrl}" target="_blank" download class="bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/30 px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center justify-center"><i class="fa-solid fa-download"></i></a>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTableView(resources) {
+            const tbody = document.getElementById('table-view-body');
+            if (resources.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400">No resources found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = resources.map(item => `
+                <tr class="hover:bg-slate-750 transition">
+                    <td class="p-4 font-semibold text-slate-100 flex items-center gap-2">
+                        <span class="text-base text-indigo-400">${getTypeIcon(item.type)}</span>
+                        ${item.title}
+                    </td>
+                    <td class="p-4 text-slate-300">${item.subject || 'General'}</td>
+                    <td class="p-4 text-slate-400 text-xs">${item.branch || '—'}</td>
+                    <td class="p-4">${getTypeBadge(item.type)}</td>
+                    <td class="p-4 text-xs text-slate-400">${item.uploadedBy || 'Admin'}</td>
+                    <td class="p-4 text-right space-x-2">
+                        <a href="${item.fileUrl}" target="_blank" class="text-xs bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/30 border border-indigo-500/30 px-3 py-1.5 rounded-lg font-semibold transition inline-flex items-center gap-1"><i class="fa-solid fa-download"></i> Download</a>
+                        ${isAdmin ? `<button onclick="deleteResource('${item.id}', '${item.storagePath || ''}')" class="text-xs bg-rose-600/20 text-rose-400 hover:bg-rose-600/30 border border-rose-500/30 px-2 py-1.5 rounded-lg font-semibold transition"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getTypeIcon(type) {
+            switch(type) {
+                case 'pdf': return '<i class="fa-solid fa-file-pdf text-rose-400"></i>';
+                case 'image': return '<i class="fa-solid fa-file-image text-blue-400"></i>';
+                case 'table': return '<i class="fa-solid fa-table-cells text-emerald-400"></i>';
+                case 'doc': return '<i class="fa-solid fa-file-word text-amber-400"></i>';
+                default: return '<i class="fa-solid fa-file text-slate-400"></i>';
+            }
+        }
+
+        function getTypeBadge(type) {
+            switch(type) {
+                case 'pdf': return '<span class="notion-tag tag-pdf"><i class="fa-solid fa-file-pdf"></i> PDF</span>';
+                case 'image': return '<span class="notion-tag tag-image"><i class="fa-solid fa-image"></i> Image</span>';
+                case 'table': return '<span class="notion-tag tag-table"><i class="fa-solid fa-table"></i> Table</span>';
+                case 'doc': return '<span class="notion-tag tag-doc"><i class="fa-solid fa-file-word"></i> Word</span>';
+                default: return '<span class="notion-tag bg-slate-700 text-slate-300">File</span>';
+            }
+        }
+
+        function toggleAccordion(id) {
+            const body = document.getElementById(`body-${id}`);
+            const icon = document.getElementById(`icon-${id}`);
+            if (body && icon) {
+                body.classList.toggle('hidden');
+                icon.classList.toggle('open');
+            }
+        }
+
+        function setTypeFilter(type) {
+            currentTypeFilter = type;
+            ['all', 'pdf', 'image', 'table', 'doc'].forEach(t => {
+                const btn = document.getElementById(`type-filter-${t}`);
+                if (t === type) {
+                    btn.className = "px-3 py-1.5 rounded-lg bg-indigo-600 text-white font-medium transition";
+                } else {
+                    btn.className = "px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition";
+                }
+            });
+            renderResources();
+        }
+
+        function setViewMode(mode) {
+            currentViewMode = mode;
+            const treeContainer = document.getElementById('resources-tree-container');
+            const tableContainer = document.getElementById('resources-table-container');
+            const treeBtn = document.getElementById('view-tree-btn');
+            const tableBtn = document.getElementById('view-table-btn');
+
+            if (mode === 'tree') {
+                treeContainer.classList.remove('hidden');
+                tableContainer.classList.add('hidden');
+                treeBtn.className = "px-3 py-1.5 rounded-lg bg-slate-700 text-white font-medium transition flex items-center gap-1.5";
+                tableBtn.className = "px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-1.5";
+            } else {
+                treeContainer.classList.add('hidden');
+                tableContainer.classList.remove('hidden');
+                tableBtn.className = "px-3 py-1.5 rounded-lg bg-slate-700 text-white font-medium transition flex items-center gap-1.5";
+                treeBtn.className = "px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex items-center gap-1.5";
+            }
+            renderResources();
+        }
+
+        function filterResources() { renderResources(); }
+        function openUploadModal() { document.getElementById('upload-modal').classList.remove('hidden'); }
+        function closeUploadModal() { document.getElementById('upload-modal').classList.add('hidden'); }
+
+        async function handleFileUpload(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submit-upload-btn');
+            const progressBox = document.getElementById('upload-progress-container');
+            const progressBar = document.getElementById('upload-progress-bar');
+            const progressText = document.getElementById('upload-status-text');
+
+            const title = document.getElementById('res-title').value.trim();
+            const subject = document.getElementById('res-subject').value.trim();
+            const branch = document.getElementById('res-branch').value.trim();
+            const type = document.getElementById('res-type').value;
+            const fileInput = document.getElementById('res-file');
+            const file = fileInput.files[0];
+
+            if (!file) return alert("Please select a file to upload.");
+
+            submitBtn.disabled = true;
+            progressBox.classList.remove('hidden');
+
+            try {
+                const user = window.firebaseAuth.currentUser;
+                const storagePath = `resources/${Date.now()}_${file.name}`;
+                const storageRef = window.storageTools.ref(window.storage, storagePath);
+                
+                const uploadTask = window.storageTools.uploadBytesResumable(storageRef, file);
+
+                uploadTask.on('state_changed', 
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        progressBar.style.width = `${progress}%`;
+                        progressText.innerText = `Uploading... ${Math.round(progress)}%`;
+                    }, 
+                    (error) => {
+                        alert("Upload failed: " + error.message);
+                        submitBtn.disabled = false;
+                        progressBox.classList.add('hidden');
+                    }, 
+                    async () => {
+                        const downloadURL = await window.storageTools.getDownloadURL(uploadTask.snapshot.ref);
+                        
+                        const { collection, addDoc, serverTimestamp } = window.firestoreTools;
+                        await addDoc(collection(window.db, "resources"), {
+                            title, subject, branch, type,
+                            fileUrl: downloadURL,
+                            storagePath,
+                            uploadedBy: user ? user.email.split('@')[0] : "Admin",
+                            timestamp: serverTimestamp()
+                        });
+
+                        alert("Resource uploaded successfully to Cloud Storage!");
+                        document.getElementById('upload-form').reset();
+                        closeUploadModal();
+                        submitBtn.disabled = false;
+                        progressBox.classList.add('hidden');
+                        fetchResources();
+                    }
+                );
+            } catch(err) {
+                alert("Upload failed: " + err.message);
+                submitBtn.disabled = false;
+                progressBox.classList.add('hidden');
+            }
+        }
+
+        async function deleteResource(id, storagePath) {
+            if(!isAdmin) return;
+            if (confirm("Are you sure you want to PERMANENTLY delete this resource?")) {
+                try {
+                    const { doc, deleteDoc } = window.firestoreTools;
+                    await deleteDoc(doc(window.db, "resources", id));
+
+                    if (storagePath) {
+                        const storageRef = window.storageTools.ref(window.storage, storagePath);
+                        await window.storageTools.deleteObject(storageRef).catch(e => console.log("Storage item clean skipped."));
+                    }
+
+                    alert("Resource deleted successfully.");
+                    fetchResources();
+                } catch(err) {
+                    alert("Error deleting resource: " + err.message);
+                }
+            }
+        }
+
+        function openLightbox(url, title) {
+            document.getElementById('lightbox-img').src = url;
+            document.getElementById('lightbox-title').innerText = title;
+            document.getElementById('lightbox-download').href = url;
+            document.getElementById('lightbox-modal').classList.remove('hidden');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox-modal').classList.add('hidden');
+            document.getElementById('lightbox-img').src = '';
+        }
+
+        window.onload = initLibrary;
+    </script>
+</body>
+</html>
