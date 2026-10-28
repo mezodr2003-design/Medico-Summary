@@ -59,7 +59,7 @@
             </div>
             <div class="flex items-center gap-3">
                 <button id="admin-upload-btn" onclick="openUploadModal()" class="hidden text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-2 rounded-lg transition items-center gap-2 shadow">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload Direct
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload Resource
                 </button>
                 <a href="index.html" class="text-xs bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 px-3 py-2 rounded-lg transition font-semibold flex items-center gap-2">
                     <i class="fa-solid fa-graduation-cap text-blue-400"></i> Back to QBank
@@ -95,7 +95,7 @@
     <div id="upload-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-slate-800 border border-indigo-500/40 rounded-2xl p-6 w-full max-w-lg shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-                <h3 class="text-base font-bold text-indigo-400 flex items-center gap-2"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Resource Directly</h3>
+                <h3 class="text-base font-bold text-indigo-400 flex items-center gap-2"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Resource</h3>
                 <button onclick="closeUploadModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
@@ -142,7 +142,6 @@
         </div>
     </div>
 
-    <!-- Scripts -->
     <script src="admins.js" onerror="console.log('No admins.js found.')"></script>
 
     <script>
@@ -260,21 +259,23 @@
             statusBox.classList.remove('hidden');
 
             try {
-                // بيانات الرفع المباشر لسحابة Cloudinary
                 const CLOUDINARY_CLOUD_NAME = "naw1ae8k";
                 const CLOUDINARY_UPLOAD_PRESET = "medico_preset";
+
+                const resourceType = file.type.includes('pdf') || file.type.includes('word') || file.type.includes('document') ? 'raw' : 'auto';
 
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
-                const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`, {
+                const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`, {
                     method: 'POST',
                     body: formData
                 });
 
-                if (!response.ok) throw new Error("فشل الرفع السحابي، تأكد من حفظ الـ Preset باسم medico_preset");
                 const data = await response.json();
+                if (!response.ok) throw new Error(data.error ? data.error.message : "Upload failed.");
+                
                 const fileUrl = data.secure_url;
 
                 const title = document.getElementById('res-title').value.trim();
@@ -295,7 +296,7 @@
                 closeUploadModal();
                 fetchResources();
             } catch(err) {
-                alert("Error: " + err.message);
+                alert("Upload Error: " + err.message + "\n\nTip: If uploading PDF fails, enable PDF Delivery in Cloudinary Security Settings.");
             } finally {
                 submitBtn.disabled = false;
                 statusBox.classList.add('hidden');
