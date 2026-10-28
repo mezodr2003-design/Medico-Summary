@@ -71,7 +71,7 @@
             </div>
             <div class="flex items-center gap-3">
                 <button id="admin-upload-btn" onclick="openUploadModal()" class="hidden text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-2 rounded-lg transition items-center gap-2 shadow">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload Resource
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Add Resource
                 </button>
                 <a href="index.html" class="text-xs bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 px-3 py-2 rounded-lg transition font-semibold flex items-center gap-2">
                     <i class="fa-solid fa-graduation-cap text-blue-400"></i> Back to QBank
@@ -107,18 +107,18 @@
         </div>
     </main>
 
-    <!-- Admin Auto Upload Modal -->
+    <!-- Admin Smart Upload Modal (File or Link) -->
     <div id="upload-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-slate-800 border border-indigo-500/40 rounded-2xl p-6 w-full max-w-lg shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-                <h3 class="text-base font-bold text-indigo-400 flex items-center gap-2"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Resource</h3>
+                <h3 class="text-base font-bold text-indigo-400 flex items-center gap-2"><i class="fa-solid fa-cloud-arrow-up"></i> Add Resource to Library</h3>
                 <button onclick="closeUploadModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
-            <form id="upload-form" onsubmit="handleDirectFileUpload(event)" class="space-y-4">
+            <form id="upload-form" onsubmit="handleResourceSubmit(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1">Resource Title *</label>
-                    <input type="text" id="res-title" required placeholder="e.g. Urology High-Yield Summary 2026" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
+                    <input type="text" id="res-title" required placeholder="e.g. Urology Summary 2026" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -144,16 +144,28 @@
                     </select>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1">Select File from Device *</label>
-                    <input type="file" id="res-file" required class="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 transition"/>
+                <!-- Choose Method: File or Link -->
+                <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-700/80 space-y-3">
+                    <label class="block text-xs font-bold text-indigo-300">Choose Upload Method:</label>
+                    
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Option A: Upload File from Device</label>
+                        <input type="file" id="res-file" class="block w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 transition"/>
+                    </div>
+
+                    <div class="text-center text-xs text-slate-500 font-bold">— OR —</div>
+
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Option B: Paste Direct Link (Drive, Mega, etc.)</label>
+                        <input type="url" id="res-url" placeholder="https://drive.google.com/..." class="w-full bg-slate-900 border border-slate-700 p-2 rounded-lg text-xs focus:outline-none focus:border-indigo-500">
+                    </div>
                 </div>
 
                 <div id="upload-status" class="hidden text-center text-xs text-indigo-400 font-semibold py-1">
-                    <i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Uploading file directly to cloud...
+                    <i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Processing & saving resource...
                 </div>
 
-                <button type="submit" id="submit-upload-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 font-bold py-3 rounded-xl text-white transition shadow-lg">Upload to Cloud Storage</button>
+                <button type="submit" id="submit-upload-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 font-bold py-3 rounded-xl text-white transition shadow-lg">Save to Library</button>
             </form>
         </div>
     </div>
@@ -325,7 +337,7 @@
                             ${isAdmin ? `<button onclick="deleteResource('${item.id}')" class="text-slate-500 hover:text-rose-400 text-xs transition p-1"><i class="fa-solid fa-trash-can"></i></button>` : ''}
                         </div>
                         <h4 class="font-bold text-sm text-slate-200 group-hover:text-indigo-300 transition line-clamp-2">${item.title}</h4>
-                        <p class="text-[11px] text-slate-400 mt-1">Uploaded by ${item.uploadedBy || 'Admin'}</p>
+                        <p class="text-[11px] text-slate-400 mt-1">By ${item.uploadedBy || 'Admin'}</p>
                     </div>
 
                     <div class="mt-4 pt-2 border-t border-slate-700/60 flex gap-2">
@@ -377,7 +389,7 @@
         function openUploadModal() { document.getElementById('upload-modal').classList.remove('hidden'); }
         function closeUploadModal() { document.getElementById('upload-modal').classList.add('hidden'); }
 
-        async function handleDirectFileUpload(e) {
+        async function handleResourceSubmit(e) {
             e.preventDefault();
             const submitBtn = document.getElementById('submit-upload-btn');
             const statusBox = document.getElementById('upload-status');
@@ -387,43 +399,50 @@
             const branch = document.getElementById('res-branch').value.trim();
             const type = document.getElementById('res-type').value;
             const fileInput = document.getElementById('res-file');
+            const urlInput = document.getElementById('res-url').value.trim();
             const file = fileInput.files[0];
 
-            if(!file) return alert("Please select a file.");
+            if (!file && !urlInput) {
+                return alert("Please select a file OR paste a direct link.");
+            }
 
             submitBtn.disabled = true;
             statusBox.classList.remove('hidden');
 
             try {
-                // Background direct upload to Catbox API
-                const formData = new FormData();
-                formData.append('reqtype', 'fileupload');
-                formData.append('fileToUpload', file);
+                let finalUrl = urlInput;
 
-                const response = await fetch('https://catbox.moe/user/api.php', {
-                    method: 'POST',
-                    body: formData
-                });
+                // If user selected a file, attempt direct cloud upload
+                if (file && !urlInput) {
+                    const formData = new FormData();
+                    formData.append('reqtype', 'fileupload');
+                    formData.append('fileToUpload', file);
 
-                if(!response.ok) throw new Error("Cloud upload service failed.");
-                const fileUrl = await response.text();
+                    const response = await fetch('https://catbox.moe/user/api.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) throw new Error("File upload failed. Try pasting a direct link instead.");
+                    finalUrl = (await response.text()).trim();
+                }
 
                 const user = window.firebaseAuth.currentUser;
                 const { collection, addDoc, serverTimestamp } = window.firestoreTools;
                 
                 await addDoc(collection(window.db, "resources"), {
                     title, subject, branch, type,
-                    fileUrl: fileUrl.trim(),
+                    fileUrl: finalUrl,
                     uploadedBy: user ? user.email.split('@')[0] : "Admin",
                     timestamp: serverTimestamp()
                 });
 
-                alert("File uploaded successfully to Cloud Storage!");
+                alert("Resource saved successfully to Library!");
                 document.getElementById('upload-form').reset();
                 closeUploadModal();
                 fetchResources();
             } catch(err) {
-                alert("Upload failed: " + err.message);
+                alert("Error: " + err.message + "\nTip: If file upload fails, paste a Google Drive/Mega link instead.");
             } finally {
                 submitBtn.disabled = false;
                 statusBox.classList.add('hidden');
