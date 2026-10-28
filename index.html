@@ -20,7 +20,7 @@
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc, arrayUnion, serverTimestamp, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc, arrayUnion, serverTimestamp, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -38,7 +38,7 @@
 
         window.db = db;
         window.firebaseAuth = auth;
-        window.firestoreTools = { collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc, arrayUnion, serverTimestamp, query, orderBy, limit };
+        window.firestoreTools = { collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc, arrayUnion, serverTimestamp, query, orderBy, limit, where };
         window.authTools = { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged };
     </script>
 
@@ -133,7 +133,6 @@
             </div>
         </div>
     </header>
-
 
     <main class="flex-grow max-w-7xl mx-auto w-full p-4 flex flex-col">
         <div id="dashboard-screen" class="max-w-4xl mx-auto w-full py-8 space-y-6">
@@ -583,7 +582,7 @@
                 } else { btn.onclick = () => submitAnswer(idx); } optsBox.appendChild(btn);
             });
             const expBox = document.getElementById('explanation-box');
-            if (state.answered && testMode === 'tutor') { document.getElementById('exp-text').innerHTML = q.explanation; expBox.classList.remove('hidden'); } else { expBox.classList.add('hidden'); }
+            if (state.answered && testMode === 'tutor') { document.getElementById('exp-text').innerHTML = typeof q.explanation === 'object' ? q.explanation.correctChoiceAnalysis || "Correct Answer" : q.explanation; expBox.classList.remove('hidden'); } else { expBox.classList.add('hidden'); }
             updateMatrixUI(); saveSession();
         }
 
@@ -653,12 +652,13 @@
             btn.disabled = false; btn.innerText = "Login";
         }
         
-        function openEditModal() { const q = activeBlock[currentIdx]; document.getElementById('edit-q-text').value = q.question; document.getElementById('edit-exp-text').value = q.explanation; const optsContainer = document.getElementById('edit-options-container'); optsContainer.innerHTML = '<label class="text-xs font-semibold text-slate-400">Options & Correct Answer (Select the radio):</label>'; q.options.forEach((opt, idx) => { const optDiv = document.createElement('div'); optDiv.className = "flex items-center gap-2"; const isCorrect = idx === q.correct ? 'checked' : ''; optDiv.innerHTML = `<input type="radio" name="edit-correct" value="${idx}" ${isCorrect} class="w-4 h-4 text-amber-500 bg-slate-900 border-slate-700 accent-amber-500"><input type="text" id="edit-opt-${idx}" value="${opt}" class="w-full bg-slate-900 border border-slate-700 p-2 rounded-lg text-sm focus:outline-none focus:border-amber-500">`; optsContainer.appendChild(optDiv); }); document.getElementById('edit-modal').classList.remove('hidden'); }
+        function openEditModal() { const q = activeBlock[currentIdx]; document.getElementById('edit-q-text').value = q.question; document.getElementById('edit-exp-text').value = typeof q.explanation === 'object' ? JSON.stringify(q.explanation) : q.explanation; const optsContainer = document.getElementById('edit-options-container'); optsContainer.innerHTML = '<label class="text-xs font-semibold text-slate-400">Options & Correct Answer (Select the radio):</label>'; q.options.forEach((opt, idx) => { const optDiv = document.createElement('div'); optDiv.className = "flex items-center gap-2"; const isCorrect = idx === q.correct ? 'checked' : ''; optDiv.innerHTML = `<input type="radio" name="edit-correct" value="${idx}" ${isCorrect} class="w-4 h-4 text-amber-500 bg-slate-900 border-slate-700 accent-amber-500"><input type="text" id="edit-opt-${idx}" value="${opt}" class="w-full bg-slate-900 border border-slate-700 p-2 rounded-lg text-sm focus:outline-none focus:border-amber-500">`; optsContainer.appendChild(optDiv); }); document.getElementById('edit-modal').classList.remove('hidden'); }
         function closeEditModal() { document.getElementById('edit-modal').classList.add('hidden'); }
         
         async function saveQuestionEdits() { 
             const newQ = document.getElementById('edit-q-text').value; 
-            const newExp = document.getElementById('edit-exp-text').value; 
+            let newExp = document.getElementById('edit-exp-text').value; 
+            try { newExp = JSON.parse(newExp); } catch(e) {}
             const selectedCorrect = parseInt(document.querySelector('input[name="edit-correct"]:checked').value); 
             const newOptions = []; 
             activeBlock[currentIdx].options.forEach((_, idx) => { newOptions.push(document.getElementById(`edit-opt-${idx}`).value); }); 
@@ -829,7 +829,7 @@
                 }
 
                 let logs = [];
-                querySnapshot.forEach(doc => logs.push(doc.data()));
+                querySnapshot.forEach(doc => logs.push({ id: doc.id, ...doc.data() }));
                 
                 listContainer.innerHTML = '';
                 logs.reverse().forEach(log => {
@@ -840,12 +840,43 @@
                                 <span class="font-bold text-amber-400">${log.adminName}</span> uploaded <span class="font-bold text-emerald-400">${log.count} questions</span> 
                                 <span class="text-xs text-slate-400">(${log.subject})</span>
                             </div>
-                            <span class="text-xs text-slate-500">${dateStr}</span>
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs text-slate-500">${dateStr}</span>
+                                <button onclick="deleteBatchQuestions('${log.id}', '${log.subject}', ${log.count})" class="text-xs bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white px-2.5 py-1.5 rounded-lg border border-rose-500/30 transition flex items-center gap-1">
+                                    <i class="fa-solid fa-trash-can"></i> <span class="hidden sm:inline">Delete Batch</span>
+                                </button>
+                            </div>
                         </div>
                     `;
                 });
             } catch(e) {
                 listContainer.innerHTML = '<p class="text-rose-400 text-center py-4">Error loading activity log.</p>';
+            }
+        }
+
+        async function deleteBatchQuestions(logId, subject, count) {
+            if (!confirm(`Are you sure you want to completely delete this batch (${count} questions)?`)) return;
+            
+            try {
+                const { collection, getDocs, query, where, deleteDoc, doc } = window.firestoreTools;
+                
+                const qSnap = await getDocs(query(collection(window.db, "questions"), where("subject", "==", subject)));
+                
+                let deleted = 0;
+                for (const docSnap of qSnap.docs) {
+                    if (deleted < count) {
+                        await deleteDoc(doc(window.db, "questions", docSnap.id));
+                        deleted++;
+                    }
+                }
+                
+                await deleteDoc(doc(window.db, "activity_logs", logId));
+                
+                alert("Batch and corresponding activity log deleted successfully!");
+                openActivityLogModal();
+                initCloudSync();
+            } catch(err) {
+                alert("Error deleting batch: " + err.message);
             }
         }
 
