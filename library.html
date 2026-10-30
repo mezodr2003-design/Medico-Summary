@@ -247,88 +247,127 @@
         function openUploadModal() { document.getElementById('upload-modal').classList.remove('hidden'); }
         function closeUploadModal() { document.getElementById('upload-modal').classList.add('hidden'); }
 
+        // الدالة الجديدة المُحدثة لرفع الملفات
         async function handleResourceSubmit(e) {
             e.preventDefault();
+
             const submitBtn = document.getElementById('submit-upload-btn');
             const statusBox = document.getElementById('upload-status');
-            
-            const file = document.getElementById('res-file').files[0];
-            if (!file) return alert("Please select a file to upload.");
+            const fileInput = document.getElementById('res-file');
+
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert("Please select a file.");
+                return;
+            }
+
+            // التأكد من أن المستخدم Admin
+            if (!isAdmin || !window.firebaseAuth.currentUser) {
+                alert("You are not authorized to upload resources.");
+                return;
+            }
 
             submitBtn.disabled = true;
             statusBox.classList.remove('hidden');
+            statusBox.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Uploading to Cloudinary...';
+
+            let uploadedFileUrl = "";
 
             try {
-                let fileUrl = '';
                 const CLOUDINARY_CLOUD_NAME = "naw1ae8k";
                 const CLOUDINARY_UPLOAD_PRESET = "medico_preset";
 
-                // المحاولة الأولى: الرفع المباشر عبر Cloudinary
-                try {
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+                // تحديد نوع الرفع حسب امتداد الملف
+                const extension = file.name.split('.').pop().toLowerCase();
 
-                    const isPdf = file.type.includes('pdf') || file.name.toLowerCase().endsWith('.pdf');
-                    const endpoint = isPdf ? 'image' : 'auto'; // Cloudinary handles PDFs best as image resources or raw
+                const imageExtensions = [
+                    'jpg', 'jpeg', 'png', 'gif',
+                    'webp', 'bmp', 'svg', 'tif', 'tiff'
+                ];
 
-                    let response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${endpoint}/upload`, {
-                        method: 'POST',
-                        body: formData
-                    });
+                const isImage = imageExtensions.includes(extension);
 
-                    if(!response.ok) {
-                        response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/raw/upload`, {
-                            method: 'POST',
-                            body: formData
-                        });
-                    }
+                // الصور تستخدم image، وباقي الملفات تستخدم raw
+                const resourceType = isImage ? 'image' : 'raw';
 
-                    if (response.ok) {
-                        const data = await response.json();
-                        fileUrl = data.secure_url;
-                    }
-                } catch(cErr) {
-                    console.log("Cloudinary attempt failed, switching to backup storage...", cErr);
+                const endpoint = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`;
+
+                // تجهيز الملف
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+                // رفع الملف
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                // قراءة رد Cloudinary
+                const responseData = await response.json();
+
+                if (!response.ok) {
+                    const cloudinaryError = responseData.error?.message || "Unknown Cloudinary error";
+                    throw new Error("Cloudinary: " + cloudinaryError);
                 }
 
-                // المحاولة الثانية السريعة تلقائياً (Backup Cloud Upload) إذا فشلت الأولى
-                if (!fileUrl) {
-                    const formDataBackup = new FormData();
-                    formDataBackup.append('reqtype', 'fileupload');
-                    formDataBackup.append('fileToUpload', file);
-
-                    const resBackup = await fetch('https://catbox.moe/user/api.php', {
-                        method: 'POST',
-                        body: formDataBackup
-                    });
-
-                    if (resBackup.ok) {
-                        fileUrl = (await resBackup.text()).trim();
-                    }
+                if (!responseData.secure_url) {
+                    throw new Error("Cloudinary did not return a file URL.");
                 }
 
-                if (!fileUrl) throw new Error("Could not process direct upload. Please check network connection.");
+                uploadedFileUrl = responseData.secure_url;
 
+                // تحديث حالة الرفع
+                statusBox.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Saving resource to Firebase...';
+
+                // تجهيز بيانات الملف
                 const title = document.getElementById('res-title').value.trim();
                 const subject = document.getElementById('res-subject').value.trim();
                 const branch = document.getElementById('res-branch').value.trim();
                 const type = document.getElementById('res-type').value;
-                const user = window.firebaseAuth.currentUser;
-                
-                const { collection, addDoc, serverTimestamp } = window.firestoreTools;
-                await addDoc(collection(window.db, "resources"), {
-                    title, subject, branch, type, fileUrl,
-                    uploadedBy: user ? user.email.split('@')[0] : "Admin",
-                    timestamp: serverTimestamp()
-                });
 
-                alert("تم الرفع والحفظ بنجاح!");
+                const user = window.firebaseAuth.currentUser;
+
+                const { collection, addDoc, serverTimestamp } = window.firestoreTools;
+
+                // حفظ بيانات الملف في Firestore
+                await addDoc(
+                    collection(window.db, "resources"),
+                    {
+                        title,
+                        subject,
+                        branch,
+                        type,
+                        fileUrl: uploadedFileUrl,
+                        fileName: file.name,
+                        fileSize: file.size,
+                        uploadedBy: user.email.split('@')[0],
+                        timestamp: serverTimestamp()
+                    }
+                );
+
+                // نجاح العملية
+                alert("تم رفع الملف وحفظه في المكتبة بنجاح!");
                 document.getElementById('upload-form').reset();
                 closeUploadModal();
-                fetchResources();
-            } catch(err) {
-                alert("Upload Status: " + err.message);
+                await fetchResources();
+
+            } catch (err) {
+                console.error("Resource Upload Error:", err);
+
+                if (uploadedFileUrl) {
+                    alert(
+                        "تم رفع الملف إلى Cloudinary بنجاح، لكن حدثت مشكلة أثناء حفظ بياناته في Firebase.\n\n" +
+                        "Error: " + err.message +
+                        "\n\nFile URL:\n" + uploadedFileUrl
+                    );
+                } else {
+                    alert(
+                        "فشل رفع الملف.\n\n" +
+                        "Error: " + err.message
+                    );
+                }
             } finally {
                 submitBtn.disabled = false;
                 statusBox.classList.add('hidden');
@@ -346,6 +385,7 @@
                 } catch(err) { alert("Error deleting: " + err.message); }
             }
         }
+        
         window.onload = initLibrary;
     </script>
 </body>
