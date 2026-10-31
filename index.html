@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en" dir="ltr" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,14 +8,41 @@
     
     <!-- PWA Settings -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1e293b">
+    <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Medico Summary">
     <link rel="apple-touch-icon" href="logo.png">
 
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        clinical: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                            950: '#020617'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     
     <!-- Firebase SDKs -->
     <script type="module">
@@ -43,315 +70,560 @@
     </script>
 
     <style>
-        .q-matrix-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; border-radius: 8px; border: 1px solid #475569; background: transparent; color: #cbd5e1; transition: all 0.2s; }
-        .q-matrix-btn:hover { border-color: #94a3b8; }
-        .q-matrix-btn.active { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); }
-        .q-matrix-btn.correct { background-color: #059669; border-color: #059669; color: white; }
-        .q-matrix-btn.incorrect { background-color: #e11d48; border-color: #e11d48; color: white; }
-        .flag-marker { position: absolute; top: -4px; right: -4px; color: #f59e0b; font-size: 0.7rem; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.5)); }
+        /* Matrix Grid (AMBOSS / UWorld Exam Navigation Palette) */
+        .q-matrix-btn {
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-radius: 6px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: #94a3b8;
+            position: relative;
+            user-select: none;
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .q-matrix-btn:hover {
+            border-color: #64748b;
+            color: #f8fafc;
+            transform: translateY(-1px);
+        }
+        .q-matrix-btn.active {
+            border-color: #6366f1 !important;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.4), inset 0 0 0 1px #6366f1;
+            color: #ffffff !important;
+            font-weight: 800;
+        }
+        .q-matrix-btn.correct {
+            background-color: #059669 !important;
+            border-color: #047857 !important;
+            color: #ffffff !important;
+        }
+        .q-matrix-btn.incorrect {
+            background-color: #e11d48 !important;
+            border-color: #be123c !important;
+            color: #ffffff !important;
+        }
+        .flag-marker {
+            position: absolute;
+            top: -3px;
+            right: -2px;
+            color: #f59e0b;
+            font-size: 0.68rem;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.8));
+        }
         
-        .option-btn { transition: all 0.2s; border: 1px solid #334155; }
-        .option-btn:hover:not(:disabled) { background-color: #334155; border-color: #475569; }
-        .option-btn.selected-correct { background-color: rgba(5, 150, 105, 0.2) !important; border-color: #059669 !important; color: #34d399 !important; }
-        .option-btn.selected-incorrect { background-color: rgba(225, 29, 72, 0.2) !important; border-color: #e11d48 !important; color: #fb7185 !important; }
-        .option-btn.actual-correct { border-color: #059669 !important; box-shadow: inset 0 0 0 1px #059669; }
+        /* Multiple Choice Options - Clinical Exam Styling */
+        .option-btn {
+            transition: all 0.15s ease-in-out;
+            border: 1.5px solid #334155;
+            background-color: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(4px);
+        }
+        .option-btn:hover:not(:disabled) {
+            background-color: #1e293b;
+            border-color: #6366f1;
+            transform: translateX(2px);
+        }
+        .option-btn:focus-visible {
+            outline: 2px solid #6366f1;
+            outline-offset: 2px;
+        }
+        .option-btn.selected-correct {
+            background-color: rgba(5, 150, 105, 0.15) !important;
+            border-color: #059669 !important;
+            color: #34d399 !important;
+        }
+        .option-btn.selected-incorrect {
+            background-color: rgba(225, 29, 72, 0.15) !important;
+            border-color: #e11d48 !important;
+            color: #fb7185 !important;
+        }
+        .option-btn.actual-correct {
+            border-color: #059669 !important;
+            box-shadow: inset 0 0 0 1px #059669;
+        }
         
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        /* Educational Objective Render Area (HTML Support) */
+        #exp-text p { margin-bottom: 0.75rem; line-height: 1.65; }
+        #exp-text ul, #exp-text ol { margin: 0.5rem 0 0.75rem 1.25rem; }
+        #exp-text ul { list-style-type: disc; }
+        #exp-text ol { list-style-type: decimal; }
+        #exp-text li { margin-bottom: 0.25rem; }
+        #exp-text table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.85rem; }
+        #exp-text th, #exp-text td { border: 1px solid #475569; padding: 6px 10px; }
+        #exp-text th { background: rgba(30, 41, 59, 0.7); font-weight: 600; text-align: left; }
+        #exp-text strong, #exp-text b { color: #f8fafc; font-weight: 700; }
+        #exp-text em, #exp-text i { font-style: italic; }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 9999px; }
         ::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
-        .theme-eyecare { background-color: #f4ebd9 !important; color: #36291b !important; }
-        .theme-eyecare header, .theme-eyecare .bg-slate-800 { background-color: #e8dcbe !important; border-color: #d8c7a1 !important; color: #2c2217 !important; }
-        .theme-eyecare select, .theme-eyecare input, .theme-eyecare textarea, .theme-eyecare .bg-slate-900, .theme-eyecare .bg-slate-900\/50 { background-color: #fbf7ee !important; border-color: #d8c7a1 !important; color: #2c2217 !important; }
-        .theme-eyecare .text-slate-400 { color: #78644a !important; }
-        .theme-eyecare .text-slate-200, .theme-eyecare .text-slate-100 { color: #2c2217 !important; }
-        .theme-eyecare .border-slate-700, .theme-eyecare .border-slate-600 { border-color: #d8c7a1 !important; }
-        .theme-eyecare .option-btn { background-color: #ede2ca !important; border-color: #d8c7a1 !important; }
-        .theme-eyecare .option-btn:hover:not(:disabled) { background-color: #e3d3b3 !important; }
-        .theme-eyecare .q-matrix-btn { border-color: #d8c7a1 !important; color: #5c4a36 !important; }
-        
+        /* THEME: Eyecare (Sepia / Warm Clinical Reader) */
+        .theme-eyecare { background-color: #f4ebd9 !important; color: #2e2417 !important; }
+        .theme-eyecare header, 
+        .theme-eyecare footer,
+        .theme-eyecare .bg-slate-800 { background-color: #e7dbbf !important; border-color: #d4c29d !important; color: #2e2417 !important; }
+        .theme-eyecare select, 
+        .theme-eyecare input, 
+        .theme-eyecare textarea, 
+        .theme-eyecare .bg-slate-900, 
+        .theme-eyecare .bg-slate-900\/50,
+        .theme-eyecare .bg-slate-900\/60,
+        .theme-eyecare .bg-slate-900\/80 { background-color: #faf5eb !important; border-color: #d4c29d !important; color: #2e2417 !important; }
+        .theme-eyecare .text-slate-400,
+        .theme-eyecare .text-slate-500 { color: #76634d !important; }
+        .theme-eyecare .text-slate-300,
+        .theme-eyecare .text-slate-200, 
+        .theme-eyecare .text-slate-100 { color: #2e2417 !important; }
+        .theme-eyecare .border-slate-700, 
+        .theme-eyecare .border-slate-600 { border-color: #d4c29d !important; }
+        .theme-eyecare .option-btn { background-color: #ede3cc !important; border-color: #d4c29d !important; color: #2e2417 !important; }
+        .theme-eyecare .option-btn:hover:not(:disabled) { background-color: #e4d7bc !important; border-color: #b59f74 !important; }
+        .theme-eyecare .q-matrix-btn { background-color: #ede3cc !important; border-color: #d4c29d !important; color: #5c4a36 !important; }
+        .theme-eyecare #exp-text strong, .theme-eyecare #exp-text b { color: #1c150c !important; }
+        .theme-eyecare #exp-text th { background: #dfd1b2 !important; color: #2e2417 !important; }
+        .theme-eyecare #exp-text td, .theme-eyecare #exp-text th { border-color: #cbb993 !important; }
+
+        /* THEME: Light (AMBOSS Clinical White Mode) */
         .theme-light { background-color: #f8fafc !important; color: #0f172a !important; }
-        .theme-light header, .theme-light .bg-slate-800 { background-color: #ffffff !important; border-color: #e2e8f0 !important; color: #0f172a !important; }
-        .theme-light select, .theme-light input, .theme-light textarea, .theme-light .bg-slate-900, .theme-light .bg-slate-900\/50 { background-color: #f1f5f9 !important; border-color: #cbd5e1 !important; color: #0f172a !important; }
-        .theme-light .text-slate-400 { color: #64748b !important; }
-        .theme-light .text-slate-200, .theme-light .text-slate-100 { color: #0f172a !important; }
-        .theme-light .border-slate-700, .theme-light .border-slate-600 { border-color: #e2e8f0 !important; }
-        .theme-light .option-btn { background-color: #ffffff !important; border-color: #cbd5e1 !important; }
-        .theme-light .option-btn:hover:not(:disabled) { background-color: #f1f5f9 !important; }
-        .theme-light .q-matrix-btn { border-color: #cbd5e1 !important; color: #475569 !important; }
+        .theme-light header, 
+        .theme-light footer,
+        .theme-light .bg-slate-800 { background-color: #ffffff !important; border-color: #e2e8f0 !important; color: #0f172a !important; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04); }
+        .theme-light select, 
+        .theme-light input, 
+        .theme-light textarea, 
+        .theme-light .bg-slate-900, 
+        .theme-light .bg-slate-900\/50,
+        .theme-light .bg-slate-900\/60,
+        .theme-light .bg-slate-900\/80 { background-color: #f1f5f9 !important; border-color: #cbd5e1 !important; color: #0f172a !important; }
+        .theme-light .text-slate-400,
+        .theme-light .text-slate-500 { color: #64748b !important; }
+        .theme-light .text-slate-300,
+        .theme-light .text-slate-200, 
+        .theme-light .text-slate-100 { color: #0f172a !important; }
+        .theme-light .border-slate-700, 
+        .theme-light .border-slate-600 { border-color: #e2e8f0 !important; }
+        .theme-light .option-btn { background-color: #ffffff !important; border-color: #cbd5e1 !important; color: #1e293b !important; }
+        .theme-light .option-btn:hover:not(:disabled) { background-color: #f8fafc !important; border-color: #6366f1 !important; }
+        .theme-light .q-matrix-btn { background-color: #ffffff !important; border-color: #cbd5e1 !important; color: #475569 !important; }
+        .theme-light #exp-text strong, .theme-light #exp-text b { color: #0f172a !important; }
+        .theme-light #exp-text th { background: #f1f5f9 !important; color: #0f172a !important; }
+        .theme-light #exp-text td, .theme-light #exp-text th { border-color: #e2e8f0 !important; }
 
         @media print {
             body * { display: none !important; }
             #print-area, #print-area * { display: block !important; }
-            #print-area { position: absolute; left: 0; top: 0; width: 100%; background: white; color: black; font-family: Arial, sans-serif; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; background: white; color: black; font-family: 'Inter', Arial, sans-serif; }
         }
     </style>
 </head>
-<body id="app-body" class="bg-slate-900 text-slate-200 min-h-screen font-sans antialiased flex flex-col transition-colors duration-300">
+<body id="app-body" class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased flex flex-col selection:bg-indigo-600 selection:text-white transition-colors duration-200">
 
     <div id="print-area" class="hidden"></div>
 
-    <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-50 transition-colors duration-300">
-        <div class="max-w-7xl mx-auto px-4 h-14 flex justify-between items-center">
-            <div class="flex items-center gap-3 cursor-pointer" onclick="goHome()">
-                <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-full object-cover border border-slate-600 shadow-md" onerror="this.src='https://via.placeholder.com/40'">
-                <h1 class="font-bold tracking-wide">Medico Summary</h1>
-            </div>
-            <div class="flex items-center gap-2 sm:gap-4">
-                <div class="hidden sm:flex bg-slate-900/50 p-1 rounded-xl border border-slate-700/60 text-xs mr-2">
-                    <button onclick="setTheme('dark')" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-700/50 transition"><i class="fa-solid fa-moon text-indigo-400"></i></button>
-                    <button onclick="setTheme('eyecare')" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-700/50 transition"><i class="fa-solid fa-eye text-amber-500"></i></button>
-                    <button onclick="setTheme('light')" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-700/50 transition"><i class="fa-solid fa-sun text-yellow-400"></i></button>
+    <!-- Exam-grade App Bar (UWorld/AMBOSS Top Bar) -->
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 transition-colors duration-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex justify-between items-center gap-3">
+            <!-- Brand Badge -->
+            <div class="flex items-center gap-3 cursor-pointer group" onclick="goHome()">
+                <div class="relative">
+                    <img src="logo.png" alt="Logo" class="w-9 h-9 rounded-lg object-cover ring-1 ring-slate-700 shadow-inner group-hover:ring-indigo-500 transition" onerror="this.src='https://via.placeholder.com/36/4f46e5/ffffff?text=MS'">
+                    <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-slate-900"></span>
                 </div>
-                <div id="quiz-header-controls" class="hidden items-center gap-2 sm:gap-3">
-                    <div id="timer-display" class="hidden items-center gap-2 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700 font-mono text-sm text-amber-400">
-                        <i class="fa-regular fa-clock"></i> <span id="time-left">00:00:00</span>
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-1.5">
+                        <h1 class="font-bold text-sm tracking-tight text-slate-100">Medico Summary</h1>
+                        <span class="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">PRO</span>
                     </div>
-                    <button onclick="exportToPDF()" class="text-xs bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30 border border-emerald-500/30 px-3 py-1.5 rounded transition font-semibold flex items-center gap-2">
-                        <i class="fa-solid fa-file-pdf"></i><span class="hidden sm:inline">Export PDF</span>
+                    <span class="text-[10px] text-slate-400 leading-none">Clinical QBank Simulator</span>
+                </div>
+            </div>
+
+            <!-- Central & Action Controls -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Theme Switcher Pill -->
+                <div class="hidden sm:flex items-center bg-slate-950/70 p-0.5 rounded-lg border border-slate-800 text-xs">
+                    <button onclick="setTheme('dark')" title="AMBOSS Dark" class="px-2 py-1 rounded-md text-slate-400 hover:text-indigo-400 hover:bg-slate-800/80 transition"><i class="fa-solid fa-moon"></i></button>
+                    <button onclick="setTheme('eyecare')" title="Sepia Eyecare" class="px-2 py-1 rounded-md text-slate-400 hover:text-amber-500 hover:bg-slate-800/80 transition"><i class="fa-solid fa-eye"></i></button>
+                    <button onclick="setTheme('light')" title="UWorld Light" class="px-2 py-1 rounded-md text-slate-400 hover:text-yellow-400 hover:bg-slate-800/80 transition"><i class="fa-solid fa-sun"></i></button>
+                </div>
+
+                <!-- Exam Controls (Toggled when in quiz) -->
+                <div id="quiz-header-controls" class="hidden items-center gap-2">
+                    <div id="timer-display" class="hidden items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-700/80 font-mono text-xs sm:text-sm font-semibold text-amber-400 shadow-inner">
+                        <i class="fa-regular fa-clock text-amber-500 animate-pulse"></i> <span id="time-left">00:00:00</span>
+                    </div>
+                    <button onclick="exportToPDF()" class="text-xs bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-file-pdf"></i><span class="hidden md:inline">Print / PDF</span>
                     </button>
-                    <button onclick="endQuizEarly()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded transition font-semibold">End Block</button>
+                    <button onclick="endQuizEarly()" class="text-xs bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-power-off"></i><span>End Block</span>
+                    </button>
                 </div>
                 
-                <!-- Library Hub Button -->
-                <a href="library.html" class="text-xs bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600/30 border border-indigo-500/40 px-3 py-1.5 rounded-lg transition font-semibold flex items-center gap-2 shadow">
-                    <i class="fa-solid fa-book-bookmark text-indigo-400"></i>
-                    <span class="hidden sm:inline">Library Hub</span>
+                <!-- Library Hub Link -->
+                <a href="library.html" class="text-xs bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-book-medical text-indigo-400"></i>
+                    <span class="hidden md:inline">Library Hub</span>
                 </a>
                 
                 <!-- Student Auth Button -->
-                <button id="student-auth-btn" onclick="openStudentModal()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg transition font-semibold flex items-center gap-2 shadow">
+                <button id="student-auth-btn" onclick="openStudentModal()" class="text-xs bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 shadow-sm transition">
                     <i class="fa-solid fa-user-graduate"></i>
                     <span id="student-btn-text" class="hidden sm:inline">Student Login</span>
                 </button>
 
-                <button onclick="requestAdminAccess()" class="text-xs bg-slate-700 hover:bg-slate-600 border border-slate-600 px-3 py-1.5 rounded transition flex items-center gap-2">
-                    <i class="fa-solid fa-lock text-amber-400"></i>
+                <!-- Admin Access Button -->
+                <button onclick="requestAdminAccess()" class="text-xs bg-slate-800 hover:bg-slate-700/90 border border-slate-700 text-slate-300 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-shield-halved text-amber-400"></i>
                     <span id="admin-btn-text" class="hidden sm:inline">Admin Access</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <main class="flex-grow max-w-7xl mx-auto w-full p-4 flex flex-col">
-        <div id="dashboard-screen" class="max-w-4xl mx-auto w-full py-8 space-y-6">
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex flex-col">
+        
+        <!-- DASHBOARD / BLOCK GENERATOR SCREEN -->
+        <div id="dashboard-screen" class="max-w-4xl mx-auto w-full py-4 space-y-6">
             
-            <div id="cloud-tools-btn" class="hidden mb-4 flex flex-col sm:flex-row gap-3">
-                <button onclick="openCloudAdmin()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-6 rounded-xl transition shadow-lg flex items-center gap-2 w-full justify-center">
-                    <i class="fa-solid fa-database"></i> Open Cloud Database Tools (Add/Clean)
+            <!-- Cloud Admin Bar (When authorized) -->
+            <div id="cloud-tools-btn" class="hidden flex flex-col sm:flex-row gap-3">
+                <button onclick="openCloudAdmin()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-5 rounded-xl transition shadow flex items-center gap-2 justify-center text-sm">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Cloud Database Tools (Add / Clean)
                 </button>
-                <button id="super-admin-activity-btn" onclick="openActivityLogModal()" class="hidden bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 px-6 rounded-xl transition shadow-lg flex items-center gap-2 w-full sm:w-auto justify-center whitespace-nowrap">
-                    <i class="fa-solid fa-bell"></i> Review Admin Uploads
+                <button id="super-admin-activity-btn" onclick="openActivityLogModal()" class="hidden bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 px-5 rounded-xl transition shadow flex items-center gap-2 justify-center text-sm whitespace-nowrap">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Review Admin Uploads
                 </button>
             </div>
 
-            <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl space-y-6 transition-colors duration-300">
-                <div><h2 class="text-2xl font-bold">Create Test Block</h2><p class="text-sm text-slate-400 mt-1">Configure your practice session.</p></div>
-                
-                <div class="grid grid-cols-2 gap-3 border-b border-slate-700 pb-6">
-                    <label class="relative flex p-4 rounded-xl border border-slate-600 cursor-pointer hover:bg-slate-700/50 transition">
-                        <input type="radio" name="test-mode" value="tutor" checked class="mt-1 accent-blue-500">
-                        <div class="ml-3"><span class="block font-semibold">Tutor Mode</span><span class="block text-xs text-slate-400">Answers shown immediately</span></div>
-                    </label>
-                    <label class="relative flex p-4 rounded-xl border border-slate-600 cursor-pointer hover:bg-slate-700/50 transition">
-                        <input type="radio" name="test-mode" value="timed" class="mt-1 accent-blue-500">
-                        <div class="ml-3"><span class="block font-semibold">Timed Mode</span><span class="block text-xs text-slate-400">1.5 mins per question</span></div>
-                    </label>
+            <!-- Clinical Block Builder Card -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6 transition-colors duration-200">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-800 gap-2">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+                            <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-white">Custom Test Block</h2>
+                        </div>
+                        <p class="text-xs sm:text-sm text-slate-400 mt-1">Configure your clinical case simulator parameters.</p>
+                    </div>
+                    <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider bg-slate-950 px-3 py-1 rounded-full border border-slate-800 self-start sm:self-auto">Step 1 / 2 & 3 Standard</span>
                 </div>
                 
-                <div class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-400 mb-1">Subject</label>
-                            <select id="filter-subject" onchange="updateFilters('subject')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition-colors"><option value="all">All Subjects</option></select>
+                <!-- Exam Mode Selector -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">Examination Mode</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <label class="relative flex items-center p-4 rounded-xl border border-slate-800 bg-slate-950/60 hover:border-slate-700 cursor-pointer transition has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-950/20 has-[:checked]:ring-1 has-[:checked]:ring-indigo-500/40">
+                            <input type="radio" name="test-mode" value="tutor" checked class="w-4 h-4 text-indigo-600 bg-slate-800 border-slate-700 accent-indigo-500 focus:ring-0">
+                            <div class="ml-3.5">
+                                <span class="block text-sm font-semibold text-slate-200 flex items-center gap-1.5"><i class="fa-solid fa-graduation-cap text-indigo-400 text-xs"></i> Tutor Mode</span>
+                                <span class="block text-xs text-slate-400 mt-0.5">Instant feedback, correct answer & full analysis</span>
+                            </div>
+                        </label>
+                        <label class="relative flex items-center p-4 rounded-xl border border-slate-800 bg-slate-950/60 hover:border-slate-700 cursor-pointer transition has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-950/20 has-[:checked]:ring-1 has-[:checked]:ring-indigo-500/40">
+                            <input type="radio" name="test-mode" value="timed" class="w-4 h-4 text-indigo-600 bg-slate-800 border-slate-700 accent-indigo-500 focus:ring-0">
+                            <div class="ml-3.5">
+                                <span class="block text-sm font-semibold text-slate-200 flex items-center gap-1.5"><i class="fa-solid fa-stopwatch text-amber-400 text-xs"></i> Timed Exam Mode</span>
+                                <span class="block text-xs text-slate-400 mt-0.5">Strict 90 sec/question timer simulation</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Cascading Criteria Filters -->
+                <div class="space-y-3">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Medical Disciplines & System Taxonomy</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                        <div class="space-y-1.5">
+                            <label class="text-[11px] font-semibold text-slate-400">Subject</label>
+                            <div class="relative">
+                                <select id="filter-subject" onchange="updateFilters('subject')" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs sm:text-sm text-slate-200 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition appearance-none pr-8">
+                                    <option value="all">All Subjects</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-slate-500 text-xs pointer-events-none"></i>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-400 mb-1">Branch</label>
-                            <select id="filter-branch" onchange="updateFilters('branch')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition-colors"><option value="all">All Branches</option></select>
+                        <div class="space-y-1.5">
+                            <label class="text-[11px] font-semibold text-slate-400">Branch / System</label>
+                            <div class="relative">
+                                <select id="filter-branch" onchange="updateFilters('branch')" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs sm:text-sm text-slate-200 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition appearance-none pr-8">
+                                    <option value="all">All Branches</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-slate-500 text-xs pointer-events-none"></i>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-400 mb-1">Subtype</label>
-                            <select id="filter-subtype" onchange="updateAvailableCount()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition-colors"><option value="all">All Subtypes</option></select>
+                        <div class="space-y-1.5">
+                            <label class="text-[11px] font-semibold text-slate-400">Subtype / Topic</label>
+                            <div class="relative">
+                                <select id="filter-subtype" onchange="updateAvailableCount()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs sm:text-sm text-slate-200 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition appearance-none pr-8">
+                                    <option value="all">All Subtypes</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-slate-500 text-xs pointer-events-none"></i>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-400 mb-1">Source</label>
-                            <select id="filter-source" onchange="updateAvailableCount()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition-colors"><option value="all">All Sources</option></select>
+                        <div class="space-y-1.5">
+                            <label class="text-[11px] font-semibold text-slate-400">Source / QBank</label>
+                            <div class="relative">
+                                <select id="filter-source" onchange="updateAvailableCount()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs sm:text-sm text-slate-200 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition appearance-none pr-8">
+                                    <option value="all">All Sources</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-slate-500 text-xs pointer-events-none"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Checkbox Filters -->
-                <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700 transition-colors">
-                    <label class="block text-xs font-semibold text-slate-400 mb-3">Question Pool Status</label>
-                    <div class="flex flex-wrap gap-4">
-                        <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
-                            <input type="checkbox" id="chk-unused" onchange="updateAvailableCount()" checked class="w-4 h-4 text-blue-500 rounded bg-slate-700 border-slate-600 accent-blue-500">
-                            <span class="text-sm">Unused</span>
+                <!-- Question Pool Status Pills -->
+                <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Question Pool Status</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <label class="flex items-center gap-2.5 p-2.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900/40 cursor-pointer transition">
+                            <input type="checkbox" id="chk-unused" onchange="updateAvailableCount()" checked class="w-4 h-4 rounded bg-slate-800 border-slate-700 accent-indigo-500 focus:ring-0">
+                            <span class="text-xs sm:text-sm font-medium text-slate-200 flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-slate-400"></span> Unused
+                            </span>
                         </label>
-                        <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
-                            <input type="checkbox" id="chk-correct" onchange="updateAvailableCount()" class="w-4 h-4 text-green-500 rounded bg-slate-700 border-slate-600 accent-emerald-500">
-                            <span class="text-sm">Correct</span>
+                        <label class="flex items-center gap-2.5 p-2.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900/40 cursor-pointer transition">
+                            <input type="checkbox" id="chk-correct" onchange="updateAvailableCount()" class="w-4 h-4 rounded bg-slate-800 border-slate-700 accent-emerald-500 focus:ring-0">
+                            <span class="text-xs sm:text-sm font-medium text-slate-200 flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Correct
+                            </span>
                         </label>
-                        <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
-                            <input type="checkbox" id="chk-incorrect" onchange="updateAvailableCount()" class="w-4 h-4 text-red-500 rounded bg-slate-700 border-slate-600 accent-rose-500">
-                            <span class="text-sm">Incorrect</span>
+                        <label class="flex items-center gap-2.5 p-2.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900/40 cursor-pointer transition">
+                            <input type="checkbox" id="chk-incorrect" onchange="updateAvailableCount()" class="w-4 h-4 rounded bg-slate-800 border-slate-700 accent-rose-500 focus:ring-0">
+                            <span class="text-xs sm:text-sm font-medium text-slate-200 flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-rose-500"></span> Incorrect
+                            </span>
                         </label>
-                        <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
-                            <input type="checkbox" id="chk-flagged" onchange="updateAvailableCount()" class="w-4 h-4 text-yellow-500 rounded bg-slate-700 border-slate-600 accent-amber-500">
-                            <span class="text-sm">Flagged</span>
+                        <label class="flex items-center gap-2.5 p-2.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900/40 cursor-pointer transition">
+                            <input type="checkbox" id="chk-flagged" onchange="updateAvailableCount()" class="w-4 h-4 rounded bg-slate-800 border-slate-700 accent-amber-500 focus:ring-0">
+                            <span class="text-xs sm:text-sm font-medium text-slate-200 flex items-center gap-1.5">
+                                <i class="fa-solid fa-bookmark text-amber-500 text-xs"></i> Flagged
+                            </span>
                         </label>
                     </div>
                 </div>
 
-                <div class="flex justify-between items-center pt-4 border-t border-slate-700 mt-2">
-                    <span id="available-count" class="text-sm font-semibold text-blue-500">Syncing with Cloud...</span>
-                    <button onclick="startQuiz()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-8 rounded-lg transition shadow-lg">Generate Test</button>
+                <!-- Footer / Action Area -->
+                <div class="flex flex-col sm:flex-row justify-between items-center pt-4 border-t border-slate-800 gap-4">
+                    <div class="flex items-center gap-2 text-xs sm:text-sm">
+                        <i class="fa-solid fa-layer-group text-indigo-400"></i>
+                        <span id="available-count" class="font-semibold text-indigo-400">Syncing with Cloud...</span>
+                    </div>
+                    <button onclick="startQuiz()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold py-3 px-8 rounded-xl transition shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2 text-sm tracking-wide">
+                        <i class="fa-solid fa-play text-xs"></i> Generate Test Block
+                    </button>
                 </div>
             </div>
         </div>
 
-        <div id="quiz-screen" class="hidden flex-grow flex flex-col lg:flex-row gap-6">
-            <div class="flex-grow flex flex-col space-y-4 max-w-4xl w-full">
-                <div class="flex justify-between items-center pb-2 border-b border-slate-700">
-                    <div class="flex flex-wrap gap-2 text-xs font-medium">
-                        <span id="q-tag-branch" class="bg-blue-900/40 text-blue-400 border border-blue-500/30 px-2.5 py-1 rounded">Branch</span>
-                        <span id="q-tag-subtype" class="bg-slate-700 text-slate-200 px-2.5 py-1 rounded">Subtype</span>
+        <!-- CLINICAL SIMULATOR EXAM SCREEN -->
+        <div id="quiz-screen" class="hidden flex-grow flex flex-col lg:flex-row gap-6 items-start">
+            
+            <!-- Left: Clinical Case Vignette & Options Column -->
+            <div class="flex-grow flex flex-col space-y-5 w-full bg-slate-900/70 border border-slate-800 rounded-2xl p-5 sm:p-7 shadow-xl backdrop-blur-sm">
+                
+                <!-- Metadata Subheader (AMBOSS style) -->
+                <div class="flex flex-wrap justify-between items-center pb-3 border-b border-slate-800 gap-2">
+                    <div class="flex flex-wrap items-center gap-2 text-xs font-semibold">
+                        <span id="q-tag-branch" class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 px-2.5 py-1 rounded-md uppercase tracking-wide">Branch</span>
+                        <span id="q-tag-subtype" class="bg-slate-800 text-slate-300 border border-slate-700 px-2.5 py-1 rounded-md">Subtype</span>
                     </div>
-                    <button id="flag-btn" onclick="toggleFlag()" class="text-sm flex items-center gap-2 text-slate-400 hover:text-amber-500 transition font-medium"><i class="fa-regular fa-bookmark"></i> <span>Flag Question</span></button>
+                    
+                    <button id="flag-btn" onclick="toggleFlag()" class="text-xs flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 text-slate-400 hover:text-amber-400 hover:border-amber-500/50 transition font-semibold">
+                        <i class="fa-regular fa-bookmark"></i> <span>Flag Question</span>
+                    </button>
                 </div>
-                <h3 class="text-xs font-bold text-slate-400 tracking-wider">QUESTION <span id="q-current-num">1</span> OF <span id="q-total-num">30</span></h3>
-                <p id="q-text" class="text-lg leading-relaxed font-medium">Loading...</p>
-                <div id="q-options" class="space-y-2 mt-4"></div>
-                <div id="explanation-box" class="hidden mt-6 bg-slate-800 border-l-4 border-emerald-500 rounded-r-xl p-5 space-y-3 shadow-lg transition-colors duration-300">
-                    <h4 class="font-bold text-emerald-500 flex items-center gap-2"><i class="fa-solid fa-book-medical"></i> Educational Objective</h4>
-                    <div id="exp-text" class="text-sm leading-relaxed"></div>
+
+                <!-- Question Vignette Header -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Item <span id="q-current-num" class="text-indigo-400">1</span> of <span id="q-total-num">30</span>
+                        </h3>
+                    </div>
+                    <p id="q-text" class="text-base sm:text-lg leading-relaxed text-slate-100 font-medium">Loading clinical question...</p>
                 </div>
-                <div class="mt-auto pt-6 flex flex-wrap justify-between items-center gap-2">
-                    <button onclick="navigate(-1)" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 px-5 py-2.5 rounded-lg text-sm transition font-medium">Previous</button>
+
+                <!-- Answer Choices (Rendered dynamically) -->
+                <div id="q-options" class="space-y-2.5 pt-2"></div>
+
+                <!-- Educational Objective / Explanation Card (UWorld Style) -->
+                <div id="explanation-box" class="hidden mt-6 bg-slate-950/80 border-l-4 border-emerald-500 rounded-r-xl border border-y-slate-800 border-r-slate-800 p-5 space-y-3.5 shadow-xl transition-all">
+                    <div class="flex items-center gap-2 pb-2 border-b border-slate-800/80">
+                        <span class="p-1.5 bg-emerald-500/20 text-emerald-400 rounded-md text-xs"><i class="fa-solid fa-book-medical"></i></span>
+                        <h4 class="font-bold text-emerald-400 text-sm tracking-wide uppercase">Educational Objective & Explanation</h4>
+                    </div>
+                    <div id="exp-text" class="text-sm leading-relaxed text-slate-200"></div>
+                </div>
+
+                <!-- Sticky Bottom Navigation Controls -->
+                <div class="mt-auto pt-6 border-t border-slate-800 flex flex-wrap justify-between items-center gap-2">
+                    <button onclick="navigate(-1)" class="bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 text-slate-200 px-5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-left text-xs"></i> Previous
+                    </button>
                     
                     <div class="flex items-center gap-2">
-                        <button id="edit-q-btn" onclick="openEditModal()" class="hidden text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-500 font-bold border border-amber-500/40 px-4 py-2.5 rounded-lg transition items-center gap-2"><i class="fa-solid fa-pen"></i> Edit</button>
-                        <!-- Exclusive Delete Button for Super Admin -->
-                        <button id="delete-q-btn" onclick="deleteCurrentQuestionFromCloud()" class="hidden text-xs bg-rose-600/20 hover:bg-rose-600/30 text-rose-500 font-bold border border-rose-500/40 px-4 py-2.5 rounded-lg transition items-center gap-2"><i class="fa-solid fa-trash-can"></i> Delete from Cloud</button>
+                        <button id="edit-q-btn" onclick="openEditModal()" class="hidden text-xs bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-bold border border-amber-500/40 px-3.5 py-2 rounded-xl transition items-center gap-1.5">
+                            <i class="fa-solid fa-pen-to-square"></i> Edit
+                        </button>
+                        <button id="delete-q-btn" onclick="deleteCurrentQuestionFromCloud()" class="hidden text-xs bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 font-bold border border-rose-500/40 px-3.5 py-2 rounded-xl transition items-center gap-1.5">
+                            <i class="fa-solid fa-trash-can"></i> Delete
+                        </button>
                     </div>
 
-                    <button onclick="navigate(1)" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-8 py-2.5 rounded-lg text-sm transition">Next</button>
+                    <button onclick="navigate(1)" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-semibold px-7 py-2 rounded-xl text-xs sm:text-sm transition flex items-center gap-2 shadow-sm">
+                        Next <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
                 </div>
             </div>
+
+            <!-- Right: Item Matrix & Scorecard (UWorld Navigator Sidebar) -->
             <div class="w-full lg:w-80 flex-shrink-0 space-y-4">
-                <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg sticky top-20 transition-colors duration-300">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-sm flex items-center gap-2"><i class="fa-solid fa-border-all text-blue-500"></i> Question Matrix</h3>
-                        <span id="answered-count" class="text-xs text-slate-400">0 / 30 Answered</span>
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl sticky top-20 transition-colors duration-200">
+                    <div class="flex justify-between items-center pb-3 border-b border-slate-800 mb-3">
+                        <h3 class="font-bold text-xs uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                            <i class="fa-solid fa-table-cells-large text-indigo-400"></i> Question Matrix
+                        </h3>
+                        <span id="answered-count" class="text-xs font-mono text-slate-400">0 / 30 Answered</span>
                     </div>
-                    <div class="grid grid-cols-2 gap-2 text-xs text-slate-400 mb-4">
-                        <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-slate-500"></span> Unanswered</div>
-                        <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Correct</div>
-                        <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-rose-500"></span> Incorrect</div>
-                        <div class="flex items-center gap-1"><i class="fa-solid fa-bookmark text-amber-500 text-[10px]"></i> Flagged</div>
+
+                    <!-- Legend -->
+                    <div class="grid grid-cols-2 gap-2 text-[11px] font-medium text-slate-400 mb-4 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
+                        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm border border-slate-600 bg-slate-900"></span> Unanswered</div>
+                        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-600"></span> Correct</div>
+                        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-rose-600"></span> Incorrect</div>
+                        <div class="flex items-center gap-1.5"><i class="fa-solid fa-bookmark text-amber-500 text-[10px]"></i> Flagged</div>
                     </div>
-                    <div id="matrix-grid" class="flex flex-wrap gap-1.5 justify-start"></div>
+
+                    <!-- Button Grid -->
+                    <div id="matrix-grid" class="flex flex-wrap gap-1.5 justify-start max-h-[380px] overflow-y-auto pr-1"></div>
                 </div>
             </div>
         </div>
 
         <!-- Student Login/Signup Modal -->
-        <div id="student-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div class="bg-slate-800 border border-indigo-500/40 rounded-2xl p-6 w-full max-w-sm shadow-2xl space-y-4">
-                <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-                    <h3 class="text-base font-bold text-indigo-400 flex items-center gap-2"><i class="fa-solid fa-user-graduate"></i> Student Account</h3>
-                    <button onclick="closeStudentModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+        <div id="student-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div class="bg-slate-900 border border-indigo-500/30 rounded-2xl p-6 w-full max-w-sm shadow-2xl space-y-4 relative">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <h3 class="text-sm font-bold text-indigo-400 flex items-center gap-2 uppercase tracking-wide">
+                        <i class="fa-solid fa-user-graduate"></i> Student Account
+                    </h3>
+                    <button onclick="closeStudentModal()" class="text-slate-400 hover:text-slate-200 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
                 </div>
-                <p class="text-xs text-slate-400 text-center">Sign up or login to save your progress.</p>
+                <p class="text-xs text-slate-400">Sign in or create a student account to sync your analytics and bookmarks across sessions.</p>
                 <div class="space-y-3">
-                    <input type="text" id="student-email" placeholder="Username (e.g. ahmed123)" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
-                    <input type="password" id="student-password" placeholder="Password (Min 6 chars)" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
+                    <input type="text" id="student-email" placeholder="Username (e.g. ahmed123)" class="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-slate-200">
+                    <input type="password" id="student-password" placeholder="Password (Min 6 characters)" class="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-slate-200">
                     <div class="flex gap-2 pt-2">
-                        <button id="student-login-btn" onclick="studentLogin()" class="w-1/2 bg-indigo-600 hover:bg-indigo-500 font-bold py-2.5 rounded-xl text-white transition text-sm">Login</button>
-                        <button id="student-signup-btn" onclick="studentSignup()" class="w-1/2 bg-emerald-600 hover:bg-emerald-500 font-bold py-2.5 rounded-xl text-white transition text-sm">Sign Up</button>
+                        <button id="student-login-btn" onclick="studentLogin()" class="w-1/2 bg-indigo-600 hover:bg-indigo-500 font-bold py-2.5 rounded-xl text-white transition text-xs tracking-wider uppercase shadow">Login</button>
+                        <button id="student-signup-btn" onclick="studentSignup()" class="w-1/2 bg-emerald-600 hover:bg-emerald-500 font-bold py-2.5 rounded-xl text-white transition text-xs tracking-wider uppercase shadow">Sign Up</button>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Admin Login Modal -->
-        <div id="login-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div class="bg-slate-800 border border-amber-500/40 rounded-2xl p-6 w-full max-w-sm shadow-2xl space-y-4">
-                <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-                    <h3 class="text-base font-bold text-amber-500 flex items-center gap-2"><i class="fa-solid fa-lock"></i> Admin Login</h3>
-                    <button onclick="closeLoginModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+        <div id="login-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div class="bg-slate-900 border border-amber-500/40 rounded-2xl p-6 w-full max-w-sm shadow-2xl space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <h3 class="text-sm font-bold text-amber-500 flex items-center gap-2 uppercase tracking-wide">
+                        <i class="fa-solid fa-shield-halved"></i> Faculty & Admin Login
+                    </h3>
+                    <button onclick="closeLoginModal()" class="text-slate-400 hover:text-slate-200 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
                 </div>
                 <div class="space-y-3">
-                    <input type="email" id="admin-email" placeholder="Admin Email / Username" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl text-sm focus:outline-none focus:border-amber-500">
-                    <input type="password" id="admin-password" placeholder="Password" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl text-sm focus:outline-none focus:border-amber-500">
-                    <button id="login-submit-btn" onclick="submitLogin()" class="w-full bg-amber-600 hover:bg-amber-500 font-bold py-3 rounded-xl text-white transition">Login</button>
+                    <input type="email" id="admin-email" placeholder="Admin Email / Username" class="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-sm focus:outline-none focus:border-amber-500 text-slate-200">
+                    <input type="password" id="admin-password" placeholder="Password" class="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-sm focus:outline-none focus:border-amber-500 text-slate-200">
+                    <button id="login-submit-btn" onclick="submitLogin()" class="w-full bg-amber-600 hover:bg-amber-500 font-bold py-2.5 rounded-xl text-white transition text-xs uppercase tracking-wider shadow">Authenticate</button>
                 </div>
             </div>
         </div>
 
         <!-- Cloud Admin Database Tools -->
-        <div id="cloud-admin-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div class="bg-slate-800 border border-indigo-500/40 rounded-2xl p-6 w-full max-w-3xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-                <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-                    <h3 class="text-base font-bold text-indigo-400 flex items-center gap-2"><i class="fa-solid fa-cloud-arrow-up"></i> Cloud Database Dashboard</h3>
-                    <button onclick="closeCloudAdmin()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+        <div id="cloud-admin-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div class="bg-slate-900 border border-indigo-500/40 rounded-2xl p-6 w-full max-w-3xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <h3 class="text-sm font-bold text-indigo-400 flex items-center gap-2 uppercase tracking-wide">
+                        <i class="fa-solid fa-database"></i> Cloud Database Operations
+                    </h3>
+                    <button onclick="closeCloudAdmin()" class="text-slate-400 hover:text-slate-200 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
                 </div>
-                <div class="bg-slate-900 border border-slate-700 p-4 rounded-xl mb-4">
-                    <h4 class="font-bold text-sm text-emerald-400 mb-2">1. Paste JSON Directly</h4>
-                    <textarea id="bulk-json-text" class="w-full bg-slate-800 border border-slate-600 p-3 rounded-lg text-sm text-slate-300 h-32 font-mono mb-3 focus:border-emerald-500 focus:outline-none" placeholder="Paste the JSON code here..."></textarea>
-                    <button id="paste-upload-btn" onclick="uploadPastedJSON()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl transition"> Upload Pasted Data </button>
+                <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-2">
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-emerald-400">1. Paste Direct JSON Array</h4>
+                    <textarea id="bulk-json-text" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-lg text-xs text-slate-200 h-32 font-mono focus:border-emerald-500 focus:outline-none" placeholder="Paste questions JSON array [ { ... } ] here..."></textarea>
+                    <button id="paste-upload-btn" onclick="uploadPastedJSON()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl transition text-xs uppercase tracking-wider"> Upload Pasted Data </button>
                 </div>
-                <div class="bg-slate-900 border border-slate-700 p-4 rounded-xl mb-4">
-                    <h4 class="font-bold text-sm text-indigo-400 mb-2">2. Or Upload JSON File</h4>
-                    <input type="file" id="bulk-file-input" accept=".json" class="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 mb-3"/>
-                    <button id="file-upload-btn" onclick="uploadBulkJSON()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl transition"> Upload File </button>
+                <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-2">
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-indigo-400">2. Or Upload JSON File</h4>
+                    <input type="file" id="bulk-file-input" accept=".json" class="block w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer"/>
+                    <button id="file-upload-btn" onclick="uploadBulkJSON()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl transition text-xs uppercase tracking-wider"> Upload File </button>
                 </div>
-                <div class="bg-slate-900 border border-rose-900/50 p-4 rounded-xl mb-2">
-                    <h4 class="font-bold text-sm text-rose-500 mb-1"><i class="fa-solid fa-broom"></i> Clean Duplicate Questions</h4>
-                    <p class="text-xs text-slate-400 mb-3">Checks for 4 exact matches: Subject + Branch + Subtype + Question. Keeps 1, deletes the rest.</p>
-                    <button id="clean-dup-btn" onclick="removeDuplicates()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-xl transition"> Scan & Remove Duplicates </button>
+                <div class="bg-slate-950 border border-rose-900/50 p-4 rounded-xl space-y-2">
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-rose-400 flex items-center gap-1.5"><i class="fa-solid fa-broom"></i> Deduplicate Repository</h4>
+                    <p class="text-xs text-slate-400">Checks for 4-factor exact duplicates (Subject + Branch + Subtype + Vignette). Retains the master copy and removes redundant entries.</p>
+                    <button id="clean-dup-btn" onclick="removeDuplicates()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-xl transition text-xs uppercase tracking-wider"> Scan & Deduplicate </button>
                 </div>
             </div>
         </div>
 
         <!-- Super Admin Activity Review Modal -->
-        <div id="activity-log-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div class="bg-slate-800 border border-amber-500/40 rounded-2xl p-6 w-full max-w-3xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-                <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-                    <h3 class="text-base font-bold text-amber-500 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left"></i> Admin Upload Activity Log</h3>
-                    <button onclick="closeActivityLogModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+        <div id="activity-log-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div class="bg-slate-900 border border-amber-500/40 rounded-2xl p-6 w-full max-w-3xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <h3 class="text-sm font-bold text-amber-500 flex items-center gap-2 uppercase tracking-wide">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Faculty Upload Activity Log
+                    </h3>
+                    <button onclick="closeActivityLogModal()" class="text-slate-400 hover:text-slate-200 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
                 </div>
-                <div id="activity-log-list" class="space-y-3 text-sm">
+                <div id="activity-log-list" class="space-y-2.5 text-xs">
                     <p class="text-slate-400 text-center py-4">Loading upload history...</p>
                 </div>
             </div>
         </div>
 
-        <div id="edit-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div class="bg-slate-800 border border-amber-500/40 rounded-2xl p-6 w-full max-w-3xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-                <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-                    <h3 class="text-base font-bold text-amber-500 flex items-center gap-2"><i class="fa-solid fa-pen-to-square"></i> Edit Question Data</h3>
-                    <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+        <!-- In-Exam Question Editor Modal -->
+        <div id="edit-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div class="bg-slate-900 border border-amber-500/40 rounded-2xl p-6 w-full max-w-3xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <h3 class="text-sm font-bold text-amber-500 flex items-center gap-2 uppercase tracking-wide">
+                        <i class="fa-solid fa-pen-to-square"></i> Modify Case Vignette & Keys
+                    </h3>
+                    <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-200 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
                 </div>
                 <div class="space-y-3">
-                    <textarea id="edit-q-text" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl text-sm h-24"></textarea>
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-400 block mb-1">Clinical Vignette Question:</label>
+                        <textarea id="edit-q-text" class="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-xs sm:text-sm h-24 focus:outline-none focus:border-amber-500 text-slate-200"></textarea>
+                    </div>
                     <div id="edit-options-container" class="space-y-2"></div>
-                    <textarea id="edit-exp-text" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl text-sm h-24"></textarea>
-                    <button onclick="saveQuestionEdits()" class="w-full bg-amber-600 font-bold py-3 rounded-xl text-white">Save Changes</button>
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-400 block mb-1">Educational Objective & Analysis (Plain text or HTML/JSON):</label>
+                        <textarea id="edit-exp-text" class="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-xs sm:text-sm h-28 focus:outline-none focus:border-amber-500 text-slate-200 font-mono"></textarea>
+                    </div>
+                    <button onclick="saveQuestionEdits()" class="w-full bg-amber-600 hover:bg-amber-500 font-bold py-2.5 rounded-xl text-white transition text-xs uppercase tracking-wider">Save & Push Changes</button>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Sadaqah Jariyah Footer -->
-    <footer class="bg-slate-800/80 border-t border-slate-700 py-6 mt-auto text-center text-sm text-slate-400 transition-colors duration-300">
-        <div class="max-w-7xl mx-auto px-4 space-y-2">
+    <!-- Sadaqah Jariyah Dedicated Footer -->
+    <footer class="bg-slate-900 border-t border-slate-800/80 py-5 mt-auto text-center text-xs text-slate-400 transition-colors duration-200">
+        <div class="max-w-7xl mx-auto px-4 space-y-1">
             <p class="font-medium text-slate-300">
                 🤍 Dedicated as an ongoing charity (Sadaqah Jariyah) for the soul of my aunt.
             </p>
-            <p class="text-xs text-slate-400">
-                Please keep her in your prayers for mercy and forgiveness.
+            <p class="text-[11px] text-slate-500">
+                Please keep her in your prayers for mercy, peace, and eternal forgiveness.
             </p>
         </div>
     </footer>
@@ -821,78 +1093,4 @@
 
             try {
                 const { collection, getDocs } = window.firestoreTools;
-                const querySnapshot = await getDocs(collection(window.db, "activity_logs"));
-                
-                if (querySnapshot.empty) {
-                    listContainer.innerHTML = '<p class="text-slate-400 text-center py-4">No admin upload activities recorded yet.</p>';
-                    return;
-                }
-
-                let logs = [];
-                querySnapshot.forEach(doc => logs.push({ id: doc.id, ...doc.data() }));
-                
-                listContainer.innerHTML = '';
-                logs.reverse().forEach(log => {
-                    const dateStr = log.timestamp ? new Date(log.timestamp.toDate()).toLocaleString() : "Recently";
-                    listContainer.innerHTML += `
-                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-700 flex justify-between items-center">
-                            <div>
-                                <span class="font-bold text-amber-400">${log.adminName}</span> uploaded <span class="font-bold text-emerald-400">${log.count} questions</span> 
-                                <span class="text-xs text-slate-400">(${log.subject})</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <span class="text-xs text-slate-500">${dateStr}</span>
-                                <button onclick="deleteBatchQuestions('${log.id}', '${log.subject}', ${log.count})" class="text-xs bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white px-2.5 py-1.5 rounded-lg border border-rose-500/30 transition flex items-center gap-1">
-                                    <i class="fa-solid fa-trash-can"></i> <span class="hidden sm:inline">Delete Batch</span>
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                });
-            } catch(e) {
-                listContainer.innerHTML = '<p class="text-rose-400 text-center py-4">Error loading activity log.</p>';
-            }
-        }
-
-        async function deleteBatchQuestions(logId, subject, count) {
-            if (!confirm(`Are you sure you want to completely delete this batch (${count} questions)?`)) return;
-            
-            try {
-                const { collection, getDocs, query, where, deleteDoc, doc } = window.firestoreTools;
-                
-                const qSnap = await getDocs(query(collection(window.db, "questions"), where("subject", "==", subject)));
-                
-                let deleted = 0;
-                for (const docSnap of qSnap.docs) {
-                    if (deleted < count) {
-                        await deleteDoc(doc(window.db, "questions", docSnap.id));
-                        deleted++;
-                    }
-                }
-                
-                await deleteDoc(doc(window.db, "activity_logs", logId));
-                
-                alert("Batch and corresponding activity log deleted successfully!");
-                openActivityLogModal();
-                initCloudSync();
-            } catch(err) {
-                alert("Error deleting batch: " + err.message);
-            }
-        }
-
-        function closeActivityLogModal() { document.getElementById('activity-log-modal').classList.add('hidden'); }
-
-        window.onload = initApp;
-    </script>
-
-    <!-- Register PWA Service Worker -->
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
-      }
-    </script>
-
-    <!-- Student Features Logic Link -->
-    <script src="student-features.js"></script>
-</body>
-</html>
+                const querySnapshot = await getDocs(c
