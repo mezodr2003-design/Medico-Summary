@@ -6,7 +6,6 @@
     <title>Medico Summary - Pro QBank</title>
     <link rel="icon" type="image/png" href="logo.png">
     
-    <!-- PWA Settings -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,7 +13,6 @@
     <meta name="apple-mobile-web-app-title" content="Medico Summary">
     <link rel="apple-touch-icon" href="logo.png">
 
-    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -31,20 +29,13 @@
                         mono: ['JetBrains Mono', 'monospace'],
                     },
                     colors: {
-                        clinical: {
-                            50: '#f8fafc',
-                            100: '#f1f5f9',
-                            800: '#1e293b',
-                            900: '#0f172a',
-                            950: '#020617'
-                        }
+                        clinical: { 50: '#f8fafc', 100: '#f1f5f9', 800: '#1e293b', 900: '#0f172a', 950: '#020617' }
                     }
                 }
             }
         }
     </script>
     
-    <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc, arrayUnion, serverTimestamp, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -70,19 +61,13 @@
     </script>
 
     <style>
-        /* Matrix Grid (AMBOSS / UWorld Exam Navigation Palette) */
-        .q-matrix-btn {
-            width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center;
-            font-size: 0.75rem; font-weight: 700; border-radius: 6px; border: 1px solid #334155;
-            background: #0f172a; color: #94a3b8; position: relative; user-select: none; transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        .q-matrix-btn { width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #94a3b8; position: relative; user-select: none; transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1); }
         .q-matrix-btn:hover { border-color: #64748b; color: #f8fafc; transform: translateY(-1px); }
         .q-matrix-btn.active { border-color: #6366f1 !important; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.4), inset 0 0 0 1px #6366f1; color: #ffffff !important; font-weight: 800; }
         .q-matrix-btn.correct { background-color: #059669 !important; border-color: #047857 !important; color: #ffffff !important; }
         .q-matrix-btn.incorrect { background-color: #e11d48 !important; border-color: #be123c !important; color: #ffffff !important; }
         .flag-marker { position: absolute; top: -3px; right: -2px; color: #f59e0b; font-size: 0.68rem; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.8)); }
         
-        /* Multiple Choice Options - Clinical Exam Styling */
         .option-btn { transition: all 0.15s ease-in-out; border: 1.5px solid #334155; background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); }
         .option-btn:hover:not(:disabled) { background-color: #1e293b; border-color: #6366f1; transform: translateX(2px); }
         .option-btn:focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; }
@@ -90,7 +75,6 @@
         .option-btn.selected-incorrect { background-color: rgba(225, 29, 72, 0.15) !important; border-color: #e11d48 !important; color: #fb7185 !important; }
         .option-btn.actual-correct { border-color: #059669 !important; box-shadow: inset 0 0 0 1px #059669; }
         
-        /* Educational Objective Render Area (HTML Support) */
         #exp-text p { margin-bottom: 0.75rem; line-height: 1.65; }
         #exp-text ul, #exp-text ol { margin: 0.5rem 0 0.75rem 1.25rem; }
         #exp-text ul { list-style-type: disc; }
@@ -102,13 +86,11 @@
         #exp-text strong, #exp-text b { color: #f8fafc; font-weight: 700; }
         #exp-text em, #exp-text i { font-style: italic; }
 
-        /* Scrollbar Styling */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
         ::-webkit-scrollbar-thumb { background: #475569; border-radius: 9999px; }
         ::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
-        /* THEME: Eyecare (Sepia / Warm Clinical Reader) */
         .theme-eyecare { background-color: #f4ebd9 !important; color: #2e2417 !important; }
         .theme-eyecare header, .theme-eyecare footer, .theme-eyecare .bg-slate-800 { background-color: #e7dbbf !important; border-color: #d4c29d !important; color: #2e2417 !important; }
         .theme-eyecare select, .theme-eyecare input, .theme-eyecare textarea, .theme-eyecare .bg-slate-900, .theme-eyecare .bg-slate-900\/50, .theme-eyecare .bg-slate-900\/60, .theme-eyecare .bg-slate-900\/80, .theme-eyecare .bg-slate-950 { background-color: #faf5eb !important; border-color: #d4c29d !important; color: #2e2417 !important; }
@@ -122,7 +104,6 @@
         .theme-eyecare #exp-text th { background: #dfd1b2 !important; color: #2e2417 !important; }
         .theme-eyecare #exp-text td, .theme-eyecare #exp-text th { border-color: #cbb993 !important; }
 
-        /* THEME: Light (AMBOSS Clinical White Mode) */
         .theme-light { background-color: #f8fafc !important; color: #0f172a !important; }
         .theme-light header, .theme-light footer, .theme-light .bg-slate-800 { background-color: #ffffff !important; border-color: #e2e8f0 !important; color: #0f172a !important; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04); }
         .theme-light select, .theme-light input, .theme-light textarea, .theme-light .bg-slate-900, .theme-light .bg-slate-900\/50, .theme-light .bg-slate-900\/60, .theme-light .bg-slate-900\/80, .theme-light .bg-slate-950 { background-color: #f1f5f9 !important; border-color: #cbd5e1 !important; color: #0f172a !important; }
@@ -147,13 +128,10 @@
 
     <div id="print-area" class="hidden"></div>
 
-    <!-- Exam-grade App Bar -->
     <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 transition-colors duration-200 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex justify-between items-center gap-3">
-            <!-- Brand Badge -->
             <div class="flex items-center gap-3 cursor-pointer group" onclick="goHome()">
                 <div class="relative">
-                    <!-- رجعنا ستايل اللوجو الدائري الأصلي -->
                     <img src="logo.png" alt="Logo" class="w-9 h-9 rounded-full object-cover ring-1 ring-slate-700 shadow-inner group-hover:ring-indigo-500 transition" onerror="this.src='https://via.placeholder.com/36/4f46e5/ffffff?text=MS'">
                     <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-slate-900"></span>
                 </div>
@@ -166,7 +144,6 @@
                 </div>
             </div>
 
-            <!-- Central & Action Controls -->
             <div class="flex items-center gap-2 sm:gap-3">
                 <div class="hidden sm:flex items-center bg-slate-950/70 p-0.5 rounded-lg border border-slate-800 text-xs">
                     <button onclick="setTheme('dark')" title="AMBOSS Dark" class="px-2 py-1 rounded-md text-slate-400 hover:text-indigo-400 hover:bg-slate-800/80 transition"><i class="fa-solid fa-moon"></i></button>
@@ -206,19 +183,17 @@
 
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex flex-col">
         
-        <!-- DASHBOARD / BLOCK GENERATOR SCREEN -->
         <div id="dashboard-screen" class="max-w-4xl mx-auto w-full py-4 space-y-6">
             
             <div id="cloud-tools-btn" class="hidden flex flex-col sm:flex-row gap-3">
                 <button onclick="openCloudAdmin()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-5 rounded-xl transition shadow flex items-center gap-2 justify-center text-sm">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> Cloud Database Tools (Add / Clean)
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Cloud Database Tools
                 </button>
                 <button id="super-admin-activity-btn" onclick="openActivityLogModal()" class="hidden bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 px-5 rounded-xl transition shadow flex items-center gap-2 justify-center text-sm whitespace-nowrap">
                     <i class="fa-solid fa-clock-rotate-left"></i> Review Admin Uploads
                 </button>
             </div>
 
-            <!-- Clinical Block Builder Card -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6 transition-colors duration-200">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-800 gap-2">
                     <div>
@@ -228,7 +203,14 @@
                         </div>
                         <p class="text-xs sm:text-sm text-slate-400 mt-1">Configure your clinical case simulator parameters.</p>
                     </div>
-                    <!-- تم حذف شارة Step 1,2,3 من هنا بناءً على طلبك -->
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">Global Search</label>
+                    <div class="relative">
+                        <input type="text" id="search-bar" onkeyup="updateAvailableCount()" placeholder="Search keywords in questions or explanations..." class="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-slate-200 pl-10 transition">
+                        <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-500 text-sm pointer-events-none"></i>
+                    </div>
                 </div>
                 
                 <div>
@@ -319,9 +301,7 @@
             </div>
         </div>
 
-        <!-- CLINICAL SIMULATOR EXAM SCREEN -->
         <div id="quiz-screen" class="hidden flex-grow flex flex-col lg:flex-row gap-6 items-start">
-            
             <div class="flex-grow flex flex-col space-y-5 w-full bg-slate-900/70 border border-slate-800 rounded-2xl p-5 sm:p-7 shadow-xl backdrop-blur-sm">
                 <div class="flex flex-wrap justify-between items-center pb-3 border-b border-slate-800 gap-2">
                     <div class="flex flex-wrap items-center gap-2 text-xs font-semibold">
@@ -381,7 +361,6 @@
             </div>
         </div>
 
-        <!-- Student Login/Signup Modal -->
         <div id="student-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-indigo-500/30 rounded-2xl p-6 w-full max-w-sm shadow-2xl space-y-4 relative">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -400,7 +379,6 @@
             </div>
         </div>
 
-        <!-- Admin Login Modal -->
         <div id="login-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-amber-500/40 rounded-2xl p-6 w-full max-w-sm shadow-2xl space-y-4">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -415,7 +393,6 @@
             </div>
         </div>
 
-        <!-- Cloud Admin Database Tools -->
         <div id="cloud-admin-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-indigo-500/40 rounded-2xl p-6 w-full max-w-3xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -440,20 +417,33 @@
             </div>
         </div>
 
-        <!-- Super Admin Activity Review Modal -->
         <div id="activity-log-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-            <div class="bg-slate-900 border border-amber-500/40 rounded-2xl p-6 w-full max-w-3xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                    <h3 class="text-sm font-bold text-amber-500 flex items-center gap-2 uppercase tracking-wide"><i class="fa-solid fa-clock-rotate-left"></i> Faculty Upload Activity Log</h3>
+            <div class="bg-slate-900 border border-amber-500/40 rounded-2xl p-6 w-full max-w-4xl shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3 shrink-0">
+                    <h3 class="text-sm font-bold text-amber-500 flex items-center gap-2 uppercase tracking-wide"><i class="fa-solid fa-clock-rotate-left"></i> Review Admin Uploads</h3>
                     <button onclick="closeActivityLogModal()" class="text-slate-400 hover:text-slate-200 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
                 </div>
-                <div id="activity-log-list" class="space-y-2.5 text-xs">
-                    <p class="text-slate-400 text-center py-4">Loading upload history...</p>
+                
+                <div class="flex-grow overflow-y-auto space-y-6 pr-2">
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-3 border-b border-slate-800 pb-2"><i class="fa-solid fa-clock"></i> Active Pending Uploads</h4>
+                        <p class="text-[10px] text-slate-500 mb-2">Check (✓) to safely isolate a batch and prevent deletion. Cross (✗) to permanently delete.</p>
+                        <div id="activity-log-list" class="space-y-2.5 text-xs">
+                            <p class="text-slate-400 text-center py-4">Loading active uploads...</p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-3 border-b border-slate-800 pb-2"><i class="fa-solid fa-shield"></i> Isolated (Safe) Uploads</h4>
+                        <p class="text-[10px] text-slate-500 mb-2">These batches are protected from accidental deletion. You can restore them to active status.</p>
+                        <div id="isolated-log-list" class="space-y-2.5 text-xs">
+                            <p class="text-slate-400 text-center py-4">No isolated uploads.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- In-Exam Question Editor Modal -->
         <div id="edit-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-amber-500/40 rounded-2xl p-6 w-full max-w-3xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -461,6 +451,25 @@
                     <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-200 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
                 </div>
                 <div class="space-y-3">
+                    
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-3">
+                        <label class="text-[11px] font-bold text-emerald-400 uppercase tracking-widest block"><i class="fa-solid fa-tags"></i> Taxonomy Metadata</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div><label class="text-[10px] text-slate-400 block mb-1">Subject</label><input type="text" id="edit-q-subject" class="w-full bg-slate-900 border border-slate-700 p-2 rounded-lg text-xs text-slate-200"></div>
+                            <div><label class="text-[10px] text-slate-400 block mb-1">Branch</label><input type="text" id="edit-q-branch" class="w-full bg-slate-900 border border-slate-700 p-2 rounded-lg text-xs text-slate-200"></div>
+                            <div><label class="text-[10px] text-slate-400 block mb-1">Subtype</label><input type="text" id="edit-q-subtype" class="w-full bg-slate-900 border border-slate-700 p-2 rounded-lg text-xs text-slate-200"></div>
+                            <div><label class="text-[10px] text-slate-400 block mb-1">Source</label><input type="text" id="edit-q-source" class="w-full bg-slate-900 border border-slate-700 p-2 rounded-lg text-xs text-slate-200"></div>
+                        </div>
+                        
+                        <div class="mt-3 pt-3 border-t border-slate-800">
+                            <label class="text-[11px] font-bold text-amber-400 uppercase tracking-widest block mb-2"><i class="fa-solid fa-sliders"></i> Apply Metadata Changes To:</label>
+                            <div class="flex gap-4">
+                                <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer"><input type="radio" name="edit-scope" value="single" checked class="accent-amber-500"> This specific question only</label>
+                                <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer"><input type="radio" name="edit-scope" value="all" class="accent-amber-500"> Entire active block currently loaded</label>
+                            </div>
+                        </div>
+                    </div>
+
                     <div>
                         <label class="text-[11px] font-semibold text-slate-400 block mb-1">Clinical Vignette Question:</label>
                         <textarea id="edit-q-text" class="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-xs sm:text-sm h-24 focus:outline-none focus:border-amber-500 text-slate-200"></textarea>
@@ -476,7 +485,6 @@
         </div>
     </main>
 
-    <!-- Sadaqah Jariyah Dedicated Footer -->
     <footer class="bg-slate-900 border-t border-slate-800/80 py-5 mt-auto text-center text-xs text-slate-400 transition-colors duration-200">
         <div class="max-w-7xl mx-auto px-4 space-y-1">
             <p class="font-medium text-slate-300">🤍 Dedicated as an ongoing charity (Sadaqah Jariyah) for the soul of my aunt.</p>
@@ -484,21 +492,16 @@
         </div>
     </footer>
 
-    <!-- Include external admin list and data -->
     <script src="admins.js" onerror="console.log('No admins.js found, defaulting to primary admin.')"></script>
     <script src="data.js" onerror="console.log('No local data.js found.')"></script>
 
-    <!-- Main Logic Script (Restored completely) -->
     <script>
         const SUPER_ADMIN_EMAIL = window.SUPER_ADMIN_EMAIL || "naheha1614@ensproxy.com";
         const ADMIN_EMAILS = window.ALLOWED_ADMIN_EMAILS || [SUPER_ADMIN_EMAIL];
         
-        let isAdmin = false;
-        let isSuperAdmin = false;
-        let allQuestions = []; 
+        let isAdmin = false; let isSuperAdmin = false; let allQuestions = []; 
         let userStats = JSON.parse(localStorage.getItem('medico_stats')) || { correct: [], incorrect: [], flagged: [] };
         if(!userStats.correct) userStats.correct = [];
-        
         let activeBlock = []; let currentIdx = 0; let blockState = []; let testMode = 'tutor'; let timerInterval; let timeRemaining = 0;
 
         function setTheme(mode) {
@@ -547,9 +550,7 @@
 
         function initApp() { 
             const savedTheme = localStorage.getItem('medico_theme') || 'dark'; 
-            setTheme(savedTheme); 
-            initCloudSync(); 
-            restoreSession(); 
+            setTheme(savedTheme); initCloudSync(); restoreSession(); 
             
             const checkAuth = setInterval(() => {
                 if (window.authTools && window.firebaseAuth) {
@@ -565,52 +566,32 @@
 
                         if (user) {
                             if (ADMIN_EMAILS.includes(user.email)) {
-                                isAdmin = true;
-                                isSuperAdmin = (user.email === SUPER_ADMIN_EMAIL);
-
+                                isAdmin = true; isSuperAdmin = (user.email === SUPER_ADMIN_EMAIL);
                                 adminBtnText.innerText = isSuperAdmin ? "Super Admin Active" : "Admin Active";
-                                cloudToolsBtn.classList.remove('hidden');
-                                studentAuthBtn.classList.add('hidden'); 
-                                
-                                if(isSuperAdmin) {
-                                    superAdminActivityBtn.classList.remove('hidden');
-                                }
-
+                                cloudToolsBtn.classList.remove('hidden'); studentAuthBtn.classList.add('hidden'); 
+                                if(isSuperAdmin) { superAdminActivityBtn.classList.remove('hidden'); }
                                 if(!document.getElementById('quiz-screen').classList.contains('hidden')) {
-                                    editQBtn.classList.remove('hidden');
-                                    editQBtn.classList.add('flex');
-                                    if(isSuperAdmin) {
-                                        deleteQBtn.classList.remove('hidden');
-                                        deleteQBtn.classList.add('flex');
-                                    }
+                                    editQBtn.classList.remove('hidden'); editQBtn.classList.add('flex');
+                                    if(isSuperAdmin) { deleteQBtn.classList.remove('hidden'); deleteQBtn.classList.add('flex'); }
                                 }
                             } else {
                                 isAdmin = false; isSuperAdmin = false;
-                                adminBtnText.innerText = "Admin Access";
-                                cloudToolsBtn.classList.add('hidden');
+                                adminBtnText.innerText = "Admin Access"; cloudToolsBtn.classList.add('hidden');
                                 editQBtn.classList.add('hidden'); editQBtn.classList.remove('flex');
                                 deleteQBtn.classList.add('hidden'); deleteQBtn.classList.remove('flex');
                                 superAdminActivityBtn.classList.add('hidden');
-                                
                                 studentBtnText.innerText = "Logout (" + user.email.split('@')[0] + ")";
                                 studentAuthBtn.onclick = logoutStudent;
-                                
-                                if (typeof fetchStudentProgressFromCloud === 'function') {
-                                    fetchStudentProgressFromCloud(user);
-                                }
+                                if (typeof fetchStudentProgressFromCloud === 'function') { fetchStudentProgressFromCloud(user); }
                             }
                         } else {
                             isAdmin = false; isSuperAdmin = false;
-                            adminBtnText.innerText = "Admin Access";
-                            cloudToolsBtn.classList.add('hidden');
+                            adminBtnText.innerText = "Admin Access"; cloudToolsBtn.classList.add('hidden');
                             editQBtn.classList.add('hidden'); editQBtn.classList.remove('flex');
                             deleteQBtn.classList.add('hidden'); deleteQBtn.classList.remove('flex');
                             superAdminActivityBtn.classList.add('hidden');
-                            
-                            studentBtnText.innerText = "Student Login";
-                            studentAuthBtn.onclick = openStudentModal;
-                            studentAuthBtn.classList.remove('hidden');
-                            studentAuthBtn.classList.add('flex');
+                            studentBtnText.innerText = "Student Login"; studentAuthBtn.onclick = openStudentModal;
+                            studentAuthBtn.classList.remove('hidden'); studentAuthBtn.classList.add('flex');
                         }
                     });
                 }
@@ -644,6 +625,7 @@
             const branch = document.getElementById('filter-branch').value; 
             const subtype = document.getElementById('filter-subtype').value; 
             const source = document.getElementById('filter-source').value; 
+            const searchQuery = (document.getElementById('search-bar') ? document.getElementById('search-bar').value.toLowerCase().trim() : '');
             
             const wantsUnused = document.getElementById('chk-unused').checked;
             const wantsCorrect = document.getElementById('chk-correct').checked;
@@ -655,8 +637,16 @@
                 const matchBranch = branch === 'all' || q.branch === branch; 
                 const matchSubtype = subtype === 'all' || q.subtype === subtype; 
                 const matchSource = source === 'all' || q.source === source;
-                
                 if (!(matchSubj && matchBranch && matchSubtype && matchSource)) return false;
+
+                if (searchQuery) {
+                    const qText = (q.question || '').toLowerCase();
+                    let expText = '';
+                    if(typeof q.explanation === 'string') expText = q.explanation.toLowerCase();
+                    else if(typeof q.explanation === 'object') expText = JSON.stringify(q.explanation).toLowerCase();
+                    
+                    if(!qText.includes(searchQuery) && !expText.includes(searchQuery)) return false;
+                }
 
                 let isCorrect = userStats.correct.includes(q.id);
                 let isIncorrect = userStats.incorrect.includes(q.id);
@@ -687,7 +677,6 @@
                     document.getElementById('delete-q-btn').classList.remove('hidden'); document.getElementById('delete-q-btn').classList.add('flex');
                 }
             }
-            
             renderMatrix(); loadQuestion(); saveSession();
         }
 
@@ -717,21 +706,10 @@
 
         function submitAnswer(selectedIndex) {
             const q = activeBlock[currentIdx]; const isCorrect = (selectedIndex === q.correct); blockState[currentIdx] = { answered: true, selected: selectedIndex, correct: isCorrect };
-            
-            if (isCorrect) {
-                if (!userStats.correct.includes(q.id)) userStats.correct.push(q.id);
-                userStats.incorrect = userStats.incorrect.filter(id => id !== q.id); 
-            } else {
-                if (!userStats.incorrect.includes(q.id)) userStats.incorrect.push(q.id);
-                userStats.correct = userStats.correct.filter(id => id !== q.id); 
-            }
-            
+            if (isCorrect) { if (!userStats.correct.includes(q.id)) userStats.correct.push(q.id); userStats.incorrect = userStats.incorrect.filter(id => id !== q.id); } 
+            else { if (!userStats.incorrect.includes(q.id)) userStats.incorrect.push(q.id); userStats.correct = userStats.correct.filter(id => id !== q.id); }
             saveStats(); 
-            
-            if (typeof onStudentAnswer === 'function') {
-                onStudentAnswer(q.id, isCorrect, userStats.flagged.includes(q.id));
-            }
-
+            if (typeof onStudentAnswer === 'function') { onStudentAnswer(q.id, isCorrect, userStats.flagged.includes(q.id)); }
             loadQuestion(); updateMatrixUI();
         }
 
@@ -749,11 +727,8 @@
         function requestAdminAccess() { 
             if(isAdmin) { 
                 if(confirm("You are currently logged in as Admin. Do you want to securely logout?")) {
-                    window.authTools.signOut(window.firebaseAuth).then(() => {
-                        alert("Logged out successfully.");
-                    });
-                }
-                return; 
+                    window.authTools.signOut(window.firebaseAuth).then(() => { alert("Logged out successfully."); });
+                } return; 
             } 
             document.getElementById('login-modal').classList.remove('hidden');
         }
@@ -769,22 +744,42 @@
             if(!email.includes('@')) email = `${email}@medico.com`;
             
             btn.disabled = true; btn.innerText = "Authenticating...";
-            
-            try {
-                await window.authTools.signInWithEmailAndPassword(window.firebaseAuth, email, password);
-                closeLoginModal();
-                alert("Login Successful! Cloud Database tools are unlocked.");
-            } catch(err) {
-                alert("Login Failed: " + err.message);
-            }
-            
+            try { await window.authTools.signInWithEmailAndPassword(window.firebaseAuth, email, password); closeLoginModal(); alert("Login Successful! Cloud Database tools are unlocked."); } 
+            catch(err) { alert("Login Failed: " + err.message); }
             btn.disabled = false; btn.innerText = "Login";
         }
         
-        function openEditModal() { const q = activeBlock[currentIdx]; document.getElementById('edit-q-text').value = q.question; document.getElementById('edit-exp-text').value = typeof q.explanation === 'object' ? JSON.stringify(q.explanation) : q.explanation; const optsContainer = document.getElementById('edit-options-container'); optsContainer.innerHTML = '<label class="text-xs font-semibold text-slate-400">Options & Correct Answer (Select the radio):</label>'; q.options.forEach((opt, idx) => { const optDiv = document.createElement('div'); optDiv.className = "flex items-center gap-2"; const isCorrect = idx === q.correct ? 'checked' : ''; optDiv.innerHTML = `<input type="radio" name="edit-correct" value="${idx}" ${isCorrect} class="w-4 h-4 text-amber-500 bg-slate-900 border-slate-700 accent-amber-500"><input type="text" id="edit-opt-${idx}" value="${opt}" class="w-full bg-slate-900 border border-slate-700 p-2 rounded-lg text-sm focus:outline-none focus:border-amber-500">`; optsContainer.appendChild(optDiv); }); document.getElementById('edit-modal').classList.remove('hidden'); }
+        function openEditModal() { 
+            const q = activeBlock[currentIdx]; 
+            document.getElementById('edit-q-subject').value = q.subject || '';
+            document.getElementById('edit-q-branch').value = q.branch || '';
+            document.getElementById('edit-q-subtype').value = q.subtype || '';
+            document.getElementById('edit-q-source').value = q.source || '';
+            document.querySelector('input[name="edit-scope"][value="single"]').checked = true;
+
+            document.getElementById('edit-q-text').value = q.question; 
+            document.getElementById('edit-exp-text').value = typeof q.explanation === 'object' ? JSON.stringify(q.explanation) : q.explanation; 
+            
+            const optsContainer = document.getElementById('edit-options-container'); 
+            optsContainer.innerHTML = '<label class="text-xs font-semibold text-slate-400 block mb-1">Options & Correct Answer (Select the radio):</label>'; 
+            
+            q.options.forEach((opt, idx) => { 
+                const optDiv = document.createElement('div'); optDiv.className = "flex items-center gap-2"; const isCorrect = idx === q.correct ? 'checked' : ''; 
+                optDiv.innerHTML = `<input type="radio" name="edit-correct" value="${idx}" ${isCorrect} class="w-4 h-4 text-amber-500 bg-slate-900 border-slate-700 accent-amber-500"><input type="text" id="edit-opt-${idx}" value="${opt}" class="w-full bg-slate-900 border border-slate-700 p-2 rounded-lg text-sm focus:outline-none focus:border-amber-500 text-slate-200">`; 
+                optsContainer.appendChild(optDiv); 
+            }); 
+            document.getElementById('edit-modal').classList.remove('hidden'); 
+        }
         function closeEditModal() { document.getElementById('edit-modal').classList.add('hidden'); }
         
         async function saveQuestionEdits() { 
+            const editScope = document.querySelector('input[name="edit-scope"]:checked').value;
+            
+            const newSubj = document.getElementById('edit-q-subject').value.trim();
+            const newBranch = document.getElementById('edit-q-branch').value.trim();
+            const newSubtype = document.getElementById('edit-q-subtype').value.trim();
+            const newSource = document.getElementById('edit-q-source').value.trim();
+            
             const newQ = document.getElementById('edit-q-text').value; 
             let newExp = document.getElementById('edit-exp-text').value; 
             try { newExp = JSON.parse(newExp); } catch(e) {}
@@ -792,24 +787,43 @@
             const newOptions = []; 
             activeBlock[currentIdx].options.forEach((_, idx) => { newOptions.push(document.getElementById(`edit-opt-${idx}`).value); }); 
             
-            const qId = activeBlock[currentIdx].id;
-            activeBlock[currentIdx].question = newQ; 
-            activeBlock[currentIdx].explanation = newExp; 
-            activeBlock[currentIdx].options = newOptions; 
-            activeBlock[currentIdx].correct = selectedCorrect; 
-            
-            if (qId && window.db) {
-                try {
-                    const { doc, setDoc } = window.firestoreTools;
-                    await setDoc(doc(window.db, "questions", qId), {
-                        question: newQ,
-                        explanation: newExp,
-                        options: newOptions,
-                        correct: selectedCorrect
-                    }, { merge: true });
-                    alert("Changes updated directly in Cloud Database!");
-                } catch(e) {
-                    console.error("Cloud update error:", e);
+            if (editScope === 'all') {
+                if(!confirm(`WARNING: This will apply the Subject/Branch/Subtype/Source taxonomy changes to ALL ${activeBlock.length} questions in the current block! Proceed?`)) return;
+                
+                let updatedCount = 0;
+                for (let i = 0; i < activeBlock.length; i++) {
+                    const blockQ = activeBlock[i];
+                    blockQ.subject = newSubj; blockQ.branch = newBranch; blockQ.subtype = newSubtype; blockQ.source = newSource;
+                    
+                    if (i === currentIdx) {
+                        blockQ.question = newQ; blockQ.explanation = newExp; blockQ.options = newOptions; blockQ.correct = selectedCorrect;
+                    }
+                    
+                    if (blockQ.id && window.db) {
+                        try {
+                            const { doc, setDoc } = window.firestoreTools;
+                            let updatePayload = { subject: newSubj, branch: newBranch, subtype: newSubtype, source: newSource };
+                            if (i === currentIdx) { updatePayload = { ...updatePayload, question: newQ, explanation: newExp, options: newOptions, correct: selectedCorrect }; }
+                            await setDoc(doc(window.db, "questions", blockQ.id), updatePayload, { merge: true });
+                            updatedCount++;
+                        } catch(e) { console.error("Update failed for", blockQ.id); }
+                    }
+                }
+                alert(`Successfully updated taxonomy for ${updatedCount} questions in the block!`);
+            } else {
+                const qId = activeBlock[currentIdx].id;
+                activeBlock[currentIdx].subject = newSubj; activeBlock[currentIdx].branch = newBranch; activeBlock[currentIdx].subtype = newSubtype; activeBlock[currentIdx].source = newSource;
+                activeBlock[currentIdx].question = newQ; activeBlock[currentIdx].explanation = newExp; activeBlock[currentIdx].options = newOptions; activeBlock[currentIdx].correct = selectedCorrect; 
+                
+                if (qId && window.db) {
+                    try {
+                        const { doc, setDoc } = window.firestoreTools;
+                        await setDoc(doc(window.db, "questions", qId), {
+                            subject: newSubj, branch: newBranch, subtype: newSubtype, source: newSource,
+                            question: newQ, explanation: newExp, options: newOptions, correct: selectedCorrect
+                        }, { merge: true });
+                        alert("Changes updated directly in Cloud Database!");
+                    } catch(e) { console.error("Cloud update error:", e); }
                 }
             }
             
@@ -827,19 +841,11 @@
                     const { deleteDoc, doc } = window.firestoreTools;
                     await deleteDoc(doc(window.db, "questions", q.id));
                     alert("Question successfully deleted from Cloud Database!");
-                    
-                    activeBlock.splice(currentIdx, 1);
-                    blockState.splice(currentIdx, 1);
-                    if(activeBlock.length === 0) {
-                        goHome();
-                    } else {
-                        if(currentIdx >= activeBlock.length) currentIdx = activeBlock.length - 1;
-                        renderMatrix(); loadQuestion();
-                    }
+                    activeBlock.splice(currentIdx, 1); blockState.splice(currentIdx, 1);
+                    if(activeBlock.length === 0) { goHome(); } 
+                    else { if(currentIdx >= activeBlock.length) currentIdx = activeBlock.length - 1; renderMatrix(); loadQuestion(); }
                     initCloudSync();
-                } catch(err) {
-                    alert("Error deleting question: " + err.message);
-                }
+                } catch(err) { alert("Error deleting question: " + err.message); }
             }
         }
 
@@ -852,11 +858,7 @@
                 if(!user) return;
                 const { collection, addDoc, serverTimestamp } = window.firestoreTools;
                 await addDoc(collection(window.db, "activity_logs"), {
-                    adminEmail: user.email,
-                    adminName: user.email.split('@')[0],
-                    count: count,
-                    subject: firstSubject || "General",
-                    timestamp: serverTimestamp()
+                    adminEmail: user.email, adminName: user.email.split('@')[0], count: count, subject: firstSubject || "General", isolated: false, timestamp: serverTimestamp()
                 });
             } catch(e) { console.error("Logging activity failed:", e); }
         }
@@ -865,7 +867,6 @@
             const btn = document.getElementById('paste-upload-btn');
             const textData = document.getElementById('bulk-json-text').value;
             if (!textData.trim()) { alert("Please paste the JSON code first."); return; }
-            
             btn.disabled = true; btn.innerText = "Uploading... Please wait";
             try {
                 const questionsArray = JSON.parse(textData);
@@ -873,9 +874,7 @@
                 const { collection, addDoc } = window.firestoreTools;
                 let count = 0;
                 for (let q of questionsArray) { await addDoc(collection(window.db, "questions"), q); count++; }
-                
                 await logAdminUpload(count, questionsArray[0]?.subject);
-
                 alert(`Success! Uploaded ${count} questions directly to the Cloud Database.`);
                 document.getElementById('bulk-json-text').value = ''; closeCloudAdmin(); initCloudSync(); 
             } catch (err) { alert("Error parsing or uploading JSON: " + err.message); }
@@ -887,7 +886,6 @@
             const fileInput = document.getElementById('bulk-file-input');
             const file = fileInput.files[0];
             if (!file) { alert("Please select a JSON file first."); return; }
-            
             btn.disabled = true; btn.innerText = "Uploading... Please wait";
             const reader = new FileReader();
             reader.onload = async (e) => {
@@ -897,9 +895,7 @@
                     const { collection, addDoc } = window.firestoreTools;
                     let count = 0;
                     for (let q of questionsArray) { await addDoc(collection(window.db, "questions"), q); count++; }
-                    
                     await logAdminUpload(count, questionsArray[0]?.subject);
-
                     alert(`Success! Uploaded ${count} questions to the Cloud Database.`);
                     fileInput.value = ''; closeCloudAdmin(); initCloudSync(); 
                 } catch (err) { alert("Error uploading JSON file: " + err.message); }
@@ -911,32 +907,22 @@
         async function removeDuplicates() {
             const btn = document.getElementById('clean-dup-btn');
             btn.disabled = true; btn.innerText = "Scanning database for duplicates...";
-            
             try {
                 const { collection, getDocs, deleteDoc, doc } = window.firestoreTools;
                 const querySnapshot = await getDocs(collection(window.db, "questions"));
-                const seen = new Set();
-                let duplicates = [];
-
+                const seen = new Set(); let duplicates = [];
                 querySnapshot.forEach((document) => {
                     const data = document.data();
                     const uniqueKey = `${data.subject || ''}|${data.branch || ''}|${data.subtype || ''}|${data.question || ''}`.trim().toLowerCase();
-                    
                     if (seen.has(uniqueKey)) { duplicates.push(document.id); } else { seen.add(uniqueKey); }
                 });
-
-                if (duplicates.length === 0) {
-                    alert("No duplicates found in the Cloud Database! Your database is clean.");
-                } else {
+                if (duplicates.length === 0) { alert("No duplicates found in the Cloud Database! Your database is clean."); } 
+                else {
                     if(confirm(`Found ${duplicates.length} duplicate questions. Do you want to delete the extra copies?`)) {
                         btn.innerText = `Deleting ${duplicates.length} questions...`;
                         let deletedCount = 0;
-                        for (let id of duplicates) {
-                            await deleteDoc(doc(window.db, "questions", id));
-                            deletedCount++;
-                        }
-                        alert(`Successfully deleted ${deletedCount} duplicate questions!`);
-                        initCloudSync(); 
+                        for (let id of duplicates) { await deleteDoc(doc(window.db, "questions", id)); deletedCount++; }
+                        alert(`Successfully deleted ${deletedCount} duplicate questions!`); initCloudSync(); 
                     }
                 }
             } catch(err) { alert("Error scanning database: " + err.message); }
@@ -945,50 +931,76 @@
 
         async function openActivityLogModal() {
             document.getElementById('activity-log-modal').classList.remove('hidden');
-            const listContainer = document.getElementById('activity-log-list');
-            listContainer.innerHTML = '<p class="text-slate-400 text-center py-4">Fetching activity history...</p>';
+            const activeList = document.getElementById('activity-log-list');
+            const isolatedList = document.getElementById('isolated-log-list');
+            
+            activeList.innerHTML = '<p class="text-slate-400 text-center py-4">Fetching activity history...</p>';
+            isolatedList.innerHTML = '';
 
             try {
                 const { collection, getDocs } = window.firestoreTools;
                 const querySnapshot = await getDocs(collection(window.db, "activity_logs"));
                 
-                if (querySnapshot.empty) {
-                    listContainer.innerHTML = '<p class="text-slate-400 text-center py-4">No admin upload activities recorded yet.</p>';
-                    return;
-                }
-
+                let activeHTML = ''; let isolatedHTML = '';
                 let logs = [];
                 querySnapshot.forEach(doc => logs.push({ id: doc.id, ...doc.data() }));
                 
-                listContainer.innerHTML = '';
                 logs.reverse().forEach(log => {
                     const dateStr = log.timestamp ? new Date(log.timestamp.toDate()).toLocaleString() : "Recently";
-                    listContainer.innerHTML += `
-                        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
-                            <div>
-                                <span class="font-bold text-amber-400">${log.adminName}</span> uploaded <span class="font-bold text-emerald-400">${log.count} questions</span> 
-                                <span class="text-[10px] text-slate-400">(${log.subject})</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <span class="text-[10px] text-slate-500">${dateStr}</span>
-                                <button onclick="deleteBatchQuestions('${log.id}', '${log.subject}', ${log.count})" class="text-xs bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white px-2.5 py-1.5 rounded-lg border border-rose-500/30 transition flex items-center gap-1">
-                                    <i class="fa-solid fa-trash-can"></i> <span class="hidden sm:inline">Delete Batch</span>
-                                </button>
-                            </div>
-                        </div>
-                    `;
+                    
+                    if(log.isolated) {
+                        isolatedHTML += `
+                            <div class="bg-slate-950 p-3 rounded-xl border border-indigo-900/50 flex justify-between items-center opacity-70">
+                                <div>
+                                    <span class="font-bold text-amber-400">${log.adminName}</span> uploaded <span class="font-bold text-emerald-400">${log.count} Qs</span> 
+                                    <span class="text-[10px] text-slate-400">(${log.subject})</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-[10px] text-slate-500">${dateStr}</span>
+                                    <button onclick="toggleLogIsolation('${log.id}', false)" title="Un-isolate (Restore to Active)" class="text-xs bg-indigo-600/20 hover:bg-indigo-600 text-indigo-400 hover:text-white w-8 h-8 rounded-lg border border-indigo-500/30 transition flex items-center justify-center">
+                                        <i class="fa-solid fa-rotate-left"></i>
+                                    </button>
+                                </div>
+                            </div>`;
+                    } else {
+                        activeHTML += `
+                            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
+                                <div>
+                                    <span class="font-bold text-amber-400">${log.adminName}</span> uploaded <span class="font-bold text-emerald-400">${log.count} Qs</span> 
+                                    <span class="text-[10px] text-slate-400">(${log.subject})</span>
+                                </div>
+                                <div class="flex items-center gap-2 sm:gap-3">
+                                    <span class="text-[10px] text-slate-500 hidden sm:inline">${dateStr}</span>
+                                    <button onclick="toggleLogIsolation('${log.id}', true)" title="Isolate & Protect" class="text-xs bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white w-8 h-8 rounded-lg border border-emerald-500/30 transition flex items-center justify-center">
+                                        <i class="fa-solid fa-check"></i>
+                                    </button>
+                                    <button onclick="deleteBatchQuestions('${log.id}', '${log.subject}', ${log.count})" title="Permanently Delete Batch" class="text-xs bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white w-8 h-8 rounded-lg border border-rose-500/30 transition flex items-center justify-center">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                            </div>`;
+                    }
                 });
+                
+                activeList.innerHTML = activeHTML || '<p class="text-slate-400 text-center py-4">No active pending uploads.</p>';
+                isolatedList.innerHTML = isolatedHTML || '<p class="text-slate-400 text-center py-4">No isolated uploads.</p>';
             } catch(e) {
-                listContainer.innerHTML = '<p class="text-rose-400 text-center py-4">Error loading activity log.</p>';
+                activeList.innerHTML = '<p class="text-rose-400 text-center py-4">Error loading activity log.</p>';
             }
         }
 
+        async function toggleLogIsolation(logId, isolateState) {
+            try {
+                const { doc, setDoc } = window.firestoreTools;
+                await setDoc(doc(window.db, "activity_logs", logId), { isolated: isolateState }, { merge: true });
+                openActivityLogModal();
+            } catch(err) { alert("Error changing isolation state: " + err.message); }
+        }
+
         async function deleteBatchQuestions(logId, subject, count) {
-            if (!confirm(`Are you sure you want to completely delete this batch (${count} questions)?`)) return;
-            
+            if (!confirm(`Are you absolutely sure you want to COMPLETELY DELETE this batch of ${count} questions? This action cannot be reversed.`)) return;
             try {
                 const { collection, getDocs, query, where, deleteDoc, doc } = window.firestoreTools;
-                
                 const qSnap = await getDocs(query(collection(window.db, "questions"), where("subject", "==", subject)));
                 
                 let deleted = 0;
@@ -1000,29 +1012,16 @@
                 }
                 
                 await deleteDoc(doc(window.db, "activity_logs", logId));
-                
                 alert("Batch and corresponding activity log deleted successfully!");
-                openActivityLogModal();
-                initCloudSync();
-            } catch(err) {
-                alert("Error deleting batch: " + err.message);
-            }
+                openActivityLogModal(); initCloudSync();
+            } catch(err) { alert("Error deleting batch: " + err.message); }
         }
 
         function closeActivityLogModal() { document.getElementById('activity-log-modal').classList.add('hidden'); }
 
-        // تم إضافة سطر التشغيل اللي كان محذوف من AI Studio!
         window.onload = initApp;
     </script>
-
-    <!-- Register PWA Service Worker -->
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
-      }
-    </script>
-
-    <!-- تم إعادة استدعاء ملف تسجيل الطلاب المفقود! -->
+    <script> if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); } </script>
     <script src="student-features.js"></script>
 </body>
 </html>
