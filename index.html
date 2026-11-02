@@ -832,20 +832,35 @@
         }
 
         async function deleteCurrentQuestionFromCloud() {
-            if(!isSuperAdmin) return alert("Only the Super Admin is authorized to delete questions permanently.");
+            if(!isSuperAdmin) return alert("Only Super Admin is authorized to delete questions permanently.");
             const q = activeBlock[currentIdx];
-            if(!q.id) return alert("This question cannot be deleted directly (Local file).");
+            if(!q || !q.id) return alert("This question cannot be deleted directly (Local file).");
 
             if(confirm("Are you sure you want to PERMANENTLY delete this question from the Cloud Database?")) {
                 try {
                     const { deleteDoc, doc } = window.firestoreTools;
+                    
+                    // Directly remove the Firestore document using its specific document ID
                     await deleteDoc(doc(window.db, "questions", q.id));
-                    alert("Question successfully deleted from Cloud Database!");
-                    activeBlock.splice(currentIdx, 1); blockState.splice(currentIdx, 1);
-                    if(activeBlock.length === 0) { goHome(); } 
-                    else { if(currentIdx >= activeBlock.length) currentIdx = activeBlock.length - 1; renderMatrix(); loadQuestion(); }
-                    initCloudSync();
-                } catch(err) { alert("Error deleting question: " + err.message); }
+                    
+                    // Immediately purge it from local arrays to ensure instant UI disappearance
+                    allQuestions = allQuestions.filter(item => item.id !== q.id);
+                    activeBlock.splice(currentIdx, 1);
+                    blockState.splice(currentIdx, 1);
+                    
+                    alert("Question deleted permanently from Cloud Database!");
+                    
+                    if(activeBlock.length === 0) { 
+                        goHome(); 
+                    } else {
+                        if(currentIdx >= activeBlock.length) currentIdx = activeBlock.length - 1;
+                        renderMatrix(); 
+                        loadQuestion();
+                    }
+                    updateAvailableCount();
+                } catch(err) { 
+                    alert("Error deleting question: " + err.message); 
+                }
             }
         }
 
@@ -1003,17 +1018,20 @@
                 const { collection, getDocs, query, where, deleteDoc, doc } = window.firestoreTools;
                 const qSnap = await getDocs(query(collection(window.db, "questions"), where("subject", "==", subject)));
                 
+                let deletedIds = [];
                 let deleted = 0;
                 for (const docSnap of qSnap.docs) {
                     if (deleted < count) {
                         await deleteDoc(doc(window.db, "questions", docSnap.id));
+                        deletedIds.push(docSnap.id);
                         deleted++;
                     }
                 }
                 
+                allQuestions = allQuestions.filter(item => !deletedIds.includes(item.id));
                 await deleteDoc(doc(window.db, "activity_logs", logId));
                 alert("Batch and corresponding activity log deleted successfully!");
-                openActivityLogModal(); initCloudSync();
+                openActivityLogModal(); updateAvailableCount();
             } catch(err) { alert("Error deleting batch: " + err.message); }
         }
 
