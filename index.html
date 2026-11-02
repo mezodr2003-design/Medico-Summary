@@ -1015,24 +1015,34 @@
         async function deleteBatchQuestions(logId, subject, count) {
             if (!confirm(`Are you absolutely sure you want to COMPLETELY DELETE this batch of ${count} questions? This action cannot be reversed.`)) return;
             try {
-                const { collection, getDocs, query, where, deleteDoc, doc } = window.firestoreTools;
-                const qSnap = await getDocs(query(collection(window.db, "questions"), where("subject", "==", subject)));
+                const { collection, getDocs, deleteDoc, doc } = window.firestoreTools;
                 
+                const snap = await getDocs(collection(window.db, "questions"));
                 let deletedIds = [];
                 let deleted = 0;
-                for (const docSnap of qSnap.docs) {
-                    if (deleted < count) {
+
+                for (const docSnap of snap.docs) {
+                    const qData = docSnap.data();
+                    const qSubj = (qData.subject || "").trim().toLowerCase();
+                    const targetSubj = (subject || "").trim().toLowerCase();
+
+                    if (qSubj === targetSubj && deleted < count) {
                         await deleteDoc(doc(window.db, "questions", docSnap.id));
                         deletedIds.push(docSnap.id);
                         deleted++;
                     }
                 }
                 
-                allQuestions = allQuestions.filter(item => !deletedIds.includes(item.id));
                 await deleteDoc(doc(window.db, "activity_logs", logId));
-                alert("Batch and corresponding activity log deleted successfully!");
-                openActivityLogModal(); updateAvailableCount();
-            } catch(err) { alert("Error deleting batch: " + err.message); }
+                
+                allQuestions = allQuestions.filter(item => !deletedIds.includes(item.id));
+                
+                alert(`Batch deleted successfully! Purged ${deleted} questions from Cloud Database.`);
+                openActivityLogModal(); 
+                updateAvailableCount();
+            } catch(err) { 
+                alert("Error deleting batch: " + err.message); 
+            }
         }
 
         function closeActivityLogModal() { document.getElementById('activity-log-modal').classList.add('hidden'); }
