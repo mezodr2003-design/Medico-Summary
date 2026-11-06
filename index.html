@@ -61,7 +61,6 @@
     </script>
 
     <style>
-        /* Liquid Glass Base Styles */
         .glass-panel {
             background: rgba(15, 23, 42, 0.65);
             backdrop-filter: blur(16px);
@@ -113,7 +112,6 @@
         ::-webkit-scrollbar-thumb { background: #475569; border-radius: 9999px; }
         ::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
-        /* Full Contrast Theme Fixes */
         .theme-eyecare { background-color: #f4ebd9 !important; color: #2e2417 !important; }
         .theme-eyecare header, .theme-eyecare footer, .theme-eyecare .glass-panel, .theme-eyecare .bg-slate-900, .theme-eyecare .bg-slate-900\/70 { background-color: #e7dbbf !important; border-color: #d4c29d !important; color: #2e2417 !important; }
         .theme-eyecare select, .theme-eyecare input, .theme-eyecare textarea, .theme-eyecare .glass-card, .theme-eyecare .glass-input, .theme-eyecare .bg-slate-950, .theme-eyecare .bg-slate-950\/80, .theme-eyecare .bg-slate-950\/70, .theme-eyecare .bg-slate-950\/60 { background-color: #faf5eb !important; border-color: #d4c29d !important; color: #2e2417 !important; }
@@ -132,7 +130,6 @@
         .theme-light .option-btn:hover:not(:disabled) { background-color: #f8fafc !important; border-color: #6366f1 !important; }
         .theme-light .q-matrix-btn { background-color: #ffffff !important; border-color: #cbd5e1 !important; color: #475569 !important; }
 
-        /* Fullscreen Focus Mode Override */
         body.focus-mode header, body.focus-mode footer, body.focus-mode #matrix-sidebar, body.focus-mode #quiz-extra-actions { display: none !important; }
         body.focus-mode #quiz-screen { max-width: 1000px !important; margin: 0 auto; padding-top: 2rem; }
         body.focus-mode .quiz-container { border-width: 2px !important; border-color: #6366f1 !important; box-shadow: 0 0 40px rgba(99, 102, 241, 0.2) !important; }
@@ -219,92 +216,76 @@
                     <div>
                         <div class="flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
-                            <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-white">Custom Test Block</h2>
+                            <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-white">Create Test</h2>
                         </div>
-                        <p class="text-xs sm:text-sm text-slate-400 mt-1">Configure your clinical case simulator parameters.</p>
+                        <p class="text-xs sm:text-sm text-slate-400 mt-1">Select subjects, branches, and subtypes to build your custom QBank block.</p>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">Global Search</label>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">Global Keyword Search</label>
                     <div class="relative">
                         <input type="text" id="search-bar" onkeyup="updateAvailableCount()" placeholder="Search keywords in questions or explanations..." class="w-full glass-input p-3 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-slate-200 pl-10 transition">
                         <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-500 text-sm pointer-events-none"></i>
                     </div>
                 </div>
                 
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">Examination Mode</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <label class="relative flex items-center p-4 rounded-xl glass-card cursor-pointer transition has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-950/30 has-[:checked]:ring-1 has-[:checked]:ring-indigo-500/40">
-                            <input type="radio" name="test-mode" value="tutor" checked class="w-4 h-4 text-indigo-600 bg-slate-800 border-slate-700 accent-indigo-500 focus:ring-0">
-                            <div class="ml-3.5">
-                                <span class="block text-sm font-semibold text-slate-200 flex items-center gap-1.5"><i class="fa-solid fa-graduation-cap text-indigo-400 text-xs"></i> Tutor Mode</span>
-                                <span class="block text-xs text-slate-400 mt-0.5">Instant feedback, correct answer & full analysis</span>
-                            </div>
-                        </label>
-                        <label class="relative flex items-center p-4 rounded-xl glass-card cursor-pointer transition has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-950/30 has-[:checked]:ring-1 has-[:checked]:ring-indigo-500/40">
-                            <input type="radio" name="test-mode" value="timed" class="w-4 h-4 text-indigo-600 bg-slate-800 border-slate-700 accent-indigo-500 focus:ring-0">
-                            <div class="ml-3.5">
-                                <span class="block text-sm font-semibold text-slate-200 flex items-center gap-1.5"><i class="fa-solid fa-stopwatch text-amber-400 text-xs"></i> Timed Exam Mode</span>
-                                <span class="block text-xs text-slate-400 mt-0.5">Strict 90 sec/question timer simulation</span>
-                            </div>
-                        </label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Test Mode</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center p-3 rounded-xl glass-card cursor-pointer transition has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-950/30">
+                                <input type="radio" name="test-mode" value="tutor" checked class="w-4 h-4 accent-indigo-500">
+                                <span class="ml-2 text-xs font-semibold text-slate-200">Tutor Mode</span>
+                            </label>
+                            <label class="flex items-center p-3 rounded-xl glass-card cursor-pointer transition has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-950/30">
+                                <input type="radio" name="test-mode" value="timed" class="w-4 h-4 accent-indigo-500">
+                                <span class="ml-2 text-xs font-semibold text-slate-200">Timed Exam</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Filter Source / QBank</label>
+                        <select id="filter-source" onchange="renderSystemsTree()" class="w-full glass-input rounded-xl p-3 text-xs text-slate-200 outline-none focus:border-indigo-500">
+                            <option value="all">All Sources & QBanks</option>
+                        </select>
                     </div>
                 </div>
-                
+
+                <!-- Systems & Branches Tree Selection -->
                 <div class="space-y-3">
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Medical Disciplines & System Taxonomy</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-                        <div class="space-y-1.5">
-                            <label class="text-[11px] font-semibold text-slate-400">Subject</label>
-                            <div class="relative">
-                                <select id="filter-subject" onchange="updateFilters('subject')" class="w-full glass-input rounded-xl p-2.5 text-xs sm:text-sm text-slate-200 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition appearance-none pr-8"><option value="all">All Subjects</option></select>
-                                <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-slate-500 text-xs pointer-events-none"></i>
-                            </div>
+                    <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Systems & System Taxonomies</label>
+                        <div class="flex gap-3 text-xs">
+                            <button type="button" onclick="selectAllTree(true)" class="text-indigo-400 hover:underline font-semibold">Select All</button>
+                            <span class="text-slate-600">|</span>
+                            <button type="button" onclick="selectAllTree(false)" class="text-slate-400 hover:underline font-semibold">Deselect All</button>
                         </div>
-                        <div class="space-y-1.5">
-                            <label class="text-[11px] font-semibold text-slate-400">Branch / System</label>
-                            <div class="relative">
-                                <select id="filter-branch" onchange="updateFilters('branch')" class="w-full glass-input rounded-xl p-2.5 text-xs sm:text-sm text-slate-200 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition appearance-none pr-8"><option value="all">All Branches</option></select>
-                                <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-slate-500 text-xs pointer-events-none"></i>
-                            </div>
-                        </div>
-                        <div class="space-y-1.5">
-                            <label class="text-[11px] font-semibold text-slate-400">Subtype / Topic</label>
-                            <div class="relative">
-                                <select id="filter-subtype" onchange="updateAvailableCount()" class="w-full glass-input rounded-xl p-2.5 text-xs sm:text-sm text-slate-200 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition appearance-none pr-8"><option value="all">All Subtypes</option></select>
-                                <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-slate-500 text-xs pointer-events-none"></i>
-                            </div>
-                        </div>
-                        <div class="space-y-1.5">
-                            <label class="text-[11px] font-semibold text-slate-400">Source / QBank</label>
-                            <div class="relative">
-                                <select id="filter-source" onchange="updateAvailableCount()" class="w-full glass-input rounded-xl p-2.5 text-xs sm:text-sm text-slate-200 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition appearance-none pr-8"><option value="all">All Sources</option></select>
-                                <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-slate-500 text-xs pointer-events-none"></i>
-                            </div>
-                        </div>
+                    </div>
+
+                    <div id="systems-tree-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[420px] overflow-y-auto pr-2">
+                        <p class="text-xs text-slate-400 col-span-2 text-center py-6">Loading taxonomy hierarchy...</p>
                     </div>
                 </div>
 
                 <div class="glass-card p-4 rounded-xl">
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Question Pool Status</label>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Question Status Filter</label>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         <label class="flex items-center gap-2.5 p-2.5 rounded-lg glass-input cursor-pointer transition">
-                            <input type="checkbox" id="chk-unused" onchange="updateAvailableCount()" checked class="w-4 h-4 rounded bg-slate-800 border-slate-700 accent-indigo-500 focus:ring-0">
-                            <span class="text-xs sm:text-sm font-medium text-slate-200 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-slate-400"></span> Unused</span>
+                            <input type="checkbox" id="chk-unused" onchange="updateAvailableCount()" checked class="w-4 h-4 rounded accent-indigo-500">
+                            <span class="text-xs font-medium text-slate-200">Unused</span>
                         </label>
                         <label class="flex items-center gap-2.5 p-2.5 rounded-lg glass-input cursor-pointer transition">
-                            <input type="checkbox" id="chk-correct" onchange="updateAvailableCount()" class="w-4 h-4 rounded bg-slate-800 border-slate-700 accent-emerald-500 focus:ring-0">
-                            <span class="text-xs sm:text-sm font-medium text-slate-200 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Correct</span>
+                            <input type="checkbox" id="chk-correct" onchange="updateAvailableCount()" class="w-4 h-4 rounded accent-emerald-500">
+                            <span class="text-xs font-medium text-slate-200">Correct</span>
                         </label>
                         <label class="flex items-center gap-2.5 p-2.5 rounded-lg glass-input cursor-pointer transition">
-                            <input type="checkbox" id="chk-incorrect" onchange="updateAvailableCount()" class="w-4 h-4 rounded bg-slate-800 border-slate-700 accent-rose-500 focus:ring-0">
-                            <span class="text-xs sm:text-sm font-medium text-slate-200 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rose-500"></span> Incorrect</span>
+                            <input type="checkbox" id="chk-incorrect" onchange="updateAvailableCount()" class="w-4 h-4 rounded accent-rose-500">
+                            <span class="text-xs font-medium text-slate-200">Incorrect</span>
                         </label>
                         <label class="flex items-center gap-2.5 p-2.5 rounded-lg glass-input cursor-pointer transition">
-                            <input type="checkbox" id="chk-flagged" onchange="updateAvailableCount()" class="w-4 h-4 rounded bg-slate-800 border-slate-700 accent-amber-500 focus:ring-0">
-                            <span class="text-xs sm:text-sm font-medium text-slate-200 flex items-center gap-1.5"><i class="fa-solid fa-bookmark text-amber-500 text-xs"></i> Flagged</span>
+                            <input type="checkbox" id="chk-flagged" onchange="updateAvailableCount()" class="w-4 h-4 rounded accent-amber-500">
+                            <span class="text-xs font-medium text-slate-200">Flagged</span>
                         </label>
                     </div>
                 </div>
@@ -528,6 +509,10 @@
         if(!userStats.correct) userStats.correct = [];
         let activeBlock = []; let currentIdx = 0; let blockState = []; let testMode = 'tutor'; let timerInterval; let timeRemaining = 0;
 
+        // System Tree State
+        let expandedNodesState = {};
+        let selectedTaxonomySet = new Set();
+
         function setTheme(mode) {
             const body = document.getElementById('app-body');
             body.classList.remove('theme-eyecare', 'theme-light');
@@ -540,17 +525,12 @@
             const body = document.getElementById('app-body');
             const btnText = document.getElementById('focus-btn-text');
             body.classList.toggle('focus-mode');
-            
             if (body.classList.contains('focus-mode')) {
                 btnText.innerText = "Exit Focus";
-                if (document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen().catch(e => {});
-                }
+                if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(e => {});
             } else {
                 btnText.innerText = "Focus View";
-                if (document.exitFullscreen) {
-                    document.exitFullscreen().catch(e => {});
-                }
+                if (document.exitFullscreen) document.exitFullscreen().catch(e => {});
             }
         }
 
@@ -565,13 +545,197 @@
                         let cloudData = [];
                         querySnapshot.forEach((doc) => { cloudData.push({ id: doc.id, ...doc.data() }); });
                         allQuestions = [...localData, ...cloudData];
-                        populateFilters(); updateAvailableCount();
+                        populateSourceFilter(); renderSystemsTree(); updateAvailableCount();
                     } catch (err) {
                         console.error("Cloud fetch failed", err);
-                        allQuestions = localData; populateFilters(); updateAvailableCount();
+                        allQuestions = localData; populateSourceFilter(); renderSystemsTree(); updateAvailableCount();
                     }
                 }
             }, 200);
+        }
+
+        function populateSourceFilter() {
+            const sources = [...new Set(allQuestions.map(q => q.source))].filter(Boolean);
+            const sourceSelect = document.getElementById('filter-source');
+            sourceSelect.innerHTML = '<option value="all">All Sources & QBanks</option>';
+            sources.forEach(s => sourceSelect.innerHTML += `<option value="${s}">${s}</option>`);
+        }
+
+        function renderSystemsTree() {
+            const container = document.getElementById('systems-tree-container');
+            if (!container) return;
+            const selectedSource = document.getElementById('filter-source').value;
+
+            // Build 3-tier taxonomy tree (Subject -> Branch -> Subtype)
+            const tree = {};
+            allQuestions.forEach(q => {
+                if (selectedSource !== 'all' && q.source !== selectedSource) return;
+                const subj = q.subject || "General";
+                const branch = q.branch || "General Branch";
+                const subtype = q.subtype || "General Subtype";
+
+                if (!tree[subj]) tree[subj] = { total: 0, branches: {} };
+                tree[subj].total++;
+
+                if (!tree[subj].branches[branch]) tree[subj].branches[branch] = { total: 0, subtypes: {} };
+                tree[subj].branches[branch].total++;
+
+                if (!tree[subj].branches[branch].subtypes[subtype]) tree[subj].branches[branch].subtypes[subtype] = 0;
+                tree[subj].branches[branch].subtypes[subtype]++;
+            });
+
+            let html = '';
+            Object.keys(tree).sort().forEach(subj => {
+                const subjData = tree[subj];
+                const isSubjExpanded = expandedNodesState[subj] || false;
+                const branchKeys = Object.keys(subjData.branches).sort();
+
+                html += `
+                <div class="glass-card rounded-xl p-3 border border-slate-800/80 space-y-2 transition">
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center gap-2.5 cursor-pointer flex-grow select-none">
+                            <input type="checkbox" onchange="toggleSubjectSelection('${subj}', this.checked)" class="w-4 h-4 rounded accent-indigo-500">
+                            <span class="text-xs font-bold text-slate-200 tracking-wide">${subj}</span>
+                        </label>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-slate-950 text-indigo-400 border border-indigo-500/20">${subjData.total}</span>
+                            <button type="button" onclick="toggleTreeNode('${subj}')" class="w-6 h-6 rounded-lg bg-slate-950/80 hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition text-xs font-bold">
+                                ${isSubjExpanded ? '<i class="fa-solid fa-minus text-[10px]"></i>' : '<i class="fa-solid fa-plus text-[10px]"></i>'}
+                            </button>
+                        </div>
+                    </div>
+
+                    ${isSubjExpanded ? `
+                        <div class="pl-4 pt-2 space-y-2 border-t border-slate-800/60 mt-2">
+                            ${branchKeys.map(branch => {
+                                const branchData = subjData.branches[branch];
+                                const branchNodeKey = `${subj}||${branch}`;
+                                const isBranchExpanded = expandedNodesState[branchNodeKey] || false;
+                                const subtypeKeys = Object.keys(branchData.subtypes).sort();
+
+                                return `
+                                <div class="space-y-1">
+                                    <div class="flex items-center justify-between">
+                                        <label class="flex items-center gap-2 cursor-pointer select-none">
+                                            <input type="checkbox" onchange="toggleBranchSelection('${subj}', '${branch}', this.checked)" class="w-3.5 h-3.5 rounded accent-indigo-500">
+                                            <span class="text-[11px] font-semibold text-slate-300">${branch}</span>
+                                        </label>
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="text-[10px] font-mono text-slate-400 bg-slate-950/60 px-1.5 py-0.2 rounded">${branchData.total}</span>
+                                            <button type="button" onclick="toggleTreeNode('${branchNodeKey}')" class="w-5 h-5 rounded bg-slate-950/60 text-slate-400 hover:text-white flex items-center justify-center text-[10px]">
+                                                ${isBranchExpanded ? '-' : '+'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    ${isBranchExpanded ? `
+                                        <div class="pl-4 space-y-1 border-l border-slate-800/50 ml-1 mt-1">
+                                            ${subtypeKeys.map(sub => {
+                                                const key = `${subj}||${branch}||${sub}`;
+                                                const isChecked = selectedTaxonomySet.has(key);
+                                                return `
+                                                    <div class="flex items-center justify-between">
+                                                        <label class="flex items-center gap-2 cursor-pointer select-none">
+                                                            <input type="checkbox" onchange="toggleSubtypeSelection('${key}', this.checked)" ${isChecked ? 'checked' : ''} class="w-3 h-3 rounded accent-indigo-500">
+                                                            <span class="text-[10px] text-slate-400">${sub}</span>
+                                                        </label>
+                                                        <span class="text-[9px] font-mono text-slate-500">${branchData.subtypes[sub]}</span>
+                                                    </div>
+                                                `;
+                                            }).join('')}
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+                `;
+            });
+
+            container.innerHTML = html || '<p class="text-xs text-slate-400 col-span-2 text-center py-4">No taxonomy items found.</p>';
+            updateAvailableCount();
+        }
+
+        function toggleTreeNode(nodeKey) {
+            expandedNodesState[nodeKey] = !expandedNodesState[nodeKey];
+            renderSystemsTree();
+        }
+
+        function toggleSubjectSelection(subj, isChecked) {
+            allQuestions.forEach(q => {
+                if ((q.subject || "General") === subj) {
+                    const key = `${q.subject || "General"}||${q.branch || "General Branch"}||${q.subtype || "General Subtype"}`;
+                    if (isChecked) selectedTaxonomySet.add(key); else selectedTaxonomySet.delete(key);
+                }
+            });
+            renderSystemsTree();
+        }
+
+        function toggleBranchSelection(subj, branch, isChecked) {
+            allQuestions.forEach(q => {
+                if ((q.subject || "General") === subj && (q.branch || "General Branch") === branch) {
+                    const key = `${subj}||${branch}||${q.subtype || "General Subtype"}`;
+                    if (isChecked) selectedTaxonomySet.add(key); else selectedTaxonomySet.delete(key);
+                }
+            });
+            renderSystemsTree();
+        }
+
+        function toggleSubtypeSelection(key, isChecked) {
+            if (isChecked) selectedTaxonomySet.add(key); else selectedTaxonomySet.delete(key);
+            updateAvailableCount();
+        }
+
+        function selectAllTree(selectAll) {
+            selectedTaxonomySet.clear();
+            if (selectAll) {
+                allQuestions.forEach(q => {
+                    const key = `${q.subject || "General"}||${q.branch || "General Branch"}||${q.subtype || "General Subtype"}`;
+                    selectedTaxonomySet.add(key);
+                });
+            }
+            renderSystemsTree();
+        }
+
+        function getFilteredQuestions() {
+            const source = document.getElementById('filter-source').value;
+            const searchQuery = (document.getElementById('search-bar') ? document.getElementById('search-bar').value.toLowerCase().trim() : '');
+            
+            const wantsUnused = document.getElementById('chk-unused').checked;
+            const wantsCorrect = document.getElementById('chk-correct').checked;
+            const wantsIncorrect = document.getElementById('chk-incorrect').checked;
+            const wantsFlagged = document.getElementById('chk-flagged').checked;
+
+            return allQuestions.filter(q => {
+                if (source !== 'all' && q.source !== source) return false;
+
+                const qKey = `${q.subject || "General"}||${q.branch || "General Branch"}||${q.subtype || "General Subtype"}`;
+                if (selectedTaxonomySet.size > 0 && !selectedTaxonomySet.has(qKey)) return false;
+
+                if (searchQuery) {
+                    const qText = (q.question || '').toLowerCase();
+                    let expText = typeof q.explanation === 'string' ? q.explanation.toLowerCase() : JSON.stringify(q.explanation || '').toLowerCase();
+                    if(!qText.includes(searchQuery) && !expText.includes(searchQuery)) return false;
+                }
+
+                let isCorrect = userStats.correct.includes(q.id);
+                let isIncorrect = userStats.incorrect.includes(q.id);
+                let isFlagged = userStats.flagged.includes(q.id);
+                let isUnused = !isCorrect && !isIncorrect;
+
+                if (wantsUnused && isUnused) return true;
+                if (wantsCorrect && isCorrect) return true;
+                if (wantsIncorrect && isIncorrect) return true;
+                if (wantsFlagged && isFlagged) return true;
+
+                return false;
+            });
+        }
+
+        function updateAvailableCount() { 
+            const count = getFilteredQuestions().length; 
+            document.getElementById('available-count').innerText = `${count} Questions Available`; 
         }
 
         function saveSession() {
@@ -640,72 +804,6 @@
             }, 200);
         }
 
-        function populateFilters() {
-            const subjects = [...new Set(allQuestions.map(q => q.subject))].filter(Boolean); const subjSelect = document.getElementById('filter-subject'); subjSelect.innerHTML = '<option value="all">All Subjects</option>';
-            subjects.forEach(s => subjSelect.innerHTML += `<option value="${s}">${s}</option>`);
-            const sources = [...new Set(allQuestions.map(q => q.source))].filter(Boolean); const sourceSelect = document.getElementById('filter-source'); sourceSelect.innerHTML = '<option value="all">All Sources</option>';
-            sources.forEach(s => sourceSelect.innerHTML += `<option value="${s}">${s}</option>`);
-        }
-
-        function updateFilters(changedLevel) {
-            const subj = document.getElementById('filter-subject').value; const branchSelect = document.getElementById('filter-branch'); const subtypeSelect = document.getElementById('filter-subtype'); const sourceSelect = document.getElementById('filter-source');
-            if (changedLevel === 'subject') {
-                branchSelect.innerHTML = '<option value="all">All Branches</option>'; subtypeSelect.innerHTML = '<option value="all">All Subtypes</option>'; sourceSelect.innerHTML = '<option value="all">All Sources</option>';
-                let filteredForSource = allQuestions;
-                if (subj !== 'all') { filteredForSource = allQuestions.filter(q => q.subject === subj); const branches = [...new Set(filteredForSource.map(q => q.branch))].filter(Boolean); branches.forEach(b => branchSelect.innerHTML += `<option value="${b}">${b}</option>`); }
-                const sources = [...new Set(filteredForSource.map(q => q.source))].filter(Boolean); sources.forEach(s => sourceSelect.innerHTML += `<option value="${s}">${s}</option>`);
-            } else if (changedLevel === 'branch') {
-                subtypeSelect.innerHTML = '<option value="all">All Subtypes</option>'; sourceSelect.innerHTML = '<option value="all">All Sources</option>'; 
-                const branch = branchSelect.value; let filteredForBranch = allQuestions.filter(q => (subj === 'all' || q.subject === subj));
-                if (branch !== 'all') { filteredForBranch = filteredForBranch.filter(q => q.branch === branch); const subtypes = [...new Set(filteredForBranch.map(q => q.subtype))].filter(Boolean); subtypes.forEach(s => subtypeSelect.innerHTML += `<option value="${s}">${s}</option>`); }
-                const sources = [...new Set(filteredForBranch.map(q => q.source))].filter(Boolean); sources.forEach(s => sourceSelect.innerHTML += `<option value="${s}">${s}</option>`);
-            } updateAvailableCount();
-        }
-
-        function getFilteredQuestions() {
-            const subj = document.getElementById('filter-subject').value; 
-            const branch = document.getElementById('filter-branch').value; 
-            const subtype = document.getElementById('filter-subtype').value; 
-            const source = document.getElementById('filter-source').value; 
-            const searchQuery = (document.getElementById('search-bar') ? document.getElementById('search-bar').value.toLowerCase().trim() : '');
-            
-            const wantsUnused = document.getElementById('chk-unused').checked;
-            const wantsCorrect = document.getElementById('chk-correct').checked;
-            const wantsIncorrect = document.getElementById('chk-incorrect').checked;
-            const wantsFlagged = document.getElementById('chk-flagged').checked;
-
-            return allQuestions.filter(q => {
-                const matchSubj = subj === 'all' || q.subject === subj; 
-                const matchBranch = branch === 'all' || q.branch === branch; 
-                const matchSubtype = subtype === 'all' || q.subtype === subtype; 
-                const matchSource = source === 'all' || q.source === source;
-                if (!(matchSubj && matchBranch && matchSubtype && matchSource)) return false;
-
-                if (searchQuery) {
-                    const qText = (q.question || '').toLowerCase();
-                    let expText = '';
-                    if(typeof q.explanation === 'string') expText = q.explanation.toLowerCase();
-                    else if(typeof q.explanation === 'object') expText = JSON.stringify(q.explanation).toLowerCase();
-                    
-                    if(!qText.includes(searchQuery) && !expText.includes(searchQuery)) return false;
-                }
-
-                let isCorrect = userStats.correct.includes(q.id);
-                let isIncorrect = userStats.incorrect.includes(q.id);
-                let isFlagged = userStats.flagged.includes(q.id);
-                let isUnused = !isCorrect && !isIncorrect;
-
-                if (wantsUnused && isUnused) return true;
-                if (wantsCorrect && isCorrect) return true;
-                if (wantsIncorrect && isIncorrect) return true;
-                if (wantsFlagged && isFlagged) return true;
-
-                return false;
-            });
-        }
-
-        function updateAvailableCount() { const count = getFilteredQuestions().length; document.getElementById('available-count').innerText = `${count} Questions Available`; }
-
         function startQuiz() {
             const pool = getFilteredQuestions(); if (pool.length === 0) return alert("No questions match your criteria.");
             activeBlock = pool; blockState = activeBlock.map(q => ({ answered: false, selected: null, correct: false })); currentIdx = 0; testMode = document.querySelector('input[name="test-mode"]:checked').value;
@@ -764,7 +862,7 @@
         function endQuizEarly() { if(confirm("Are you sure you want to exit this block?")) { goHome(); } }
         function goHome() { clearInterval(timerInterval); document.getElementById('app-body').classList.remove('focus-mode'); document.getElementById('quiz-screen').classList.add('hidden'); document.getElementById('quiz-screen').classList.remove('flex'); document.getElementById('quiz-header-controls').classList.add('hidden'); document.getElementById('quiz-header-controls').classList.remove('flex'); document.getElementById('dashboard-screen').classList.remove('hidden'); sessionStorage.removeItem('medico_session'); updateAvailableCount(); }
         
-        function exportToPDF() { const printArea = document.getElementById('print-area'); const titleSubject = document.getElementById('filter-subject').value === 'all' ? 'Mixed Subjects' : document.getElementById('filter-subject').value; const titleBranch = document.getElementById('filter-branch').value === 'all' ? 'Mixed Branches' : document.getElementById('filter-branch').value; let htmlContent = `<style>@media print { @page { size: A4; margin: 0; } body { margin: 0; background-color: #fdfbf2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .print-page-container { width: 100%; min-height: 297mm; display: flex; flex-direction: column; page-break-after: always; padding: 20mm; box-sizing: border-box; background-color: #fdfbf2 !important; } } .print-page-container { width: 100%; min-height: 100vh; display: flex; flex-direction: column; padding: 40px; box-sizing: border-box; background-color: #fdfbf2; margin-bottom: 20px; }</style>`; const Q_PER_PAGE = 4; for (let i = 0; i < activeBlock.length; i += Q_PER_PAGE) { const chunk = activeBlock.slice(i, i + Q_PER_PAGE); htmlContent += `<div class="print-page-container" dir="ltr">`; if (i === 0) { htmlContent += `<h2 style="color: #b8860b; font-size: 22px; font-weight: bold; margin-bottom: 30px; font-family: Arial, sans-serif;">Section: ${titleSubject} - ${titleBranch}</h2>`; } htmlContent += `<div style="flex-grow: 1; font-family: Arial, sans-serif;">`; chunk.forEach((q, chunkIdx) => { const globalIndex = i + chunkIdx; htmlContent += `<div style="margin-bottom: 28px;"><div style="font-size: 16px; margin: 0 0 10px 0; line-height: 1.5; display: flex; align-items: flex-start;"><span style="color: #b8860b; font-weight: bold; min-width: 28px;">${globalIndex + 1}.</span><span style="color: #701a75; font-weight: bold; flex: 1;">${q.question}&nbsp;<sup style="color: #000; font-size: 10px; font-weight: normal;">${globalIndex + 1}</sup></span></div><div style="margin-left: 28px;">`; q.options.forEach((opt, optIdx) => { const letter = String.fromCharCode(97 + optIdx); htmlContent += `<div style="margin-bottom: 6px; font-size: 15px; color: #000;">${letter}. ${opt}</div>`; }); htmlContent += `</div></div>`; }); htmlContent += `</div><div style="margin-top: auto; border-top: 1px solid #000; padding-top: 15px; font-family: Arial, sans-serif; font-size: 12px; line-height: 1.6; color: #000;">`; chunk.forEach((q, chunkIdx) => { const globalIndex = i + chunkIdx; const correctOptText = q.options[q.correct]; htmlContent += `<div style="margin-bottom: 8px;"><sup style="font-size: 10px;">${globalIndex + 1}</sup> <b>Answer:</b> ${correctOptText}</div>`; }); htmlContent += `</div></div>`; } printArea.innerHTML = htmlContent; setTimeout(() => { window.print(); }, 500); }
+        function exportToPDF() { const printArea = document.getElementById('print-area'); let htmlContent = `<style>@media print { @page { size: A4; margin: 0; } body { margin: 0; background-color: #fdfbf2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .print-page-container { width: 100%; min-height: 297mm; display: flex; flex-direction: column; page-break-after: always; padding: 20mm; box-sizing: border-box; background-color: #fdfbf2 !important; } } .print-page-container { width: 100%; min-height: 100vh; display: flex; flex-direction: column; padding: 40px; box-sizing: border-box; background-color: #fdfbf2; margin-bottom: 20px; }</style>`; const Q_PER_PAGE = 4; for (let i = 0; i < activeBlock.length; i += Q_PER_PAGE) { const chunk = activeBlock.slice(i, i + Q_PER_PAGE); htmlContent += `<div class="print-page-container" dir="ltr">`; if (i === 0) { htmlContent += `<h2 style="color: #b8860b; font-size: 22px; font-weight: bold; margin-bottom: 30px; font-family: Arial, sans-serif;">Custom Exam Block</h2>`; } htmlContent += `<div style="flex-grow: 1; font-family: Arial, sans-serif;">`; chunk.forEach((q, chunkIdx) => { const globalIndex = i + chunkIdx; htmlContent += `<div style="margin-bottom: 28px;"><div style="font-size: 16px; margin: 0 0 10px 0; line-height: 1.5; display: flex; align-items: flex-start;"><span style="color: #b8860b; font-weight: bold; min-width: 28px;">${globalIndex + 1}.</span><span style="color: #701a75; font-weight: bold; flex: 1;">${q.question}&nbsp;<sup style="color: #000; font-size: 10px; font-weight: normal;">${globalIndex + 1}</sup></span></div><div style="margin-left: 28px;">`; q.options.forEach((opt, optIdx) => { const letter = String.fromCharCode(97 + optIdx); htmlContent += `<div style="margin-bottom: 6px; font-size: 15px; color: #000;">${letter}. ${opt}</div>`; }); htmlContent += `</div></div>`; }); htmlContent += `</div><div style="margin-top: auto; border-top: 1px solid #000; padding-top: 15px; font-family: Arial, sans-serif; font-size: 12px; line-height: 1.6; color: #000;">`; chunk.forEach((q, chunkIdx) => { const globalIndex = i + chunkIdx; const correctOptText = q.options[q.correct]; htmlContent += `<div style="margin-bottom: 8px;"><sup style="font-size: 10px;">${globalIndex + 1}</sup> <b>Answer:</b> ${correctOptText}</div>`; }); htmlContent += `</div></div>`; } printArea.innerHTML = htmlContent; setTimeout(() => { window.print(); }, 500); }
         
         function requestAdminAccess() { 
             if(isAdmin) { 
