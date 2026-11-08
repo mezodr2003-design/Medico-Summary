@@ -55,64 +55,63 @@
             border: 1px solid rgba(255, 255, 255, 0.12);
         }
 
-        /* --- PROPER TABLE STYLING FIX --- */
+        /* Highlight Selection Styling */
+        mark.custom-highlight {
+            background-color: rgba(250, 204, 21, 0.4);
+            color: inherit;
+            border-radius: 4px;
+            padding: 0 4px;
+            border-bottom: 2px solid #facc15;
+        }
+
+        /* --- TABLE STYLING --- */
         .model-answer-content {
             font-family: 'Inter', sans-serif !important;
-            line-height: 1.6;
+            line-height: 1.75 !important;
+            white-space: pre-line !important;
+        }
+
+        .model-answer-content b, .model-answer-content strong {
+            color: #38bdf8 !important;
+            font-weight: 700 !important;
         }
 
         .model-answer-content table {
             width: 100% !important;
             border-collapse: separate !important;
             border-spacing: 0 !important;
-            margin: 1rem 0 !important;
+            margin: 1.25rem 0 !important;
             border-radius: 12px !important;
             overflow: hidden !important;
             border: 1px solid rgba(255, 255, 255, 0.15) !important;
             background-color: rgba(15, 23, 42, 0.6) !important;
+            white-space: normal !important;
         }
 
         .model-answer-content th {
-            background: rgba(30, 41, 59, 0.9) !important;
+            background: rgba(30, 41, 59, 0.95) !important;
             color: #38bdf8 !important;
             font-weight: 700 !important;
-            font-size: 0.825rem !important;
+            font-size: 0.85rem !important;
             text-transform: uppercase !important;
             letter-spacing: 0.05em !important;
-            padding: 12px 14px !important;
+            padding: 12px 16px !important;
             border-bottom: 2px solid rgba(255, 255, 255, 0.15) !important;
             border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
             text-align: left !important;
         }
 
-        .model-answer-content th:last-child {
-            border-right: none !important;
-        }
-
         .model-answer-content td {
-            padding: 12px 14px !important;
-            font-size: 0.85rem !important;
+            padding: 12px 16px !important;
+            font-size: 0.875rem !important;
             color: #e2e8f0 !important;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
             border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
             vertical-align: top !important;
         }
 
-        .model-answer-content td:last-child {
+        .model-answer-content th:last-child, .model-answer-content td:last-child {
             border-right: none !important;
-        }
-
-        .model-answer-content tr:last-child td {
-            border-bottom: none !important;
-        }
-
-        .model-answer-content tr:nth-child(even) {
-            background-color: rgba(30, 41, 59, 0.25) !important;
-        }
-
-        .model-answer-content b, .model-answer-content strong {
-            color: #f3f4f6 !important;
-            font-weight: 700 !important;
         }
 
         .theme-eyecare { background-color: #f4ebd9 !important; color: #2e2417 !important; }
@@ -136,7 +135,7 @@
         }
     </style>
 </head>
-<body id="app-body" class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col transition-colors duration-200">
+<body id="app-body" class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col transition-colors duration-200 select-text">
 
     <div id="print-area" class="hidden"></div>
 
@@ -170,9 +169,8 @@
 
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex flex-col md:flex-row gap-6">
         
-        <!-- Sidebar Navigation -->
-        <div class="w-full md:w-80 flex-shrink-0 space-y-4">
-            <!-- Anki Review Decks Card -->
+        <div id="sidebar-panel" class="w-full md:w-80 flex-shrink-0 space-y-4">
+            
             <div class="glass-panel rounded-2xl p-4 shadow-xl border border-indigo-500/30 space-y-3">
                 <h3 class="font-bold text-xs uppercase tracking-wider text-indigo-300 flex items-center justify-between">
                     <span><i class="fa-solid fa-layer-group text-indigo-400"></i> Active Recall Decks</span>
@@ -194,40 +192,46 @@
                     </button>
                 </div>
 
-                <button onclick="startAnkiSession()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-2 shadow transition">
+                <button onclick="startAnkiSession()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition active:scale-95">
                     <i class="fa-solid fa-play"></i> Start Anki Practice Block
                 </button>
             </div>
 
-            <!-- Taxonomy Tree -->
-            <div class="glass-panel rounded-2xl p-4 shadow-xl">
-                <div class="flex justify-between items-center pb-3 border-b border-slate-800 mb-3">
+            <div class="glass-panel rounded-2xl p-4 shadow-xl space-y-3">
+                <div class="flex justify-between items-center pb-2 border-b border-slate-800">
                     <h3 class="font-bold text-xs uppercase tracking-wider text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-folder-tree text-indigo-400"></i> Subjects & Topics
+                        <i class="fa-solid fa-folder-tree text-indigo-400"></i> Custom Topics Filter
                     </h3>
-                    <button onclick="clearFilter()" class="text-[11px] text-indigo-400 hover:underline">Show All</button>
+                    <div class="flex gap-2 text-[11px]">
+                        <button onclick="selectAllTree(true)" class="text-indigo-400 hover:underline">Select All</button>
+                        <span class="text-slate-600">|</span>
+                        <button onclick="selectAllTree(false)" class="text-slate-400 hover:underline">Reset</button>
+                    </div>
                 </div>
 
-                <div class="relative mb-3">
+                <div class="relative">
                     <input type="text" id="library-search" onkeyup="filterQuestions()" placeholder="Search written questions..." class="w-full glass-input p-2 rounded-xl text-xs text-slate-200 pl-8 focus:outline-none focus:border-indigo-500">
                     <i class="fa-solid fa-search absolute left-2.5 top-2.5 text-slate-500 text-xs"></i>
                 </div>
 
-                <div id="written-tree-container" class="space-y-2 max-h-[400px] overflow-y-auto pr-1 text-xs">
-                    <p class="text-slate-400 text-center py-4">Loading taxonomy...</p>
+                <div id="written-tree-container" class="space-y-2 max-h-[380px] overflow-y-auto pr-1 text-xs">
+                    <p class="text-slate-400 text-center py-4">Loading topics...</p>
                 </div>
             </div>
         </div>
 
-        <!-- Main Written View -->
         <div class="flex-grow space-y-4">
+            
             <div class="flex flex-wrap justify-between items-center pb-2 border-b border-slate-800 gap-2">
                 <div class="flex items-center gap-2">
                     <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
                     <h2 id="active-topic-title" class="text-lg font-bold text-slate-100">All Written Questions</h2>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="printWrittenSheet()" class="text-xs bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/30 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
+                    <button id="exit-anki-btn" onclick="exitAnkiSession()" class="hidden text-xs bg-rose-600/20 hover:bg-rose-600 text-rose-300 border border-rose-500/30 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-xmark"></i> Exit Practice
+                    </button>
+                    <button id="print-btn" onclick="printWrittenSheet()" class="text-xs bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/30 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
                         <i class="fa-solid fa-print"></i> Print Sheet
                     </button>
                 </div>
@@ -236,10 +240,21 @@
             <div id="written-questions-list" class="space-y-4">
                 <p class="text-slate-400 text-center py-8">Fetching written repository...</p>
             </div>
+
+            <div id="anki-single-card-view" class="hidden space-y-4">
+                <div class="flex justify-between items-center text-xs text-slate-400 font-mono bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-fire text-amber-500"></i> Active Card: <b id="anki-current-index" class="text-indigo-400">1</b> of <b id="anki-total-cards">10</b></span>
+                    <div class="w-32 bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
+                        <div id="anki-progress-bar" class="bg-indigo-500 h-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div id="anki-card-container"></div>
+            </div>
+
         </div>
     </main>
 
-    <!-- Modal for Upload -->
     <div id="upload-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
         <div class="glass-panel border-indigo-500/40 rounded-2xl p-6 w-full max-w-2xl shadow-2xl space-y-4">
             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -257,10 +272,16 @@
         const SUPER_ADMIN_EMAIL = "naheha1614@ensproxy.com";
         let allWrittenQuestions = [];
         let activeAnkiQueue = [];
+        let currentAnkiIndex = 0;
         let isAnkiActiveMode = false;
-        let selectedFilterKey = null;
+        let selectedTaxonomySet = new Set();
         let ankiStatusFilter = null;
         let selfScores = JSON.parse(localStorage.getItem('medico_written_scores')) || {};
+
+        // Canvas Drawing Variables
+        let isDrawing = false;
+        let activeCanvas = null;
+        let activeCtx = null;
 
         function setTheme(mode) {
             const body = document.getElementById('app-body');
@@ -323,26 +344,62 @@
             allWrittenQuestions.forEach(q => {
                 const subj = q.subject || "General";
                 const branch = q.branch || "General Branch";
-                if(!tree[subj]) tree[subj] = {};
-                if(!tree[subj][branch]) tree[subj][branch] = 0;
-                tree[subj][branch]++;
+                const topic = q.topic || "General Topic";
+
+                if(!tree[subj]) tree[subj] = { total: 0, branches: {} };
+                tree[subj].total++;
+
+                if(!tree[subj].branches[branch]) tree[subj].branches[branch] = { total: 0, topics: {} };
+                tree[subj].branches[branch].total++;
+
+                if(!tree[subj].branches[branch].topics[topic]) tree[subj].branches[branch].topics[topic] = 0;
+                tree[subj].branches[branch].topics[topic]++;
             });
 
             let html = '';
             Object.keys(tree).sort().forEach(subj => {
+                const subjData = tree[subj];
+                
                 html += `
                 <div class="glass-card rounded-xl p-2.5 border border-slate-800/80 space-y-1.5">
-                    <div class="font-bold text-slate-200 flex justify-between items-center cursor-pointer" onclick="filterBySubject('${subj}')">
-                        <span>${subj}</span>
-                        <span class="text-[10px] bg-slate-950 px-2 py-0.5 rounded-full text-indigo-400 font-mono">${Object.values(tree[subj]).reduce((a,b)=>a+b, 0)}</span>
+                    <div class="font-bold text-slate-200 flex justify-between items-center">
+                        <label class="flex items-center gap-2 cursor-pointer select-none">
+                            <input type="checkbox" onchange="toggleSubjectCheck('${subj}', this.checked)" class="w-3.5 h-3.5 rounded accent-indigo-500">
+                            <span>${subj}</span>
+                        </label>
+                        <span class="text-[10px] bg-slate-950 px-2 py-0.5 rounded-full text-indigo-400 font-mono">${subjData.total}</span>
                     </div>
-                    <div class="pl-3 space-y-1 border-l border-slate-800/60 mt-1">
-                        ${Object.keys(tree[subj]).sort().map(branch => `
-                            <div class="flex justify-between items-center text-slate-400 hover:text-indigo-300 cursor-pointer text-[11px]" onclick="filterByBranch('${subj}', '${branch}')">
-                                <span>${branch}</span>
-                                <span class="font-mono text-[9px] text-slate-500">${tree[subj][branch]}</span>
+                    
+                    <div class="pl-4 space-y-1 border-l border-slate-800/60 mt-1">
+                        ${Object.keys(subjData.branches).sort().map(branch => {
+                            const branchData = subjData.branches[branch];
+                            return `
+                            <div class="space-y-1">
+                                <div class="flex justify-between items-center text-slate-300 font-semibold text-[11px]">
+                                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                                        <input type="checkbox" onchange="toggleBranchCheck('${subj}', '${branch}', this.checked)" class="w-3 h-3 rounded accent-indigo-500">
+                                        <span>${branch}</span>
+                                    </label>
+                                    <span class="font-mono text-[9px] text-slate-500">${branchData.total}</span>
+                                </div>
+                                <div class="pl-3 space-y-0.5 border-l border-slate-800/40 ml-1">
+                                    ${Object.keys(branchData.topics).sort().map(topic => {
+                                        const key = `${subj}||${branch}||${topic}`;
+                                        const isChecked = selectedTaxonomySet.has(key);
+                                        return `
+                                            <div class="flex items-center justify-between text-slate-400 text-[10px]">
+                                                <label class="flex items-center gap-1.5 cursor-pointer select-none">
+                                                    <input type="checkbox" onchange="toggleTopicCheck('${key}', this.checked)" ${isChecked ? 'checked' : ''} class="w-3 h-3 rounded accent-indigo-500">
+                                                    <span>${topic}</span>
+                                                </label>
+                                                <span class="font-mono text-[9px] text-slate-600">${branchData.topics[topic]}</span>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
                             </div>
-                        `).join('')}
+                            `;
+                        }).join('')}
                     </div>
                 </div>`;
             });
@@ -350,34 +407,51 @@
             container.innerHTML = html || '<p class="text-slate-500 text-center py-2">No written questions found.</p>';
         }
 
-        function startAnkiSession() {
-            isAnkiActiveMode = true;
-            // Queue priorities: Missed first, then Partial, then Unscored
-            const missedList = allWrittenQuestions.filter(q => selfScores[q.id] === 'missed');
-            const partialList = allWrittenQuestions.filter(q => selfScores[q.id] === 'partial');
-            const remaining = allWrittenQuestions.filter(q => !selfScores[q.id] || selfScores[q.id] === 'unrated');
-            
-            activeAnkiQueue = [...missedList, ...partialList, ...remaining];
-            if(activeAnkiQueue.length === 0) activeAnkiQueue = [...allWrittenQuestions];
+        function toggleSubjectCheck(subj, isChecked) {
+            allWrittenQuestions.forEach(q => {
+                if((q.subject || "General") === subj) {
+                    const key = `${q.subject || "General"}||${q.branch || "General Branch"}||${q.topic || "General Topic"}`;
+                    if(isChecked) selectedTaxonomySet.add(key); else selectedTaxonomySet.delete(key);
+                }
+            });
+            renderTree(); renderQuestions();
+        }
 
-            document.getElementById('active-topic-title').innerText = "Anki Active Practice Block (Spaced Repetition)";
+        function toggleBranchCheck(subj, branch, isChecked) {
+            allWrittenQuestions.forEach(q => {
+                if((q.subject || "General") === subj && (q.branch || "General Branch") === branch) {
+                    const key = `${subj}||${branch}||${q.topic || "General Topic"}`;
+                    if(isChecked) selectedTaxonomySet.add(key); else selectedTaxonomySet.delete(key);
+                }
+            });
+            renderTree(); renderQuestions();
+        }
+
+        function toggleTopicCheck(key, isChecked) {
+            if(isChecked) selectedTaxonomySet.add(key); else selectedTaxonomySet.delete(key);
             renderQuestions();
         }
 
-        function renderQuestions() {
-            const container = document.getElementById('written-questions-list');
+        function selectAllTree(selectAll) {
+            selectedTaxonomySet.clear();
+            if(selectAll) {
+                allWrittenQuestions.forEach(q => {
+                    const key = `${q.subject || "General"}||${q.branch || "General Branch"}||${q.topic || "General Topic"}`;
+                    selectedTaxonomySet.add(key);
+                });
+            }
+            renderTree(); renderQuestions();
+        }
+
+        function getFilteredQuestionsPool() {
             const searchVal = document.getElementById('library-search').value.toLowerCase().trim();
-
-            let targetPool = isAnkiActiveMode ? activeAnkiQueue : allWrittenQuestions;
-
-            const filtered = targetPool.filter(q => {
+            return allWrittenQuestions.filter(q => {
                 if(ankiStatusFilter) {
                     if(selfScores[q.id] !== ankiStatusFilter) return false;
                 }
-                if(selectedFilterKey) {
-                    if(selectedFilterKey.type === 'subj' && q.subject !== selectedFilterKey.value) return false;
-                    if(selectedFilterKey.type === 'branch' && (q.subject !== selectedFilterKey.subj || q.branch !== selectedFilterKey.branch)) return false;
-                }
+                const key = `${q.subject || "General"}||${q.branch || "General Branch"}||${q.topic || "General Topic"}`;
+                if(selectedTaxonomySet.size > 0 && !selectedTaxonomySet.has(key)) return false;
+
                 if(searchVal) {
                     const qText = (q.question || '').toLowerCase();
                     const ansText = (q.modelAnswer || '').toLowerCase();
@@ -385,15 +459,205 @@
                 }
                 return true;
             });
+        }
+
+        function startAnkiSession() {
+            const pool = getFilteredQuestionsPool();
+            if(pool.length === 0) return alert("No questions selected or matching your filter.");
+
+            const missedList = pool.filter(q => selfScores[q.id] === 'missed');
+            const partialList = pool.filter(q => selfScores[q.id] === 'partial');
+            const remaining = pool.filter(q => !selfScores[q.id] || selfScores[q.id] === 'unrated');
+
+            activeAnkiQueue = [...missedList, ...partialList, ...remaining];
+            if(activeAnkiQueue.length === 0) activeAnkiQueue = [...pool];
+
+            currentAnkiIndex = 0;
+            isAnkiActiveMode = true;
+
+            document.getElementById('written-questions-list').classList.add('hidden');
+            document.getElementById('anki-single-card-view').classList.remove('hidden');
+            document.getElementById('exit-anki-btn').classList.remove('hidden');
+            document.getElementById('print-btn').classList.add('hidden');
+            document.getElementById('active-topic-title').innerText = "Anki Flashcard Mode (Single Card View)";
+
+            renderAnkiSingleCard();
+        }
+
+        function renderAnkiSingleCard() {
+            if(activeAnkiQueue.length === 0 || currentAnkiIndex >= activeAnkiQueue.length) {
+                document.getElementById('anki-card-container').innerHTML = `
+                <div class="glass-panel p-8 text-center space-y-4 rounded-2xl border border-emerald-500/40">
+                    <i class="fa-solid fa-trophy text-amber-400 text-5xl animate-bounce"></i>
+                    <h3 class="font-extrabold text-slate-100 text-xl">Block Completed! 🎉</h3>
+                    <p class="text-xs text-slate-300">You have reviewed all active flashcards in this queue.</p>
+                    <button onclick="exitAnkiSession()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-2.5 rounded-xl text-xs uppercase tracking-wider shadow">Return to Library</button>
+                </div>`;
+                return;
+            }
+
+            const q = activeAnkiQueue[currentAnkiIndex];
+
+            document.getElementById('anki-current-index').innerText = currentAnkiIndex + 1;
+            document.getElementById('anki-total-cards').innerText = activeAnkiQueue.length;
+            const progress = ((currentAnkiIndex + 1) / activeAnkiQueue.length) * 100;
+            document.getElementById('anki-progress-bar').style.width = `${progress}%`;
+
+            document.getElementById('anki-card-container').innerHTML = `
+            <div class="glass-panel rounded-2xl p-6 border border-indigo-500/30 shadow-2xl space-y-4">
+                <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-800 pb-3">
+                    <div class="flex items-center gap-2 text-xs font-semibold">
+                        <span class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-3 py-1 rounded-md uppercase tracking-wider">${q.subject || 'General'}</span>
+                        <span class="bg-slate-800 text-slate-300 px-3 py-1 rounded-md">${q.branch || 'General'}</span>
+                        ${q.topic ? `<span class="bg-slate-900 text-slate-400 px-2.5 py-1 rounded text-xs">${q.topic}</span>` : ''}
+                    </div>
+                    <div class="flex items-center gap-2">
+                        ${q.marks ? `<span class="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded border border-amber-500/20">${q.marks}</span>` : ''}
+                    </div>
+                </div>
+
+                <div class="text-slate-100 font-bold text-base sm:text-lg leading-relaxed">
+                    ${q.question}
+                </div>
+
+                <!-- Stylus Scratchpad / Canvas Toggle -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <button onclick="toggleScratchpad('${q.id}')" class="text-xs bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-pen-nib"></i> <span>Stylus Pen Scratchpad</span>
+                        </button>
+                    </div>
+                    
+                    <div id="scratchpad-box-${q.id}" class="hidden glass-card p-3 rounded-xl border border-amber-500/30 space-y-2">
+                        <div class="flex justify-between items-center text-xs text-slate-400">
+                            <span class="font-semibold text-amber-400"><i class="fa-solid fa-signature"></i> Write / Recite your answer here:</span>
+                            <div class="flex gap-2">
+                                <button onclick="clearScratchpad('${q.id}')" class="text-[10px] bg-rose-600/20 text-rose-400 border border-rose-500/30 px-2 py-0.5 rounded font-bold hover:bg-rose-600 hover:text-white">Clear</button>
+                            </div>
+                        </div>
+                        <canvas id="canvas-${q.id}" class="w-full h-44 bg-slate-950 rounded-lg border border-slate-800 cursor-crosshair touch-none"></canvas>
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <button onclick="toggleAnkiAnswer('${q.id}')" class="w-full text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30">
+                        <i class="fa-solid fa-eye"></i> <span id="btn-txt-single-${q.id}">Show Model Answer</span>
+                    </button>
+                </div>
+
+                <div id="ans-box-single-${q.id}" class="hidden mt-4 glass-card border-l-4 border-emerald-500 rounded-r-xl p-5 space-y-4">
+                    <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2 pb-2 border-b border-slate-800">
+                        <i class="fa-solid fa-check-double"></i> Model Answer & Key Points
+                    </h4>
+                    
+                    <div class="model-answer-content">${q.modelAnswer || 'No model answer available.'}</div>
+                    
+                    <div class="pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <span class="text-xs text-slate-400 font-semibold">Rate Your Recall Strength:</span>
+                        <div class="grid grid-cols-3 gap-2 w-full sm:w-auto">
+                            <button onclick="rateSingleAnkiCard('${q.id}', 'missed')" class="text-xs px-4 py-2 rounded-xl font-bold bg-slate-900 hover:bg-rose-950 text-rose-400 border border-rose-500/40 transition flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-rotate-right text-[10px]"></i> Repeat Soon
+                            </button>
+                            <button onclick="rateSingleAnkiCard('${q.id}', 'partial')" class="text-xs px-4 py-2 rounded-xl font-bold bg-slate-900 hover:bg-amber-950 text-amber-400 border border-amber-500/40 transition flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-hourglass-half text-[10px]"></i> End of Block
+                            </button>
+                            <button onclick="rateSingleAnkiCard('${q.id}', 'mastered')" class="text-xs px-4 py-2 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg transition flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-check text-[10px]"></i> Got It Easy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function toggleScratchpad(id) {
+            const box = document.getElementById(`scratchpad-box-${id}`);
+            box.classList.toggle('hidden');
+            if(!box.classList.contains('hidden')) {
+                initCanvas(id);
+            }
+        }
+
+        function initCanvas(id) {
+            const canvas = document.getElementById(`canvas-${id}`);
+            if(!canvas) return;
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.strokeStyle = '#facc15'; // Amber yellow pen
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+
+            let drawing = false;
+
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return { x: clientX - rect.left, y: clientY - rect.top };
+            }
+
+            function startDraw(e) { drawing = true; ctx.beginPath(); const pos = getPos(e); ctx.moveTo(pos.x, pos.y); }
+            function draw(e) { if(!drawing) return; e.preventDefault(); const pos = getPos(e); ctx.lineTo(pos.x, pos.y); ctx.stroke(); }
+            function stopDraw() { drawing = false; }
+
+            canvas.onmousedown = startDraw; canvas.onmousemove = draw; canvas.onmouseup = stopDraw;
+            canvas.ontouchstart = startDraw; canvas.ontouchmove = draw; canvas.ontouchend = stopDraw;
+        }
+
+        function clearScratchpad(id) {
+            const canvas = document.getElementById(`canvas-${id}`);
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function toggleAnkiAnswer(id) {
+            const box = document.getElementById(`ans-box-single-${id}`);
+            const btnTxt = document.getElementById(`btn-txt-single-${id}`);
+            box.classList.toggle('hidden');
+            if(box.classList.contains('hidden')) {
+                btnTxt.innerText = "Show Model Answer";
+            } else {
+                btnTxt.innerText = "Hide Model Answer";
+            }
+        }
+
+        function rateSingleAnkiCard(id, score) {
+            selfScores[id] = score;
+            localStorage.setItem('medico_written_scores', JSON.stringify(selfScores));
+            updateAnkiBadges();
+
+            const currentQ = activeAnkiQueue[currentAnkiIndex];
+
+            if(score === 'missed') {
+                const insertIdx = Math.min(currentAnkiIndex + 3, activeAnkiQueue.length);
+                activeAnkiQueue.splice(insertIdx, 0, currentQ);
+            } else if(score === 'partial') {
+                activeAnkiQueue.push(currentQ);
+            }
+
+            currentAnkiIndex++;
+            renderAnkiSingleCard();
+        }
+
+        function exitAnkiSession() {
+            isAnkiActiveMode = false;
+            document.getElementById('written-questions-list').classList.remove('hidden');
+            document.getElementById('anki-single-card-view').classList.add('hidden');
+            document.getElementById('exit-anki-btn').classList.add('hidden');
+            document.getElementById('print-btn').classList.remove('hidden');
+            document.getElementById('active-topic-title').innerText = "All Written Questions";
+            renderQuestions();
+        }
+
+        function renderQuestions() {
+            if(isAnkiActiveMode) return;
+            const container = document.getElementById('written-questions-list');
+            const filtered = getFilteredQuestionsPool();
 
             if(filtered.length === 0) {
-                container.innerHTML = `
-                <div class="glass-panel p-8 text-center space-y-3 rounded-2xl">
-                    <i class="fa-solid fa-circle-check text-emerald-400 text-4xl"></i>
-                    <h3 class="font-bold text-slate-200 text-base">No questions found in this queue!</h3>
-                    <p class="text-xs text-slate-400">All questions in this deck have been mastered or filtered out.</p>
-                    <button onclick="clearFilter()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-2 rounded-xl text-xs">Reset All Filters</button>
-                </div>`;
+                container.innerHTML = '<p class="text-slate-400 text-center py-8">No written questions match your selection.</p>';
                 return;
             }
 
@@ -432,52 +696,12 @@
                             </h4>
                         </div>
                         
-                        <!-- Fixed Table Container -->
                         <div class="model-answer-content overflow-x-auto">${q.modelAnswer || 'No model answer available.'}</div>
-                        
-                        <!-- Anki Spaced Repetition Rating Buttons -->
-                        <div class="pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
-                            <span class="text-[11px] text-slate-400 font-semibold">Anki Self Rating:</span>
-                            <div class="flex gap-2">
-                                <button onclick="rateAnkiQuestion('${q.id}', 'missed')" class="text-xs px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1 ${currentScore === 'missed' ? 'bg-rose-600 text-white shadow-lg shadow-rose-600/30' : 'bg-slate-900 text-rose-400 hover:bg-rose-950 border border-rose-500/40'}">
-                                    <i class="fa-solid fa-rotate-right text-[10px]"></i> Repeat Soon (Missed)
-                                </button>
-                                <button onclick="rateAnkiQuestion('${q.id}', 'partial')" class="text-xs px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1 ${currentScore === 'partial' ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/30' : 'bg-slate-900 text-amber-400 hover:bg-amber-950 border border-amber-500/40'}">
-                                    <i class="fa-solid fa-hourglass-half text-[10px]"></i> End of Block (Hard)
-                                </button>
-                                <button onclick="rateAnkiQuestion('${q.id}', 'mastered')" class="text-xs px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1 ${currentScore === 'mastered' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'bg-slate-900 text-emerald-400 hover:bg-emerald-950 border border-emerald-500/40'}">
-                                    <i class="fa-solid fa-check text-[10px]"></i> Done (Easy)
-                                </button>
-                            </div>
-                        </div>
                     </div>
                 </div>`;
             });
 
             container.innerHTML = html;
-        }
-
-        function rateAnkiQuestion(id, score) {
-            selfScores[id] = score;
-            localStorage.setItem('medico_written_scores', JSON.stringify(selfScores));
-            updateAnkiBadges();
-
-            if(isAnkiActiveMode) {
-                const targetQ = allWrittenQuestions.find(q => q.id === id);
-                if(score === 'missed') {
-                    // Re-insert after 2 questions or at queue end
-                    const pos = Math.min(2, activeAnkiQueue.length);
-                    activeAnkiQueue.splice(pos, 0, targetQ);
-                } else if(score === 'partial') {
-                    // Push to the end of the queue
-                    activeAnkiQueue.push(targetQ);
-                } else if(score === 'mastered') {
-                    // Remove permanently from active queue
-                    activeAnkiQueue = activeAnkiQueue.filter(q => q.id !== id);
-                }
-            }
-
-            renderQuestions();
         }
 
         function toggleAnswer(id) {
@@ -493,33 +717,15 @@
 
         function filterByAnkiStatus(status) {
             ankiStatusFilter = status;
-            isAnkiActiveMode = false;
             document.getElementById('active-topic-title').innerText = `Deck: ${status.toUpperCase()} Questions`;
             renderQuestions();
         }
 
-        function filterBySubject(subj) {
-            selectedFilterKey = { type: 'subj', value: subj };
-            ankiStatusFilter = null;
-            isAnkiActiveMode = false;
-            document.getElementById('active-topic-title').innerText = `Subject: ${subj}`;
-            renderQuestions();
-        }
-
-        function filterByBranch(subj, branch) {
-            selectedFilterKey = { type: 'branch', subj: subj, branch: branch };
-            ankiStatusFilter = null;
-            isAnkiActiveMode = false;
-            document.getElementById('active-topic-title').innerText = `${subj} ➔ ${branch}`;
-            renderQuestions();
-        }
-
         function clearFilter() {
-            selectedFilterKey = null;
+            selectedTaxonomySet.clear();
             ankiStatusFilter = null;
-            isAnkiActiveMode = false;
             document.getElementById('active-topic-title').innerText = "All Written Questions";
-            renderQuestions();
+            renderTree(); renderQuestions();
         }
 
         function filterQuestions() { renderQuestions(); }
@@ -557,11 +763,12 @@
             let html = `<div style="padding: 30px; font-family: Arial, sans-serif;">
                 <h1 style="color: #4f46e5; border-bottom: 2px solid #ddd; padding-bottom: 10px;">Written Questions Bank - Medico Summary</h1>`;
             
-            allWrittenQuestions.forEach((q, i) => {
+            const pool = getFilteredQuestionsPool();
+            pool.forEach((q, i) => {
                 html += `
                 <div style="margin-bottom: 25px; page-break-inside: avoid;">
                     <h3 style="margin: 0 0 5px 0; color: #1e293b;">Q${i+1}. ${q.question} <span style="font-size: 12px; color: #64748b;">(${q.marks || ''})</span></h3>
-                    <div style="background: #f8fafc; padding: 10px; border-left: 3px solid #10b981; margin-top: 5px; font-size: 13px; font-family: sans-serif; whitespace-pre-line;">
+                    <div style="background: #f8fafc; padding: 12px; border-left: 3px solid #10b981; margin-top: 5px; font-size: 13px; font-family: sans-serif; white-space: pre-line;">
                         <b>Answer:</b><br>${q.modelAnswer || 'N/A'}
                     </div>
                 </div>`;
