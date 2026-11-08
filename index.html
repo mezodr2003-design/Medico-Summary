@@ -209,6 +209,9 @@
                 <button id="super-admin-activity-btn" onclick="openActivityLogModal()" class="hidden bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 px-5 rounded-xl transition shadow flex items-center gap-2 justify-center text-sm whitespace-nowrap">
                     <i class="fa-solid fa-clock-rotate-left"></i> Review Admin Uploads
                 </button>
+                <button id="super-admin-trash-btn" onclick="openTrashModal()" class="hidden bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2.5 px-5 rounded-xl transition shadow flex items-center gap-2 justify-center text-sm whitespace-nowrap">
+                    <i class="fa-solid fa-trash-can-arrow-up"></i> Recycle Bin
+                </button>
             </div>
 
             <div class="glass-panel rounded-2xl p-6 sm:p-8 shadow-xl space-y-6 transition-colors duration-200">
@@ -417,7 +420,7 @@
                 </div>
                 <div class="glass-card border-rose-900/50 p-4 rounded-xl space-y-2">
                     <h4 class="font-bold text-xs uppercase tracking-wider text-rose-400 flex items-center gap-1.5"><i class="fa-solid fa-broom"></i> Deduplicate Repository</h4>
-                    <p class="text-xs text-slate-400">Checks for 4-factor exact duplicates (Subject + Branch + Subtype + Vignette). Retains the master copy and removes redundant entries.</p>
+                    <p class="text-xs text-slate-400">Checks for 4-factor exact duplicates (Subject + Branch + Subtype + Vignette). Retains the master copy and moves redundant entries to the Recycle Bin (they can be restored).</p>
                     <button id="clean-dup-btn" onclick="removeDuplicates()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-xl transition text-xs uppercase tracking-wider"> Scan & Deduplicate </button>
                 </div>
             </div>
@@ -433,7 +436,7 @@
                 <div class="flex-grow overflow-y-auto space-y-6 pr-2">
                     <div>
                         <h4 class="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-3 border-b border-slate-800 pb-2"><i class="fa-solid fa-clock"></i> Active Pending Uploads</h4>
-                        <p class="text-[10px] text-slate-500 mb-2">Check (✓) to safely isolate a batch and prevent deletion. Cross (✗) to permanently delete.</p>
+                        <p class="text-[10px] text-slate-500 mb-2">Check (✓) to safely isolate a batch and prevent deletion. Cross (✗) deletes ONLY the questions that belong to that exact upload (they go to the Recycle Bin and can be restored).</p>
                         <div id="activity-log-list" class="space-y-2.5 text-xs">
                             <p class="text-slate-400 text-center py-4">Loading active uploads...</p>
                         </div>
@@ -446,6 +449,22 @@
                             <p class="text-slate-400 text-center py-4">No isolated uploads.</p>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="trash-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div class="glass-panel border-slate-500/40 rounded-2xl p-6 w-full max-w-4xl shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3 shrink-0 gap-2">
+                    <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2 uppercase tracking-wide"><i class="fa-solid fa-trash-can-arrow-up text-emerald-400"></i> Recycle Bin</h3>
+                    <div class="flex items-center gap-2">
+                        <button id="trash-restore-all-btn" onclick="restoreAllFromTrash()" class="text-[11px] bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/30 px-3 py-1.5 rounded-lg font-bold transition">Restore All</button>
+                        <button onclick="closeTrashModal()" class="text-slate-400 hover:text-slate-200 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+                    </div>
+                </div>
+                <p class="text-[10px] text-slate-500 shrink-0">Deleted questions are kept here. Restore puts a question back in the question bank with the same ID, so your stats and flags stay linked to it.</p>
+                <div id="trash-list" class="flex-grow overflow-y-auto space-y-2.5 text-xs pr-2">
+                    <p class="text-slate-400 text-center py-4">Loading...</p>
                 </div>
             </div>
         </div>
@@ -512,6 +531,11 @@
         // System Tree State
         let expandedNodesState = {};
         let selectedTaxonomySet = new Set();
+
+        // Small helper: escape text before putting it inside HTML
+        function esc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
 
         function setTheme(mode) {
             const body = document.getElementById('app-body');
@@ -769,13 +793,14 @@
                         const editQBtn = document.getElementById('edit-q-btn');
                         const deleteQBtn = document.getElementById('delete-q-btn');
                         const superAdminActivityBtn = document.getElementById('super-admin-activity-btn');
+                        const superAdminTrashBtn = document.getElementById('super-admin-trash-btn');
 
                         if (user) {
                             if (ADMIN_EMAILS.includes(user.email)) {
                                 isAdmin = true; isSuperAdmin = (user.email === SUPER_ADMIN_EMAIL);
                                 adminBtnText.innerText = isSuperAdmin ? "Super Admin Active" : "Admin Active";
                                 cloudToolsBtn.classList.remove('hidden'); studentAuthBtn.classList.add('hidden'); 
-                                if(isSuperAdmin) { superAdminActivityBtn.classList.remove('hidden'); }
+                                if(isSuperAdmin) { superAdminActivityBtn.classList.remove('hidden'); superAdminTrashBtn.classList.remove('hidden'); }
                                 if(!document.getElementById('quiz-screen').classList.contains('hidden')) {
                                     editQBtn.classList.remove('hidden'); editQBtn.classList.add('flex');
                                     if(isSuperAdmin) { deleteQBtn.classList.remove('hidden'); deleteQBtn.classList.add('flex'); }
@@ -786,6 +811,7 @@
                                 editQBtn.classList.add('hidden'); editQBtn.classList.remove('flex');
                                 deleteQBtn.classList.add('hidden'); deleteQBtn.classList.remove('flex');
                                 superAdminActivityBtn.classList.add('hidden');
+                                superAdminTrashBtn.classList.add('hidden');
                                 studentBtnText.innerText = "Logout (" + user.email.split('@')[0] + ")";
                                 studentAuthBtn.onclick = logoutStudent;
                                 if (typeof fetchStudentProgressFromCloud === 'function') { fetchStudentProgressFromCloud(user); }
@@ -796,6 +822,7 @@
                             editQBtn.classList.add('hidden'); editQBtn.classList.remove('flex');
                             deleteQBtn.classList.add('hidden'); deleteQBtn.classList.remove('flex');
                             superAdminActivityBtn.classList.add('hidden');
+                            superAdminTrashBtn.classList.add('hidden');
                             studentBtnText.innerText = "Student Login"; studentAuthBtn.onclick = openStudentModal;
                             studentAuthBtn.classList.remove('hidden'); studentAuthBtn.classList.add('flex');
                         }
@@ -971,21 +998,44 @@
             loadQuestion(); closeEditModal(); 
         }
 
+        // =====================================================
+        //   SAFE DELETE: every delete first copies the question
+        //   to the "questions_trash" collection (Recycle Bin).
+        //   If the copy fails, NOTHING is deleted.
+        // =====================================================
+        function currentAdminEmail() {
+            const u = window.firebaseAuth && window.firebaseAuth.currentUser;
+            return u ? u.email : 'unknown';
+        }
+
+        async function archiveAndDelete(docId, data, reason) {
+            const { doc, setDoc, deleteDoc, serverTimestamp } = window.firestoreTools;
+            const clean = { ...data };
+            delete clean.id;
+            await setDoc(doc(window.db, "questions_trash", docId), {
+                ...clean,
+                _deletedAt: serverTimestamp(),
+                _deletedBy: currentAdminEmail(),
+                _reason: reason || 'manual'
+            });
+            await deleteDoc(doc(window.db, "questions", docId));
+        }
+
         async function deleteCurrentQuestionFromCloud() {
-            if(!isSuperAdmin) return alert("Only Super Admin is authorized to delete questions permanently.");
+            if(!isSuperAdmin) return alert("Only Super Admin is authorized to delete questions.");
             const q = activeBlock[currentIdx];
             if(!q || !q.id) return alert("This question cannot be deleted directly (Local file).");
 
-            if(confirm("Are you sure you want to PERMANENTLY delete this question from the Cloud Database?")) {
+            const preview = (q.question || '').slice(0, 120);
+            if(confirm(`Delete this question?\n\n"${preview}..."\n\nIt will be moved to the Recycle Bin and can be restored.`)) {
                 try {
-                    const { deleteDoc, doc } = window.firestoreTools;
-                    await deleteDoc(doc(window.db, "questions", q.id));
+                    await archiveAndDelete(q.id, q, 'single');
                     
                     allQuestions = allQuestions.filter(item => item.id !== q.id);
                     activeBlock.splice(currentIdx, 1);
                     blockState.splice(currentIdx, 1);
                     
-                    alert("Question deleted permanently from Cloud Database!");
+                    alert("Question moved to the Recycle Bin.");
                     
                     if(activeBlock.length === 0) { 
                         goHome(); 
@@ -996,7 +1046,7 @@
                     }
                     updateAvailableCount();
                 } catch(err) { 
-                    alert("Error deleting question: " + err.message); 
+                    alert("Error deleting question (nothing was deleted): " + err.message); 
                 }
             }
         }
@@ -1004,15 +1054,56 @@
         function openCloudAdmin() { document.getElementById('cloud-admin-modal').classList.remove('hidden'); }
         function closeCloudAdmin() { document.getElementById('cloud-admin-modal').classList.add('hidden'); }
 
-        async function logAdminUpload(count, firstSubject) {
+        // =====================================================
+        //   UPLOADS: every upload gets a unique batchId that is
+        //   stored on each question AND on the activity log, so a
+        //   batch delete can only touch that exact batch.
+        // =====================================================
+        function validateQuestionsArray(arr) {
+            for (let i = 0; i < arr.length; i++) {
+                const q = arr[i];
+                if (!q || typeof q !== 'object') return `Item #${i + 1} is not an object.`;
+                if (typeof q.question !== 'string' || !q.question.trim()) return `Item #${i + 1} has no "question" text.`;
+                if (!Array.isArray(q.options) || q.options.length < 2) return `Item #${i + 1} needs an "options" array with at least 2 options.`;
+                if (typeof q.correct !== 'number' || q.correct < 0 || q.correct >= q.options.length) return `Item #${i + 1} has an invalid "correct" index.`;
+            }
+            return null;
+        }
+
+        async function logAdminUpload(count, firstSubject, batchId) {
+            const user = window.firebaseAuth.currentUser;
+            if(!user) throw new Error("Not logged in.");
+            const { doc, setDoc, serverTimestamp } = window.firestoreTools;
+            await setDoc(doc(window.db, "activity_logs", batchId), {
+                adminEmail: user.email, adminName: user.email.split('@')[0], count: count, subject: firstSubject || "General",
+                isolated: false, batchId: batchId, timestamp: serverTimestamp()
+            });
+        }
+
+        async function uploadQuestionsArray(questionsArray) {
+            const problem = validateQuestionsArray(questionsArray);
+            if (problem) { alert("Upload cancelled, nothing was uploaded.\n\n" + problem); return -1; }
+            if (questionsArray.length === 0) { alert("The array is empty."); return -1; }
+
+            const { collection, addDoc } = window.firestoreTools;
+            const batchId = 'batch_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+
+            // Log FIRST, so even a half-finished upload can be found and removed safely later
+            await logAdminUpload(questionsArray.length, questionsArray[0].subject, batchId);
+
+            let count = 0;
             try {
-                const user = window.firebaseAuth.currentUser;
-                if(!user) return;
-                const { collection, addDoc, serverTimestamp } = window.firestoreTools;
-                await addDoc(collection(window.db, "activity_logs"), {
-                    adminEmail: user.email, adminName: user.email.split('@')[0], count: count, subject: firstSubject || "General", isolated: false, timestamp: serverTimestamp()
-                });
-            } catch(e) { console.error("Logging activity failed:", e); }
+                for (const q of questionsArray) {
+                    const clean = { ...q };
+                    delete clean.id; delete clean.batchId;
+                    await addDoc(collection(window.db, "questions"), { ...clean, batchId: batchId });
+                    count++;
+                }
+            } catch (err) {
+                alert(`Upload stopped after ${count} of ${questionsArray.length} questions: ${err.message}\n\nThe ${count} uploaded questions appear in "Review Admin Uploads" as one batch; you can remove that batch safely and try again.`);
+                return count;
+            }
+            return count;
         }
 
         async function uploadPastedJSON() {
@@ -1023,12 +1114,11 @@
             try {
                 const questionsArray = JSON.parse(textData);
                 if (!Array.isArray(questionsArray)) { alert("Invalid structure. It must be an array [ ... ]."); btn.disabled=false; btn.innerText="Upload Pasted Data"; return; }
-                const { collection, addDoc } = window.firestoreTools;
-                let count = 0;
-                for (let q of questionsArray) { await addDoc(collection(window.db, "questions"), q); count++; }
-                await logAdminUpload(count, questionsArray[0]?.subject);
-                alert(`Success! Uploaded ${count} questions directly to the Cloud Database.`);
-                document.getElementById('bulk-json-text').value = ''; closeCloudAdmin(); initCloudSync(); 
+                const count = await uploadQuestionsArray(questionsArray);
+                if (count === questionsArray.length) {
+                    alert(`Success! Uploaded ${count} questions directly to the Cloud Database.`);
+                    document.getElementById('bulk-json-text').value = ''; closeCloudAdmin(); initCloudSync(); 
+                } else if (count > 0) { initCloudSync(); }
             } catch (err) { alert("Error parsing or uploading JSON: " + err.message); }
             btn.disabled = false; btn.innerText = "Upload Pasted Data";
         }
@@ -1044,12 +1134,11 @@
                 try {
                     const questionsArray = JSON.parse(e.target.result);
                     if (!Array.isArray(questionsArray)) { alert("Invalid JSON structure."); btn.disabled=false; btn.innerText="Upload File"; return; }
-                    const { collection, addDoc } = window.firestoreTools;
-                    let count = 0;
-                    for (let q of questionsArray) { await addDoc(collection(window.db, "questions"), q); count++; }
-                    await logAdminUpload(count, questionsArray[0]?.subject);
-                    alert(`Success! Uploaded ${count} questions to the Cloud Database.`);
-                    fileInput.value = ''; closeCloudAdmin(); initCloudSync(); 
+                    const count = await uploadQuestionsArray(questionsArray);
+                    if (count === questionsArray.length) {
+                        alert(`Success! Uploaded ${count} questions to the Cloud Database.`);
+                        fileInput.value = ''; closeCloudAdmin(); initCloudSync(); 
+                    } else if (count > 0) { initCloudSync(); }
                 } catch (err) { alert("Error uploading JSON file: " + err.message); }
                 btn.disabled = false; btn.innerText = "Upload File";
             };
@@ -1060,27 +1149,30 @@
             const btn = document.getElementById('clean-dup-btn');
             btn.disabled = true; btn.innerText = "Scanning database for duplicates...";
             try {
-                const { collection, getDocs, deleteDoc, doc } = window.firestoreTools;
+                const { collection, getDocs } = window.firestoreTools;
                 const querySnapshot = await getDocs(collection(window.db, "questions"));
                 const seen = new Set(); let duplicates = [];
                 querySnapshot.forEach((document) => {
                     const data = document.data();
                     const uniqueKey = `${data.subject || ''}|${data.branch || ''}|${data.subtype || ''}|${data.question || ''}`.trim().toLowerCase();
-                    if (seen.has(uniqueKey)) { duplicates.push(document.id); } else { seen.add(uniqueKey); }
+                    if (seen.has(uniqueKey)) { duplicates.push({ id: document.id, data: data }); } else { seen.add(uniqueKey); }
                 });
                 if (duplicates.length === 0) { alert("No duplicates found in the Cloud Database! Your database is clean."); } 
                 else {
-                    if(confirm(`Found ${duplicates.length} duplicate questions. Do you want to delete the extra copies?`)) {
-                        btn.innerText = `Deleting ${duplicates.length} questions...`;
-                        let deletedCount = 0;
-                        for (let id of duplicates) { await deleteDoc(doc(window.db, "questions", id)); deletedCount++; }
-                        alert(`Successfully deleted ${deletedCount} duplicate questions!`); initCloudSync(); 
+                    if(confirm(`Found ${duplicates.length} duplicate questions. Move the extra copies to the Recycle Bin?`)) {
+                        btn.innerText = `Moving ${duplicates.length} questions...`;
+                        let movedCount = 0;
+                        for (const d of duplicates) { await archiveAndDelete(d.id, d.data, 'duplicate'); movedCount++; }
+                        alert(`Moved ${movedCount} duplicate questions to the Recycle Bin.`); initCloudSync(); 
                     }
                 }
             } catch(err) { alert("Error scanning database: " + err.message); }
-            btn.disabled = false; btn.innerText = "Scan & Remove Duplicates";
+            btn.disabled = false; btn.innerText = "Scan & Deduplicate";
         }
 
+        // =====================================================
+        //                ADMIN UPLOAD LOG / BATCHES
+        // =====================================================
         async function openActivityLogModal() {
             document.getElementById('activity-log-modal').classList.remove('hidden');
             const activeList = document.getElementById('activity-log-list');
@@ -1095,17 +1187,21 @@
                 
                 let activeHTML = ''; let isolatedHTML = '';
                 let logs = [];
-                querySnapshot.forEach(doc => logs.push({ id: doc.id, ...doc.data() }));
+                querySnapshot.forEach(d => logs.push({ id: d.id, ...d.data() }));
+                logs.sort((a, b) => ((b.timestamp && b.timestamp.seconds) || 0) - ((a.timestamp && a.timestamp.seconds) || 0));
                 
-                logs.reverse().forEach(log => {
+                logs.forEach(log => {
                     const dateStr = log.timestamp ? new Date(log.timestamp.toDate()).toLocaleString() : "Recently";
+                    const tag = log.batchId
+                        ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 ml-1">tracked</span>'
+                        : '<span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-700 text-slate-300 border border-slate-600 ml-1" title="Uploaded before batch tracking: its questions cannot be identified safely">legacy</span>';
                     
                     if(log.isolated) {
                         isolatedHTML += `
                             <div class="glass-card p-3 rounded-xl flex justify-between items-center opacity-70">
                                 <div>
-                                    <span class="font-bold text-amber-400">${log.adminName}</span> uploaded <span class="font-bold text-emerald-400">${log.count} Qs</span> 
-                                    <span class="text-[10px] text-slate-400">(${log.subject})</span>
+                                    <span class="font-bold text-amber-400">${esc(log.adminName)}</span> uploaded <span class="font-bold text-emerald-400">${esc(log.count)} Qs</span> 
+                                    <span class="text-[10px] text-slate-400">(${esc(log.subject)})</span>${tag}
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <span class="text-[10px] text-slate-500">${dateStr}</span>
@@ -1118,15 +1214,15 @@
                         activeHTML += `
                             <div class="glass-card p-3 rounded-xl flex justify-between items-center">
                                 <div>
-                                    <span class="font-bold text-amber-400">${log.adminName}</span> uploaded <span class="font-bold text-emerald-400">${log.count} Qs</span> 
-                                    <span class="text-[10px] text-slate-400">(${log.subject})</span>
+                                    <span class="font-bold text-amber-400">${esc(log.adminName)}</span> uploaded <span class="font-bold text-emerald-400">${esc(log.count)} Qs</span> 
+                                    <span class="text-[10px] text-slate-400">(${esc(log.subject)})</span>${tag}
                                 </div>
                                 <div class="flex items-center gap-2 sm:gap-3">
                                     <span class="text-[10px] text-slate-500 hidden sm:inline">${dateStr}</span>
                                     <button onclick="toggleLogIsolation('${log.id}', true)" title="Isolate & Protect" class="text-xs bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white w-8 h-8 rounded-lg border border-emerald-500/30 transition flex items-center justify-center">
                                         <i class="fa-solid fa-check"></i>
                                     </button>
-                                    <button onclick="deleteBatchQuestions('${log.id}', '${log.subject}', ${log.count})" title="Permanently Delete Batch" class="text-xs bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white w-8 h-8 rounded-lg border border-rose-500/30 transition flex items-center justify-center">
+                                    <button onclick="deleteBatchQuestions('${log.id}')" title="Delete this batch (to Recycle Bin)" class="text-xs bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white w-8 h-8 rounded-lg border border-rose-500/30 transition flex items-center justify-center">
                                         <i class="fa-solid fa-xmark"></i>
                                     </button>
                                 </div>
@@ -1149,39 +1245,131 @@
             } catch(err) { alert("Error changing isolation state: " + err.message); }
         }
 
-        async function deleteBatchQuestions(logId, subject, count) {
-            if (!confirm(`Are you absolutely sure you want to COMPLETELY DELETE this batch of ${count} questions? This action cannot be reversed.`)) return;
+        // Deletes ONLY the questions stamped with this exact batchId.
+        async function deleteBatchQuestions(logId) {
+            if(!isSuperAdmin) return alert("Only Super Admin can delete batches.");
             try {
-                const { collection, getDocs, deleteDoc, doc } = window.firestoreTools;
-                
-                const snap = await getDocs(collection(window.db, "questions"));
-                let deletedIds = [];
-                let deleted = 0;
+                const { collection, getDocs, getDoc, deleteDoc, doc, query, where } = window.firestoreTools;
 
-                for (const docSnap of snap.docs) {
-                    const qData = docSnap.data();
-                    const qSubj = (qData.subject || "").trim().toLowerCase();
-                    const targetSubj = (subject || "").trim().toLowerCase();
+                // Safety: never touch an isolated (protected) batch
+                const logSnap = await getDoc(doc(window.db, "activity_logs", logId));
+                if (logSnap.exists() && logSnap.data().isolated) return alert("This batch is isolated (protected). Un-isolate it first.");
 
-                    if (qSubj === targetSubj && deleted < count) {
-                        await deleteDoc(doc(window.db, "questions", docSnap.id));
-                        deletedIds.push(docSnap.id);
-                        deleted++;
+                const snap = await getDocs(query(collection(window.db, "questions"), where("batchId", "==", logId)));
+
+                if (snap.empty) {
+                    if (confirm("No questions are linked to this upload (it is a legacy upload from before batch tracking, or it was already deleted).\n\nFor safety, NO questions will be deleted.\n\nRemove only this log entry from the list?")) {
+                        await deleteDoc(doc(window.db, "activity_logs", logId));
+                        openActivityLogModal();
                     }
+                    return;
                 }
-                
-                await deleteDoc(doc(window.db, "activity_logs", logId));
+
+                if (!confirm(`Delete exactly ${snap.size} questions that belong to this upload?\n\nThey will be moved to the Recycle Bin and can be restored.`)) return;
+
+                let deletedIds = []; let failed = 0;
+                for (const d of snap.docs) {
+                    try { await archiveAndDelete(d.id, d.data(), 'batch:' + logId); deletedIds.push(d.id); }
+                    catch (e) { failed++; console.error("Archive/delete failed for", d.id, e); }
+                }
+
+                if (failed === 0) { await deleteDoc(doc(window.db, "activity_logs", logId)); }
                 allQuestions = allQuestions.filter(item => !deletedIds.includes(item.id));
-                
-                alert(`Batch deleted successfully! Purged ${deleted} questions from Cloud Database.`);
-                openActivityLogModal(); 
+
+                alert(failed === 0
+                    ? `Batch moved to the Recycle Bin: ${deletedIds.length} questions.`
+                    : `Moved ${deletedIds.length} questions. ${failed} failed and were left untouched (log entry kept so you can retry).`);
+                openActivityLogModal();
                 updateAvailableCount();
+                renderSystemsTree();
             } catch(err) { 
-                alert("Error deleting batch: " + err.message); 
+                alert("Error deleting batch (nothing else was touched): " + err.message); 
             }
         }
 
         function closeActivityLogModal() { document.getElementById('activity-log-modal').classList.add('hidden'); }
+
+        // =====================================================
+        //                     RECYCLE BIN
+        // =====================================================
+        async function openTrashModal() {
+            if(!isSuperAdmin) return alert("Only Super Admin can open the Recycle Bin.");
+            document.getElementById('trash-modal').classList.remove('hidden');
+            const list = document.getElementById('trash-list');
+            list.innerHTML = '<p class="text-slate-400 text-center py-4">Loading...</p>';
+            try {
+                const { collection, getDocs } = window.firestoreTools;
+                const snap = await getDocs(collection(window.db, "questions_trash"));
+                let items = [];
+                snap.forEach(d => items.push({ id: d.id, ...d.data() }));
+                items.sort((a, b) => ((b._deletedAt && b._deletedAt.seconds) || 0) - ((a._deletedAt && a._deletedAt.seconds) || 0));
+
+                document.getElementById('trash-restore-all-btn').classList.toggle('hidden', items.length === 0);
+
+                if (items.length === 0) { list.innerHTML = '<p class="text-slate-400 text-center py-6">Recycle Bin is empty.</p>'; return; }
+
+                list.innerHTML = items.map(it => {
+                    const when = it._deletedAt ? new Date(it._deletedAt.toDate()).toLocaleString() : '';
+                    return `
+                    <div class="glass-card p-3 rounded-xl flex justify-between items-center gap-3">
+                        <div class="min-w-0">
+                            <div class="text-slate-200 font-semibold truncate">${esc((it.question || '').slice(0, 110))}</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">${esc(it.subject || 'General')} › ${esc(it.branch || 'General')} · deleted ${esc(when)} · ${esc(it._reason || '')}</div>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <button onclick="restoreFromTrash('${it.id}')" title="Restore" class="text-xs bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white w-8 h-8 rounded-lg border border-emerald-500/30 transition flex items-center justify-center"><i class="fa-solid fa-rotate-left"></i></button>
+                            <button onclick="purgeFromTrash('${it.id}')" title="Delete forever" class="text-xs bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white w-8 h-8 rounded-lg border border-rose-500/30 transition flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch (e) {
+                list.innerHTML = `<p class="text-rose-400 text-center py-4">Could not load the Recycle Bin: ${esc(e.message)}<br><span class="text-[10px] text-slate-400">Check that your Firestore rules allow the "questions_trash" collection.</span></p>`;
+            }
+        }
+
+        function closeTrashModal() { document.getElementById('trash-modal').classList.add('hidden'); }
+
+        async function restoreOneFromTrash(id) {
+            const { doc, getDoc, setDoc, deleteDoc } = window.firestoreTools;
+            const ref = doc(window.db, "questions_trash", id);
+            const snap = await getDoc(ref);
+            if (!snap.exists()) throw new Error("Item not found in the Recycle Bin.");
+            const data = { ...snap.data() };
+            delete data._deletedAt; delete data._deletedBy; delete data._reason;
+            await setDoc(doc(window.db, "questions", id), data);
+            await deleteDoc(ref);
+        }
+
+        async function restoreFromTrash(id) {
+            try {
+                await restoreOneFromTrash(id);
+                await initCloudSync();
+                openTrashModal();
+            } catch (e) { alert("Restore failed: " + e.message); }
+        }
+
+        async function restoreAllFromTrash() {
+            try {
+                const { collection, getDocs } = window.firestoreTools;
+                const snap = await getDocs(collection(window.db, "questions_trash"));
+                if (snap.empty) return;
+                if (!confirm(`Restore all ${snap.size} questions in the Recycle Bin?`)) return;
+                let ok = 0, fail = 0;
+                for (const d of snap.docs) { try { await restoreOneFromTrash(d.id); ok++; } catch (e) { fail++; console.error(e); } }
+                alert(`Restored ${ok} questions.` + (fail ? ` ${fail} failed.` : ''));
+                await initCloudSync();
+                openTrashModal();
+            } catch (e) { alert("Restore failed: " + e.message); }
+        }
+
+        async function purgeFromTrash(id) {
+            if (!confirm("Delete this question FOREVER? This cannot be undone.")) return;
+            try {
+                const { doc, deleteDoc } = window.firestoreTools;
+                await deleteDoc(doc(window.db, "questions_trash", id));
+                openTrashModal();
+            } catch (e) { alert("Error: " + e.message); }
+        }
 
         window.onload = initApp;
     </script>
