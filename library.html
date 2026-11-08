@@ -45,21 +45,10 @@
         body.anki-focus-mode #sidebar-panel { display: none !important; }
         body.anki-focus-mode main { max-width: 1000px !important; margin: 0 auto; width: 100%; padding-top: 1rem; justify-content: center; }
 
-        /* Floating Highlighter Toolbar */
-        #highlighter-toolbar {
-            position: absolute; z-index: 1000; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); padding: 6px; border-radius: 12px; display: flex; gap: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); transition: opacity 0.2s ease; pointer-events: auto;
-        }
-        .hl-btn { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.15s; }
-        .hl-btn:hover { transform: scale(1.15); border-color: white; }
-        .hl-yellow { background: rgba(250, 204, 21, 0.8); }
-        .hl-green { background: rgba(52, 211, 153, 0.8); }
-        .hl-pink { background: rgba(244, 114, 182, 0.8); }
-        .hl-clear { background: transparent; border: 1px solid #94a3b8; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 10px; }
-
         /* Custom Highlights */
-        mark.custom-hl-yellow { background-color: rgba(250, 204, 21, 0.4); color: inherit; padding: 2px 4px; border-radius: 4px; border-bottom: 2px solid #facc15; }
-        mark.custom-hl-green { background-color: rgba(52, 211, 153, 0.4); color: inherit; padding: 2px 4px; border-radius: 4px; border-bottom: 2px solid #34d399; }
-        mark.custom-hl-pink { background-color: rgba(244, 114, 182, 0.4); color: inherit; padding: 2px 4px; border-radius: 4px; border-bottom: 2px solid #f472b6; }
+        mark.custom-hl-yellow { background-color: rgba(250, 204, 21, 0.45); color: inherit; padding: 2px 4px; border-radius: 4px; border-bottom: 2px solid #facc15; }
+        mark.custom-hl-green { background-color: rgba(52, 211, 153, 0.45); color: inherit; padding: 2px 4px; border-radius: 4px; border-bottom: 2px solid #34d399; }
+        mark.custom-hl-pink { background-color: rgba(244, 114, 182, 0.45); color: inherit; padding: 2px 4px; border-radius: 4px; border-bottom: 2px solid #f472b6; }
 
         /* Table Styling */
         .model-answer-content { font-family: 'Inter', sans-serif !important; line-height: 1.75 !important; white-space: pre-line !important; position: relative; }
@@ -69,23 +58,19 @@
         .model-answer-content td { padding: 12px 16px !important; font-size: 0.875rem !important; color: #e2e8f0 !important; border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important; border-right: 1px solid rgba(255, 255, 255, 0.08) !important; vertical-align: top !important; }
         .model-answer-content th:last-child, .model-answer-content td:last-child { border-right: none !important; }
 
-        /* Canvas Scratchpad Styling */
-        .scratchpad-container { position: relative; width: 100%; height: 240px; background-color: rgba(2, 6, 23, 0.85); border-radius: 12px; border: 2px dashed rgba(71, 85, 105, 0.5); overflow: hidden; touch-action: none; }
+        /* Scratchpad Canvas */
+        .scratchpad-container { position: relative; width: 100%; height: 260px; background-color: rgba(2, 6, 23, 0.9); border-radius: 12px; border: 2px dashed rgba(71, 85, 105, 0.6); overflow: hidden; }
         .scratchpad-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; }
 
         /* Themes */
         .theme-eyecare { background-color: #f4ebd9 !important; color: #2e2417 !important; }
         .theme-eyecare .glass-panel { background-color: #e7dbbf !important; border-color: #d4c29d !important; color: #2e2417 !important; }
         .theme-eyecare .model-answer-content table { background-color: #faf5eb !important; border-color: #d4c29d !important; }
-        .theme-eyecare .model-answer-content th { background-color: #e4d7bc !important; color: #2e2417 !important; }
-        .theme-eyecare .model-answer-content td { color: #2e2417 !important; border-color: #d4c29d !important; }
         .theme-eyecare .scratchpad-container { background-color: #faf5eb; border-color: #b59f74; }
 
         .theme-light { background-color: #f8fafc !important; color: #0f172a !important; }
         .theme-light .glass-panel { background-color: #ffffff !important; border-color: #e2e8f0 !important; color: #0f172a !important; }
         .theme-light .model-answer-content table { background-color: #ffffff !important; border-color: #cbd5e1 !important; }
-        .theme-light .model-answer-content th { background-color: #f1f5f9 !important; color: #0f172a !important; }
-        .theme-light .model-answer-content td { color: #334155 !important; border-color: #e2e8f0 !important; }
         .theme-light .scratchpad-container { background-color: #f1f5f9; border-color: #cbd5e1; }
         
         @media print { body * { display: none !important; } #print-area, #print-area * { display: block !important; } #print-area { position: absolute; left: 0; top: 0; width: 100%; background: white; color: black; font-family: sans-serif; } }
@@ -94,14 +79,6 @@
 <body id="app-body" class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col transition-colors duration-200 select-text relative">
 
     <div id="print-area" class="hidden"></div>
-    
-    <!-- Floating Highlighter Toolbar -->
-    <div id="highlighter-toolbar" class="hidden">
-        <button class="hl-btn hl-yellow" onclick="applyHighlight('yellow')" title="Highlight Yellow"></button>
-        <button class="hl-btn hl-green" onclick="applyHighlight('green')" title="Highlight Green"></button>
-        <button class="hl-btn hl-pink" onclick="applyHighlight('pink')" title="Highlight Pink"></button>
-        <button class="hl-btn hl-clear" onclick="removeHighlight()" title="Remove Highlight"><i class="fa-solid fa-eraser"></i></button>
-    </div>
 
     <header class="glass-panel sticky top-0 z-50 shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex justify-between items-center gap-3">
@@ -201,14 +178,17 @@
             <!-- Anki Full Screen Focus Mode -->
             <div id="anki-single-card-view" class="hidden space-y-3 w-full">
                 
-                <!-- Floating Top Toolbar -->
-                <div class="flex flex-wrap justify-between items-center gap-2 bg-slate-900/90 backdrop-blur-md p-2.5 rounded-xl border border-slate-700 shadow-xl sticky top-2 z-[60]">
-                    <div class="flex items-center gap-2">
-                        <button id="btn-autohl-mode" onclick="toggleAutoHighlight()" class="px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 shadow-sm">
-                            <i class="fa-solid fa-wand-magic-sparkles"></i> <span>Auto-Highlight: OFF</span>
-                        </button>
+                <!-- Explicit Highlighter & Stylus Toolbox -->
+                <div class="flex flex-wrap justify-between items-center gap-2 bg-slate-900/90 backdrop-blur-md p-3 rounded-xl border border-slate-700 shadow-xl sticky top-2 z-[60]">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider"><i class="fa-solid fa-highlighter text-amber-400"></i> Highlighter:</span>
+                        <button onclick="setActiveHighlighter('yellow')" id="hl-btn-yellow" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/50 hover:bg-amber-500/30 transition">Yellow</button>
+                        <button onclick="setActiveHighlighter('green')" id="hl-btn-green" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition">Green</button>
+                        <button onclick="setActiveHighlighter('pink')" id="hl-btn-pink" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition">Pink</button>
+                        <button onclick="setActiveHighlighter('off')" id="hl-btn-off" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-600/20 text-rose-300 border border-rose-500/30 hover:bg-rose-600 hover:text-white transition">OFF</button>
                     </div>
-                    <div class="flex items-center gap-3">
+
+                    <div class="flex items-center gap-2">
                         <button onclick="exitAnkiSession()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-600/20 text-rose-400 border border-rose-500/30 hover:bg-rose-600 hover:text-white transition flex items-center gap-1.5">
                             <i class="fa-solid fa-xmark"></i> Exit
                         </button>
@@ -239,7 +219,8 @@
         let ankiStatusFilter = null;
         let selfScores = JSON.parse(localStorage.getItem('medico_written_scores')) || {};
 
-        let autoHighlightActive = false;
+        // Active Highlighter State ('yellow', 'green', 'pink', or 'off')
+        let currentHighlighterColor = 'yellow';
 
         function setTheme(mode) {
             const body = document.getElementById('app-body');
@@ -249,50 +230,45 @@
             localStorage.setItem('medico_theme', mode);
         }
 
-        // --- ROBUST AUTO-HIGHLIGHTER ---
-        function toggleAutoHighlight() {
-            autoHighlightActive = !autoHighlightActive;
-            const btn = document.getElementById('btn-autohl-mode');
-            if(autoHighlightActive) {
-                btn.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-[0_0_10px_rgba(245,158,11,0.3)]";
-                btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i> <span>Auto-Highlight: ON</span>`;
-            } else {
-                btn.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 shadow-sm";
-                btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> <span>Auto-Highlight: OFF</span>`;
-            }
+        // --- EXPLICIT HIGHLIGHTER BUTTON LOGIC ---
+        function setActiveHighlighter(color) {
+            currentHighlighterColor = color;
+            ['yellow', 'green', 'pink', 'off'].forEach(c => {
+                const btn = document.getElementById(`hl-btn-${c}`);
+                if(!btn) return;
+                if(c === color) {
+                    if(c === 'off') {
+                        btn.className = "px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-600 text-white border border-rose-500 shadow";
+                    } else {
+                        btn.className = `px-2.5 py-1 rounded-lg text-xs font-bold bg-${c === 'yellow' ? 'amber' : c === 'green' ? 'emerald' : 'pink'}-500/30 text-${c === 'yellow' ? 'amber' : c === 'green' ? 'emerald' : 'pink'}-300 border border-${c === 'yellow' ? 'amber' : c === 'green' ? 'emerald' : 'pink'}-500 shadow`;
+                    }
+                } else {
+                    btn.className = "px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition";
+                }
+            });
         }
 
-        document.addEventListener('mouseup', handleHighlightSelection);
-        document.addEventListener('touchend', handleHighlightSelection);
+        document.addEventListener('mouseup', handleDirectHighlight);
+        document.addEventListener('touchend', handleDirectHighlight);
 
-        function handleHighlightSelection(e) {
+        function handleDirectHighlight(e) {
+            if(currentHighlighterColor === 'off') return;
+            
             setTimeout(() => {
                 const selection = window.getSelection();
-                const toolbar = document.getElementById('highlighter-toolbar');
-                
-                if (!selection.isCollapsed && selection.toString().trim().length > 0 && (!toolbar || !toolbar.contains(e.target))) {
-                    if(autoHighlightActive) {
-                        applyHighlight('yellow'); 
-                    } else {
-                        const range = selection.getRangeAt(0);
-                        const rect = range.getBoundingClientRect();
-                        toolbar.style.top = `${rect.top + window.scrollY - 45}px`;
-                        toolbar.style.left = `${rect.left + window.scrollX + (rect.width/2) - (toolbar.offsetWidth/2)}px`;
-                        toolbar.classList.remove('hidden');
-                    }
-                } else if (toolbar && !toolbar.contains(e.target)) {
-                    toolbar.classList.add('hidden');
+                if (!selection.isCollapsed && selection.toString().trim().length > 0) {
+                    applyHighlightDirect(currentHighlighterColor);
                 }
             }, 60);
         }
 
-        function applyHighlight(colorClass) {
+        function applyHighlightDirect(color) {
             const selection = window.getSelection();
             if (!selection.rangeCount || selection.isCollapsed) return;
             
             const range = selection.getRangeAt(0);
             const colorMap = { 'yellow': 'custom-hl-yellow', 'green': 'custom-hl-green', 'pink': 'custom-hl-pink' };
-            const className = colorMap[colorClass] || 'custom-hl-yellow';
+            const className = colorMap[color] || 'custom-hl-yellow';
 
             try {
                 const mark = document.createElement('mark');
@@ -321,26 +297,10 @@
                 });
             }
             selection.removeAllRanges();
-            const toolbar = document.getElementById('highlighter-toolbar');
-            if(toolbar) toolbar.classList.add('hidden');
-        }
-
-        function removeHighlight() {
-            const selection = window.getSelection();
-            if (!selection.rangeCount) return;
-            const range = selection.getRangeAt(0);
-            const parent = range.commonAncestorContainer.parentElement;
-            if (parent && parent.tagName === 'MARK') {
-                const text = document.createTextNode(parent.textContent);
-                parent.replaceWith(text);
-            }
-            selection.removeAllRanges();
-            const toolbar = document.getElementById('highlighter-toolbar');
-            if(toolbar) toolbar.classList.add('hidden');
         }
 
 
-        // --- STYLUS SCRATCHPAD LOGIC (Anki Style) ---
+        // --- STYLUS SCRATCHPAD LOGIC (Supports Samsung S-Pen & Palm Rejection) ---
         function toggleScratchpad(id) {
             const box = document.getElementById(`scratchpad-box-${id}`);
             if(!box) return;
@@ -356,10 +316,10 @@
             
             const container = canvas.parentElement;
             canvas.width = container.clientWidth;
-            canvas.height = 220;
+            canvas.height = 240;
             
             const ctx = canvas.getContext('2d', { willReadFrequently: true });
-            ctx.strokeStyle = '#38bdf8'; // Light Blue Ink
+            ctx.strokeStyle = '#38bdf8'; // Light blue ink
             ctx.lineWidth = 2.5;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
@@ -374,7 +334,11 @@
                 };
             }
 
+            // Samsung S-Pen & Pointer Events with Palm Rejection
             canvas.onpointerdown = (e) => {
+                // If it's a finger touch, ignore it so user can scroll or touch UI normally
+                if(e.pointerType === 'touch') return; 
+
                 drawing = true;
                 ctx.beginPath();
                 const pos = getPos(e);
@@ -384,6 +348,8 @@
 
             canvas.onpointermove = (e) => {
                 if(!drawing) return;
+                if(e.pointerType === 'touch') return; 
+                
                 e.preventDefault();
                 const pos = getPos(e);
                 
@@ -399,7 +365,7 @@
 
             canvas.onpointerup = (e) => {
                 drawing = false;
-                canvas.releasePointerCapture(e.pointerId);
+                try { canvas.releasePointerCapture(e.pointerId); } catch(err) {}
             };
             
             canvas.onpointerleave = () => { drawing = false; };
@@ -416,6 +382,7 @@
         // --- FIREBASE & INITIALIZATION ---
         async function initWrittenLibrary() {
             setTheme(localStorage.getItem('medico_theme') || 'dark');
+            setActiveHighlighter('yellow');
             
             const checkFirebase = setInterval(async () => {
                 if (window.db && window.firestoreTools) {
@@ -554,7 +521,7 @@
                     
                     <div id="scratchpad-box-${q.id}" class="hidden glass-card p-3 rounded-xl border border-amber-500/30 space-y-2">
                         <div class="flex justify-between items-center text-xs text-slate-400">
-                            <span class="font-semibold text-amber-400"><i class="fa-solid fa-signature"></i> Write / Recite your answer here:</span>
+                            <span class="font-semibold text-amber-400"><i class="fa-solid fa-signature"></i> Write / Draw with S-Pen (Palm Rejection Enabled):</span>
                             <button onclick="clearScratchpad('${q.id}')" class="text-[10px] bg-rose-600/20 text-rose-400 border border-rose-500/30 px-3 py-1 rounded font-bold hover:bg-rose-600 hover:text-white transition">Clear Canvas</button>
                         </div>
                         <div class="scratchpad-container">
@@ -591,7 +558,7 @@
                         </div>
                     </div>
                 </div>
-            </div>`;
+            `;
         }
 
         function toggleAnkiAnswer(id) {
