@@ -206,6 +206,9 @@
                 <button onclick="openCloudAdmin()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-5 rounded-xl transition shadow flex items-center gap-2 justify-center text-sm">
                     <i class="fa-solid fa-cloud-arrow-up"></i> Cloud Database Tools
                 </button>
+                <button onclick="openManager()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 px-5 rounded-xl transition shadow flex items-center gap-2 justify-center text-sm whitespace-nowrap">
+                    <i class="fa-solid fa-screwdriver-wrench"></i> Question Manager
+                </button>
                 <button id="super-admin-activity-btn" onclick="openActivityLogModal()" class="hidden bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 px-5 rounded-xl transition shadow flex items-center gap-2 justify-center text-sm whitespace-nowrap">
                     <i class="fa-solid fa-clock-rotate-left"></i> Review Admin Uploads
                 </button>
@@ -469,6 +472,81 @@
             </div>
         </div>
 
+        <div id="manager-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-2 sm:p-4">
+            <div class="glass-panel border-indigo-500/40 rounded-2xl p-4 sm:p-6 w-full max-w-6xl shadow-2xl max-h-[94vh] flex flex-col space-y-3">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3 shrink-0">
+                    <h3 class="text-sm font-bold text-indigo-400 flex items-center gap-2 uppercase tracking-wide"><i class="fa-solid fa-screwdriver-wrench"></i> Question Manager</h3>
+                    <button onclick="closeManager()" class="text-slate-400 hover:text-slate-200 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+
+                <!-- Filters -->
+                <div class="grid grid-cols-2 md:grid-cols-6 gap-2 shrink-0">
+                    <select id="mgr-f-subject" onchange="mgrFilterChanged()" class="glass-input rounded-lg p-2 text-xs text-slate-200"></select>
+                    <select id="mgr-f-branch" onchange="mgrFilterChanged()" class="glass-input rounded-lg p-2 text-xs text-slate-200"></select>
+                    <select id="mgr-f-subtype" onchange="mgrFilterChanged()" class="glass-input rounded-lg p-2 text-xs text-slate-200"></select>
+                    <select id="mgr-f-source" onchange="mgrFilterChanged()" class="glass-input rounded-lg p-2 text-xs text-slate-200"></select>
+                    <select id="mgr-f-batch" onchange="mgrFilterChanged()" class="glass-input rounded-lg p-2 text-xs text-slate-200 col-span-2 md:col-span-1"></select>
+                    <input type="text" id="mgr-search" onkeyup="mgrFilterChanged()" placeholder="Search text..." class="glass-input rounded-lg p-2 text-xs text-slate-200 col-span-2 md:col-span-1">
+                </div>
+
+                <!-- Bulk actions -->
+                <div class="glass-card rounded-xl p-3 space-y-2 shrink-0">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer select-none">
+                            <input type="checkbox" id="mgr-select-all" onchange="mgrSelectAllFiltered(this.checked)" class="w-4 h-4 accent-indigo-500">
+                            Select all matching the filter
+                        </label>
+                        <span id="mgr-count" class="text-xs font-mono text-indigo-300"></span>
+                    </div>
+                    <p class="text-[10px] text-slate-500">Bulk edit: fill only the fields you want to change (empty fields stay untouched), then press Apply. It changes every selected question.</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        <input type="text" id="mgr-set-subject" list="dl-subject" placeholder="New Subject" class="glass-input rounded-lg p-2 text-xs text-slate-200">
+                        <input type="text" id="mgr-set-branch" list="dl-branch" placeholder="New Branch" class="glass-input rounded-lg p-2 text-xs text-slate-200">
+                        <input type="text" id="mgr-set-subtype" list="dl-subtype" placeholder="New Subtype" class="glass-input rounded-lg p-2 text-xs text-slate-200">
+                        <input type="text" id="mgr-set-source" list="dl-source" placeholder="New Source" class="glass-input rounded-lg p-2 text-xs text-slate-200">
+                    </div>
+                    <datalist id="dl-subject"></datalist><datalist id="dl-branch"></datalist><datalist id="dl-subtype"></datalist><datalist id="dl-source"></datalist>
+                    <div class="flex flex-wrap gap-2">
+                        <button id="mgr-apply-btn" onclick="mgrApplyBulk()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-4 py-2 rounded-lg transition"><i class="fa-solid fa-pen-to-square"></i> Apply to selected</button>
+                        <button id="mgr-delete-btn" onclick="mgrDeleteSelected()" class="hidden bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs px-4 py-2 rounded-lg transition"><i class="fa-solid fa-trash-can"></i> Delete selected</button>
+                        <button onclick="mgrClearSelection()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-bold text-xs px-4 py-2 rounded-lg transition">Clear selection</button>
+                    </div>
+                </div>
+
+                <!-- List -->
+                <div id="mgr-list" class="flex-grow overflow-y-auto space-y-2 pr-1 min-h-[160px]"></div>
+            </div>
+        </div>
+
+        <div id="mgr-edit-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div class="glass-panel border-amber-500/40 rounded-2xl p-6 w-full max-w-3xl shadow-2xl space-y-3 max-h-[92vh] overflow-y-auto">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <h3 class="text-sm font-bold text-amber-500 flex items-center gap-2 uppercase tracking-wide"><i class="fa-solid fa-pen-to-square"></i> Edit Question</h3>
+                    <button onclick="mgrCloseEdit()" class="text-slate-400 hover:text-slate-200 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-[10px] text-slate-400 block mb-1">Subject</label><input type="text" id="mgr-e-subject" list="dl-subject" class="w-full glass-input p-2 rounded-lg text-xs text-slate-200"></div>
+                    <div><label class="text-[10px] text-slate-400 block mb-1">Branch</label><input type="text" id="mgr-e-branch" list="dl-branch" class="w-full glass-input p-2 rounded-lg text-xs text-slate-200"></div>
+                    <div><label class="text-[10px] text-slate-400 block mb-1">Subtype</label><input type="text" id="mgr-e-subtype" list="dl-subtype" class="w-full glass-input p-2 rounded-lg text-xs text-slate-200"></div>
+                    <div><label class="text-[10px] text-slate-400 block mb-1">Source</label><input type="text" id="mgr-e-source" list="dl-source" class="w-full glass-input p-2 rounded-lg text-xs text-slate-200"></div>
+                </div>
+                <div>
+                    <label class="text-[11px] font-semibold text-slate-400 block mb-1">Question:</label>
+                    <textarea id="mgr-e-question" class="w-full glass-input p-3 rounded-xl text-xs sm:text-sm h-24 focus:outline-none focus:border-amber-500 text-slate-200"></textarea>
+                </div>
+                <div>
+                    <label class="text-[11px] font-semibold text-slate-400 block mb-1">Options (select the radio of the correct one):</label>
+                    <div id="mgr-e-options" class="space-y-2"></div>
+                    <button onclick="mgrAddOptionRow('', false)" class="mt-2 text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-lg font-semibold"><i class="fa-solid fa-plus"></i> Add option</button>
+                </div>
+                <div>
+                    <label class="text-[11px] font-semibold text-slate-400 block mb-1">Explanation (plain text, HTML or JSON):</label>
+                    <textarea id="mgr-e-explanation" class="w-full glass-input p-3 rounded-xl text-xs sm:text-sm h-28 focus:outline-none focus:border-amber-500 text-slate-200 font-mono"></textarea>
+                </div>
+                <button id="mgr-e-save-btn" onclick="mgrSaveEdit()" class="w-full bg-amber-600 hover:bg-amber-500 font-bold py-2.5 rounded-xl text-white transition text-xs uppercase tracking-wider">Save Changes</button>
+            </div>
+        </div>
+
         <div id="edit-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
             <div class="glass-panel border-amber-500/40 rounded-2xl p-6 w-full max-w-3xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -567,7 +645,7 @@
                         const { collection, getDocs } = window.firestoreTools;
                         const querySnapshot = await getDocs(collection(window.db, "questions"));
                         let cloudData = [];
-                        querySnapshot.forEach((doc) => { cloudData.push({ id: doc.id, ...doc.data() }); });
+                        querySnapshot.forEach((doc) => { const d = doc.data(); if (d._deleted) return; cloudData.push({ id: doc.id, _cloud: true, ...d }); });
                         allQuestions = [...localData, ...cloudData];
                         populateSourceFilter(); renderSystemsTree(); updateAvailableCount();
                     } catch (err) {
@@ -999,9 +1077,10 @@
         }
 
         // =====================================================
-        //   SAFE DELETE: every delete first copies the question
-        //   to the "questions_trash" collection (Recycle Bin).
-        //   If the copy fails, NOTHING is deleted.
+        //   SAFE DELETE (soft delete): a deleted question is only
+        //   flagged _deleted:true inside the same "questions"
+        //   collection, so it needs no extra Firestore rules and can
+        //   be restored from the Recycle Bin.
         // =====================================================
         function currentAdminEmail() {
             const u = window.firebaseAuth && window.firebaseAuth.currentUser;
@@ -1009,22 +1088,19 @@
         }
 
         async function archiveAndDelete(docId, data, reason) {
-            const { doc, setDoc, deleteDoc, serverTimestamp } = window.firestoreTools;
-            const clean = { ...data };
-            delete clean.id;
-            await setDoc(doc(window.db, "questions_trash", docId), {
-                ...clean,
+            const { doc, setDoc, serverTimestamp } = window.firestoreTools;
+            await setDoc(doc(window.db, "questions", docId), {
+                _deleted: true,
                 _deletedAt: serverTimestamp(),
                 _deletedBy: currentAdminEmail(),
                 _reason: reason || 'manual'
-            });
-            await deleteDoc(doc(window.db, "questions", docId));
+            }, { merge: true });
         }
 
         async function deleteCurrentQuestionFromCloud() {
             if(!isSuperAdmin) return alert("Only Super Admin is authorized to delete questions.");
             const q = activeBlock[currentIdx];
-            if(!q || !q.id) return alert("This question cannot be deleted directly (Local file).");
+            if(!q || !q.id || !q._cloud) return alert("This question comes from the local data.js file, not from the cloud, so it cannot be deleted from here. Remove it from data.js (or reload the page and start a new block if you just updated).");
 
             const preview = (q.question || '').slice(0, 120);
             if(confirm(`Delete this question?\n\n"${preview}..."\n\nIt will be moved to the Recycle Bin and can be restored.`)) {
@@ -1255,7 +1331,9 @@
                 const logSnap = await getDoc(doc(window.db, "activity_logs", logId));
                 if (logSnap.exists() && logSnap.data().isolated) return alert("This batch is isolated (protected). Un-isolate it first.");
 
-                const snap = await getDocs(query(collection(window.db, "questions"), where("batchId", "==", logId)));
+                const rawSnap = await getDocs(query(collection(window.db, "questions"), where("batchId", "==", logId)));
+                const snap = { docs: rawSnap.docs.filter(d => !d.data()._deleted) };
+                snap.size = snap.docs.length; snap.empty = snap.docs.length === 0;
 
                 if (snap.empty) {
                     if (confirm("No questions are linked to this upload (it is a legacy upload from before batch tracking, or it was already deleted).\n\nFor safety, NO questions will be deleted.\n\nRemove only this log entry from the list?")) {
@@ -1299,9 +1377,9 @@
             list.innerHTML = '<p class="text-slate-400 text-center py-4">Loading...</p>';
             try {
                 const { collection, getDocs } = window.firestoreTools;
-                const snap = await getDocs(collection(window.db, "questions_trash"));
+                const snap = await getDocs(collection(window.db, "questions"));
                 let items = [];
-                snap.forEach(d => items.push({ id: d.id, ...d.data() }));
+                snap.forEach(d => { const x = d.data(); if (x._deleted) items.push({ id: d.id, ...x }); });
                 items.sort((a, b) => ((b._deletedAt && b._deletedAt.seconds) || 0) - ((a._deletedAt && a._deletedAt.seconds) || 0));
 
                 document.getElementById('trash-restore-all-btn').classList.toggle('hidden', items.length === 0);
@@ -1309,7 +1387,7 @@
                 if (items.length === 0) { list.innerHTML = '<p class="text-slate-400 text-center py-6">Recycle Bin is empty.</p>'; return; }
 
                 list.innerHTML = items.map(it => {
-                    const when = it._deletedAt ? new Date(it._deletedAt.toDate()).toLocaleString() : '';
+                    const when = (it._deletedAt && it._deletedAt.toDate) ? it._deletedAt.toDate().toLocaleString() : '';
                     return `
                     <div class="glass-card p-3 rounded-xl flex justify-between items-center gap-3">
                         <div class="min-w-0">
@@ -1323,21 +1401,15 @@
                     </div>`;
                 }).join('');
             } catch (e) {
-                list.innerHTML = `<p class="text-rose-400 text-center py-4">Could not load the Recycle Bin: ${esc(e.message)}<br><span class="text-[10px] text-slate-400">Check that your Firestore rules allow the "questions_trash" collection.</span></p>`;
+                list.innerHTML = `<p class="text-rose-400 text-center py-4">Could not load the Recycle Bin: ${esc(e.message)}</p>`;
             }
         }
 
         function closeTrashModal() { document.getElementById('trash-modal').classList.add('hidden'); }
 
         async function restoreOneFromTrash(id) {
-            const { doc, getDoc, setDoc, deleteDoc } = window.firestoreTools;
-            const ref = doc(window.db, "questions_trash", id);
-            const snap = await getDoc(ref);
-            if (!snap.exists()) throw new Error("Item not found in the Recycle Bin.");
-            const data = { ...snap.data() };
-            delete data._deletedAt; delete data._deletedBy; delete data._reason;
-            await setDoc(doc(window.db, "questions", id), data);
-            await deleteDoc(ref);
+            const { doc, setDoc } = window.firestoreTools;
+            await setDoc(doc(window.db, "questions", id), { _deleted: false, _deletedAt: null, _deletedBy: null, _reason: null }, { merge: true });
         }
 
         async function restoreFromTrash(id) {
@@ -1351,11 +1423,13 @@
         async function restoreAllFromTrash() {
             try {
                 const { collection, getDocs } = window.firestoreTools;
-                const snap = await getDocs(collection(window.db, "questions_trash"));
-                if (snap.empty) return;
-                if (!confirm(`Restore all ${snap.size} questions in the Recycle Bin?`)) return;
+                const snap = await getDocs(collection(window.db, "questions"));
+                const ids = [];
+                snap.forEach(d => { if (d.data()._deleted) ids.push(d.id); });
+                if (ids.length === 0) return;
+                if (!confirm(`Restore all ${ids.length} questions in the Recycle Bin?`)) return;
                 let ok = 0, fail = 0;
-                for (const d of snap.docs) { try { await restoreOneFromTrash(d.id); ok++; } catch (e) { fail++; console.error(e); } }
+                for (const id of ids) { try { await restoreOneFromTrash(id); ok++; } catch (e) { fail++; console.error(e); } }
                 alert(`Restored ${ok} questions.` + (fail ? ` ${fail} failed.` : ''));
                 await initCloudSync();
                 openTrashModal();
@@ -1366,9 +1440,295 @@
             if (!confirm("Delete this question FOREVER? This cannot be undone.")) return;
             try {
                 const { doc, deleteDoc } = window.firestoreTools;
-                await deleteDoc(doc(window.db, "questions_trash", id));
+                await deleteDoc(doc(window.db, "questions", id));
                 openTrashModal();
             } catch (e) { alert("Error: " + e.message); }
+        }
+
+        // =====================================================
+        //                  QUESTION MANAGER
+        //  Browse / filter every cloud question, edit one or many,
+        //  change Subject / Branch / Subtype / Source in bulk, delete.
+        // =====================================================
+        const MGR_FIELDS = ['subject', 'branch', 'subtype', 'source'];
+        let mgrAll = [];
+        let mgrSelected = new Set();
+        let mgrLimit = 100;
+        let mgrEditId = null;
+
+        async function openManager() {
+            if (!isAdmin) return alert("Admins only.");
+            document.getElementById('manager-modal').classList.remove('hidden');
+            document.getElementById('mgr-delete-btn').classList.toggle('hidden', !isSuperAdmin);
+            const list = document.getElementById('mgr-list');
+            list.innerHTML = '<p class="text-slate-400 text-center py-6">Loading all questions from the cloud...</p>';
+            try {
+                const { collection, getDocs } = window.firestoreTools;
+                const snap = await getDocs(collection(window.db, "questions"));
+                mgrAll = [];
+                snap.forEach(d => { const x = d.data(); if (!x._deleted) mgrAll.push({ id: d.id, ...x }); });
+                mgrSelected.clear();
+                mgrLimit = 100;
+                MGR_FIELDS.forEach(f => { document.getElementById('mgr-f-' + f).dataset.keep = ''; });
+                document.getElementById('mgr-f-batch').dataset.keep = '';
+                document.getElementById('mgr-search').value = '';
+                mgrBuildFilters();
+                mgrRender();
+            } catch (e) {
+                list.innerHTML = `<p class="text-rose-400 text-center py-6">Could not load questions: ${esc(e.message)}</p>`;
+            }
+        }
+
+        function closeManager() { document.getElementById('manager-modal').classList.add('hidden'); }
+
+        function mgrUnique(field) {
+            const set = new Set();
+            mgrAll.forEach(q => set.add((q[field] || '').toString().trim()));
+            return [...set].sort((a, b) => a.localeCompare(b));
+        }
+
+        function mgrBuildFilters() {
+            const labels = { subject: 'Subject', branch: 'Branch', subtype: 'Subtype', source: 'Source' };
+            MGR_FIELDS.forEach(f => {
+                const sel = document.getElementById('mgr-f-' + f);
+                const keep = sel.value;
+                const vals = mgrUnique(f);
+                let html = `<option value="">All ${labels[f]}s</option>`;
+                vals.forEach(v => { html += v === '' ? `<option value="__empty__">(no ${labels[f].toLowerCase()})</option>` : `<option value="${esc(v)}">${esc(v)}</option>`; });
+                sel.innerHTML = html;
+                sel.value = [...sel.options].some(o => o.value === keep) ? keep : '';
+                document.getElementById('dl-' + f).innerHTML = vals.filter(v => v).map(v => `<option value="${esc(v)}"></option>`).join('');
+            });
+
+            const batchSel = document.getElementById('mgr-f-batch');
+            const keepB = batchSel.value;
+            const counts = {};
+            mgrAll.forEach(q => { const b = q.batchId || '__none__'; counts[b] = (counts[b] || 0) + 1; });
+            let bHtml = '<option value="">All uploads</option>';
+            Object.keys(counts).sort().forEach(b => {
+                if (b === '__none__') { bHtml += `<option value="__none__">Older / untracked uploads (${counts[b]})</option>`; return; }
+                const ts = parseInt((b.split('_')[1] || ''), 10);
+                const when = isNaN(ts) ? b : new Date(ts).toLocaleString();
+                bHtml += `<option value="${esc(b)}">Upload ${esc(when)} (${counts[b]})</option>`;
+            });
+            batchSel.innerHTML = bHtml;
+            batchSel.value = [...batchSel.options].some(o => o.value === keepB) ? keepB : '';
+        }
+
+        function mgrFiltered() {
+            const f = {};
+            MGR_FIELDS.forEach(k => { f[k] = document.getElementById('mgr-f-' + k).value; });
+            const b = document.getElementById('mgr-f-batch').value;
+            const s = document.getElementById('mgr-search').value.toLowerCase().trim();
+            return mgrAll.filter(q => {
+                for (const k of MGR_FIELDS) {
+                    const v = f[k];
+                    if (!v) continue;
+                    const qv = (q[k] || '').toString().trim();
+                    if (v === '__empty__') { if (qv) return false; } else if (qv !== v) return false;
+                }
+                if (b) { if (b === '__none__') { if (q.batchId) return false; } else if (q.batchId !== b) return false; }
+                if (s) {
+                    const exp = typeof q.explanation === 'string' ? q.explanation : JSON.stringify(q.explanation || '');
+                    const hay = ((q.question || '') + ' ' + exp).toLowerCase();
+                    if (!hay.includes(s)) return false;
+                }
+                return true;
+            });
+        }
+
+        function mgrFilterChanged() { mgrLimit = 100; mgrRender(); }
+
+        function mgrRender() {
+            const filtered = mgrFiltered();
+            const list = document.getElementById('mgr-list');
+            const labels = { subject: 'subject', branch: 'branch', subtype: 'subtype', source: 'source' };
+            const tag = (v, k) => v
+                ? `<span class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] text-slate-300">${esc(v)}</span>`
+                : `<span class="px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-[10px] text-amber-400">no ${labels[k]}</span>`;
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<p class="text-slate-400 text-center py-8">No questions match this filter.</p>';
+            } else {
+                const shown = filtered.slice(0, mgrLimit);
+                let html = shown.map(q => `
+                    <div class="glass-card p-2.5 rounded-xl flex items-start gap-3">
+                        <input type="checkbox" ${mgrSelected.has(q.id) ? 'checked' : ''} onchange="mgrToggle('${q.id}', this.checked)" class="mt-1 w-4 h-4 accent-indigo-500 shrink-0">
+                        <div class="min-w-0 flex-grow">
+                            <div class="text-xs text-slate-200 font-medium">${esc((q.question || '').slice(0, 180))}</div>
+                            <div class="flex flex-wrap gap-1 mt-1">${tag(q.subject, 'subject')}${tag(q.branch, 'branch')}${tag(q.subtype, 'subtype')}${tag(q.source, 'source')}</div>
+                        </div>
+                        <div class="flex gap-1.5 shrink-0">
+                            <button onclick="mgrOpenEdit('${q.id}')" title="Edit" class="text-xs bg-amber-500/10 hover:bg-amber-500/30 text-amber-400 w-8 h-8 rounded-lg border border-amber-500/30 transition flex items-center justify-center"><i class="fa-solid fa-pen-to-square"></i></button>
+                            ${isSuperAdmin ? `<button onclick="mgrDeleteOne('${q.id}')" title="Delete" class="text-xs bg-rose-600/10 hover:bg-rose-600/30 text-rose-400 w-8 h-8 rounded-lg border border-rose-500/30 transition flex items-center justify-center"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                        </div>
+                    </div>`).join('');
+                if (filtered.length > shown.length) {
+                    html += `<button onclick="mgrLimit += 100; mgrRender();" class="w-full text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 py-2 rounded-lg font-semibold">Show more (${filtered.length - shown.length} hidden)</button>`;
+                }
+                list.innerHTML = html;
+            }
+            mgrUpdateCounts(filtered);
+        }
+
+        function mgrUpdateCounts(filtered) {
+            filtered = filtered || mgrFiltered();
+            document.getElementById('mgr-count').innerText = `${filtered.length} match · ${mgrSelected.size} selected · ${mgrAll.length} total`;
+            const allSel = filtered.length > 0 && filtered.every(q => mgrSelected.has(q.id));
+            document.getElementById('mgr-select-all').checked = allSel;
+        }
+
+        function mgrToggle(id, checked) {
+            if (checked) mgrSelected.add(id); else mgrSelected.delete(id);
+            mgrUpdateCounts();
+        }
+
+        function mgrSelectAllFiltered(checked) {
+            const filtered = mgrFiltered();
+            filtered.forEach(q => { if (checked) mgrSelected.add(q.id); else mgrSelected.delete(q.id); });
+            mgrRender();
+        }
+
+        function mgrClearSelection() { mgrSelected.clear(); mgrRender(); }
+
+        // Keep the rest of the app (test builder tree, counts) in sync after changes
+        function mgrSyncLocal(id, changes) {
+            const m = mgrAll.find(q => q.id === id);
+            if (m) Object.assign(m, changes);
+            const a = allQuestions.find(q => q.id === id && q._cloud);
+            if (a) Object.assign(a, changes);
+        }
+
+        function mgrRefreshApp() {
+            populateSourceFilter();
+            renderSystemsTree();
+            updateAvailableCount();
+            mgrBuildFilters();
+            mgrRender();
+        }
+
+        async function mgrApplyBulk() {
+            const changes = {};
+            MGR_FIELDS.forEach(k => { const v = document.getElementById('mgr-set-' + k).value.trim(); if (v) changes[k] = v; });
+            if (Object.keys(changes).length === 0) return alert("Type at least one new value (Subject / Branch / Subtype / Source).");
+            const ids = [...mgrSelected];
+            if (ids.length === 0) return alert("Select questions first.");
+            const summary = Object.keys(changes).map(k => `${k} → "${changes[k]}"`).join('\n');
+            if (!confirm(`Apply these changes to ${ids.length} selected questions?\n\n${summary}`)) return;
+
+            const btn = document.getElementById('mgr-apply-btn');
+            btn.disabled = true;
+            const { doc, setDoc } = window.firestoreTools;
+            let ok = 0, fail = 0, lastErr = '';
+            for (const id of ids) {
+                try {
+                    await setDoc(doc(window.db, "questions", id), changes, { merge: true });
+                    mgrSyncLocal(id, changes);
+                    ok++;
+                } catch (e) { fail++; lastErr = e.message; console.error(e); }
+                btn.innerText = `Applying ${ok + fail} / ${ids.length}...`;
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Apply to selected';
+            MGR_FIELDS.forEach(k => { document.getElementById('mgr-set-' + k).value = ''; });
+            alert(`Updated ${ok} questions.` + (fail ? ` ${fail} failed (${lastErr}).` : ''));
+            mgrRefreshApp();
+        }
+
+        async function mgrSoftDelete(id, reason) {
+            await archiveAndDelete(id, null, reason);
+            mgrAll = mgrAll.filter(q => q.id !== id);
+            allQuestions = allQuestions.filter(q => q.id !== id);
+            mgrSelected.delete(id);
+        }
+
+        async function mgrDeleteOne(id) {
+            if (!isSuperAdmin) return alert("Only Super Admin can delete.");
+            const q = mgrAll.find(x => x.id === id);
+            if (!confirm(`Delete this question?\n\n"${((q && q.question) || '').slice(0, 120)}"\n\nIt goes to the Recycle Bin and can be restored.`)) return;
+            try {
+                await mgrSoftDelete(id, 'manager');
+                mgrRefreshApp();
+            } catch (e) { alert("Delete failed (nothing was deleted): " + e.message); }
+        }
+
+        async function mgrDeleteSelected() {
+            if (!isSuperAdmin) return alert("Only Super Admin can delete.");
+            const ids = [...mgrSelected];
+            if (ids.length === 0) return alert("Select questions first.");
+            if (!confirm(`Delete ${ids.length} selected questions?\n\nThey go to the Recycle Bin and can be restored.`)) return;
+            const btn = document.getElementById('mgr-delete-btn');
+            btn.disabled = true;
+            let ok = 0, fail = 0, lastErr = '';
+            for (const id of ids) {
+                try { await mgrSoftDelete(id, 'manager-bulk'); ok++; }
+                catch (e) { fail++; lastErr = e.message; console.error(e); }
+                btn.innerText = `Deleting ${ok + fail} / ${ids.length}...`;
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-trash-can"></i> Delete selected';
+            alert(`Moved ${ok} questions to the Recycle Bin.` + (fail ? ` ${fail} failed (${lastErr}).` : ''));
+            mgrRefreshApp();
+        }
+
+        // ---------- single question editor ----------
+        function mgrAddOptionRow(text, isCorrect) {
+            const box = document.getElementById('mgr-e-options');
+            const row = document.createElement('div');
+            row.className = 'flex items-center gap-2 mgr-opt-row';
+            row.innerHTML = `<input type="radio" name="mgr-e-correct" ${isCorrect ? 'checked' : ''} class="w-4 h-4 accent-amber-500 shrink-0">
+                <input type="text" class="mgr-opt-input w-full glass-input p-2 rounded-lg text-sm focus:outline-none focus:border-amber-500 text-slate-200">
+                <button type="button" title="Remove option" class="text-rose-400 hover:text-rose-300 px-2"><i class="fa-solid fa-xmark"></i></button>`;
+            row.querySelector('.mgr-opt-input').value = text || '';
+            row.querySelector('button').onclick = () => row.remove();
+            box.appendChild(row);
+        }
+
+        function mgrOpenEdit(id) {
+            const q = mgrAll.find(x => x.id === id);
+            if (!q) return;
+            mgrEditId = id;
+            MGR_FIELDS.forEach(k => { document.getElementById('mgr-e-' + k).value = q[k] || ''; });
+            document.getElementById('mgr-e-question').value = q.question || '';
+            document.getElementById('mgr-e-explanation').value = typeof q.explanation === 'object' && q.explanation !== null ? JSON.stringify(q.explanation) : (q.explanation || '');
+            document.getElementById('mgr-e-options').innerHTML = '';
+            (q.options || []).forEach((opt, i) => mgrAddOptionRow(opt, i === q.correct));
+            document.getElementById('mgr-edit-modal').classList.remove('hidden');
+        }
+
+        function mgrCloseEdit() { document.getElementById('mgr-edit-modal').classList.add('hidden'); mgrEditId = null; }
+
+        async function mgrSaveEdit() {
+            if (!mgrEditId) return;
+            const rows = [...document.querySelectorAll('#mgr-e-options .mgr-opt-row')];
+            const options = []; let correct = -1;
+            rows.forEach(r => {
+                const text = r.querySelector('.mgr-opt-input').value.trim();
+                if (!text) return;
+                if (r.querySelector('input[type=radio]').checked) correct = options.length;
+                options.push(text);
+            });
+            const question = document.getElementById('mgr-e-question').value.trim();
+            if (!question) return alert("The question text is empty.");
+            if (options.length < 2) return alert("Add at least 2 non-empty options.");
+            if (correct < 0) return alert("Select which option is correct.");
+
+            let explanation = document.getElementById('mgr-e-explanation').value;
+            try { explanation = JSON.parse(explanation); } catch (e) {}
+
+            const payload = { question, options, correct, explanation };
+            MGR_FIELDS.forEach(k => { payload[k] = document.getElementById('mgr-e-' + k).value.trim(); });
+
+            const btn = document.getElementById('mgr-e-save-btn');
+            btn.disabled = true; btn.innerText = "Saving...";
+            try {
+                const { doc, setDoc } = window.firestoreTools;
+                await setDoc(doc(window.db, "questions", mgrEditId), payload, { merge: true });
+                mgrSyncLocal(mgrEditId, payload);
+                mgrCloseEdit();
+                mgrRefreshApp();
+            } catch (e) { alert("Save failed: " + e.message); }
+            btn.disabled = false; btn.innerText = "Save Changes";
         }
 
         window.onload = initApp;
