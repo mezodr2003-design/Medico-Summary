@@ -13,7 +13,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
     <!-- Load Admins Configuration FIRST in HEAD -->
-    <script src="admins.js" onerror="console.log('No admins.js found, using fallback')"></script>
+    <script src="admins.js" onerror="console.log('No admins.js found, using default admin')"></script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -115,7 +115,7 @@
         </div>
     </header>
 
-    <!-- ADMIN FLOATING TOOLBAR: Automatically reveals when admin session is detected -->
+    <!-- ADMIN TOOLBAR: Automatically reveals when admin session is detected -->
     <div id="admin-toolbar" class="hidden bg-slate-900 border-b border-indigo-500/30 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs shadow-md">
         <div class="flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
@@ -150,7 +150,7 @@
                 <button onclick="setDrawingTool('eraser')" id="tool-eraser" class="px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold flex items-center gap-1 hover:bg-slate-700 transition">
                     <i class="fa-solid fa-eraser"></i> Eraser
                 </button>
-                <button onclick="clearCurrentCanvas()" class="px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-400 hover:text-white font-bold flex items-center gap-1 hover:bg-slate-700 transition">
+                <button onclick="clearCurrentCanvas()" class="px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-400 hover:text-white font-bold flex items-center gap-1 hover:bg-slate-700 transition" title="Clear page ink">
                     <i class="fa-solid fa-trash-can"></i> Clear
                 </button>
                 <button onclick="setDrawingTool('off')" id="tool-off" class="px-3 py-1.5 rounded-lg border border-indigo-500 bg-indigo-600 text-white font-bold flex items-center gap-1 shadow">
@@ -414,3 +414,535 @@
                         img.onload = () => ctx.drawImage(img, 0, 0, rect.width, rect.height);
                         img.src = dataURL;
                     }
+                }
+
+                function getCoords(e) {
+                    const rect = canvas.getBoundingClientRect();
+                    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+                }
+
+                function applyToolStyle() {
+                    ctx.globalCompositeOperation = 'source-over';
+                    if (activeTool === 'pen-blue') {
+                        ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+                    } else if (activeTool === 'pen-red') {
+                        ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+                    } else if (activeTool === 'highlighter') {
+                        ctx.strokeStyle = 'rgba(250, 204, 21, 0.45)'; ctx.lineWidth = 16; ctx.lineCap = 'square';
+                    } else if (activeTool === 'eraser') {
+                        ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = 22; ctx.lineCap = 'round';
+                    }
+                }
+
+                canvas.addEventListener('pointerdown', e => {
+                    if (activeTool === 'off') return;
+                    if (drawingInputMode === 'spen' && e.pointerType !== 'pen') return;
+
+                    e.preventDefault();
+                    drawing = true;
+                    applyToolStyle();
+                    const pos = getCoords(e);
+                    lastX = pos.x; lastY = pos.y;
+                    ctx.beginPath();
+                    ctx.moveTo(lastX, lastY);
+                });
+
+                canvas.addEventListener('pointermove', e => {
+                    if (!drawing || activeTool === 'off') return;
+                    if (drawingInputMode === 'spen' && e.pointerType !== 'pen') return;
+
+                    e.preventDefault();
+                    const pos = getCoords(e);
+                    ctx.lineTo(pos.x, pos.y);
+                    ctx.stroke();
+                    lastX = pos.x; lastY = pos.y;
+                });
+
+                function stopDrawing() {
+                    if (!drawing) return;
+                    drawing = false;
+                    localStorage.setItem('ink_' + inkId, canvas.toDataURL());
+                }
+
+                canvas.addEventListener('pointerup', stopDrawing);
+                canvas.addEventListener('pointercancel', stopDrawing);
+
+                resizeCanvas();
+                new ResizeObserver(resizeCanvas).observe(area);
+            });
+        }
+
+        // ================= AUTOMATIC ADMIN AUTH DETECTION =================
+        function checkAdminAuth() {
+            const checkAuth = setInterval(() => {
+                if (window.authTools && window.firebaseAuth) {
+                    clearInterval(checkAuth);
+                    window.authTools.onAuthStateChanged(window.firebaseAuth, (user) => {
+                        const adminToolbar = document.getElementById('admin-toolbar');
+                        const adminBadge = document.getElementById('admin-badge-indicator');
+
+                        if (user && ADMIN_EMAILS.includes((user.email || '').toLowerCase().trim())) {
+                            isAdmin = true;
+                            if (adminBadge) { adminBadge.classList.remove('hidden'); adminBadge.classList.add('flex'); }
+                            if (adminToolbar) adminToolbar.classList.remove('hidden');
+                        } else {
+                            isAdmin = false;
+                            if (adminBadge) { adminBadge.classList.add('hidden'); adminBadge.classList.remove('flex'); }
+                            if (adminToolbar) adminToolbar.classList.add('hidden');
+                        }
+                        renderQuestions();
+                    });
+                }
+            }, 150);
+        }
+
+        // ================= CRUD OPERATIONS (ADMIN ONLY) =================
+        function openAddQuestionModal(qId = null) {
+            if (!isAdmin) return alert("Admin access required.");
+            document.getElementById('written-edit-modal').classList.remove('hidden');
+
+            if (qId) {
+                const editQ = allWrittenQuestions.find(q => q.id === qId);
+                if (!editQ) return;
+                document.getElementById('edit-modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Edit Written Question';
+                document.getElementById('edit-q-id').value = editQ.id;
+                document.getElementById('edit-q-subject').value = editQ.subject || '';
+                document.getElementById('edit-q-branch').value = editQ.branch || '';
+                document.getElementById('edit-q-topic').value = editQ.topic || '';
+                document.getElementById('edit-q-marks').value = editQ.marks || '';
+                document.getElementById('edit-q-text').value = editQ.question || '';
+                document.getElementById('edit-q-model-answer').value = editQ.modelAnswer || '';
+            } else {
+                document.getElementById('edit-modal-title').innerHTML = '<i class="fa-solid fa-plus"></i> Add Written Question';
+                document.getElementById('edit-q-id').value = '';
+                document.getElementById('edit-q-subject').value = '';
+                document.getElementById('edit-q-branch').value = '';
+                document.getElementById('edit-q-topic').value = '';
+                document.getElementById('edit-q-marks').value = '';
+                document.getElementById('edit-q-text').value = '';
+                document.getElementById('edit-q-model-answer').value = '';
+            }
+        }
+
+        function closeAddQuestionModal() { 
+            document.getElementById('written-edit-modal').classList.add('hidden'); 
+        }
+
+        async function saveWrittenQuestion() {
+            const qId = document.getElementById('edit-q-id').value;
+            const subject = document.getElementById('edit-q-subject').value.trim() || 'General';
+            const branch = document.getElementById('edit-q-branch').value.trim() || 'General';
+            const topic = document.getElementById('edit-q-topic').value.trim() || 'General';
+            const marks = document.getElementById('edit-q-marks').value.trim();
+            const question = document.getElementById('edit-q-text').value.trim();
+            const modelAnswer = document.getElementById('edit-q-model-answer').value.trim();
+
+            if (!question) return alert("Question scenario cannot be empty.");
+
+            const btn = document.getElementById('save-written-btn');
+            btn.disabled = true; btn.innerText = "Saving to Cloud...";
+
+            try {
+                const { collection, addDoc, doc, setDoc, serverTimestamp } = window.firestoreTools;
+                const payload = { subject, branch, topic, marks, question, modelAnswer, updatedAt: serverTimestamp() };
+
+                if (qId) {
+                    await setDoc(doc(window.db, "written_questions", qId), payload, { merge: true });
+                    const localQ = allWrittenQuestions.find(q => q.id === qId);
+                    if (localQ) Object.assign(localQ, payload);
+                } else {
+                    const docRef = await addDoc(collection(window.db, "written_questions"), payload);
+                    allWrittenQuestions.unshift({ id: docRef.id, ...payload });
+                }
+
+                alert("Question saved successfully!");
+                closeAddQuestionModal();
+                updateAnkiBadges();
+                renderTree();
+                renderQuestions();
+            } catch(e) {
+                alert("Error saving: " + e.message);
+            }
+            btn.disabled = false; btn.innerText = "Save to Library Hub";
+        }
+
+        async function deleteWrittenQuestion(id) {
+            if (!isAdmin) return alert("Only Admins can delete questions.");
+            if (!confirm("Are you sure you want to permanently delete this written question?")) return;
+
+            try {
+                const { doc, deleteDoc } = window.firestoreTools;
+                await deleteDoc(doc(window.db, "written_questions", id));
+                allWrittenQuestions = allWrittenQuestions.filter(q => q.id !== id);
+                alert("Question deleted.");
+                updateAnkiBadges();
+                renderTree();
+                renderQuestions();
+            } catch(e) {
+                alert("Delete failed: " + e.message);
+            }
+        }
+
+        // ================= BULK JSON UPLOAD (FOR PDF IMPORT) =================
+        function openBulkJSONModal() {
+            if (!isAdmin) return alert("Admin access required.");
+            document.getElementById('bulk-json-modal').classList.remove('hidden');
+        }
+
+        function closeBulkJSONModal() { 
+            document.getElementById('bulk-json-modal').classList.add('hidden'); 
+        }
+
+        async function uploadBulkWrittenJSON() {
+            const rawText = document.getElementById('bulk-json-text').value.trim();
+            if (!rawText) return alert("Please paste JSON array first.");
+
+            const btn = document.getElementById('bulk-upload-btn');
+            btn.disabled = true; btn.innerText = "Uploading questions...";
+
+            try {
+                const arr = JSON.parse(rawText);
+                if (!Array.isArray(arr)) throw new Error("JSON must be an array: [ { ... }, { ... } ]");
+
+                const { collection, addDoc, serverTimestamp } = window.firestoreTools;
+                let count = 0;
+
+                for (const item of arr) {
+                    if (!item.question) continue;
+                    const clean = {
+                        subject: item.subject || 'General',
+                        branch: item.branch || 'General',
+                        topic: item.topic || 'General',
+                        marks: item.marks || '',
+                        question: item.question,
+                        modelAnswer: item.modelAnswer || '',
+                        updatedAt: serverTimestamp()
+                    };
+                    const docRef = await addDoc(collection(window.db, "written_questions"), clean);
+                    allWrittenQuestions.push({ id: docRef.id, ...clean });
+                    count++;
+                }
+
+                alert(`Successfully uploaded ${count} written questions!`);
+                document.getElementById('bulk-json-text').value = '';
+                closeBulkJSONModal();
+                updateAnkiBadges();
+                renderTree();
+                renderQuestions();
+            } catch(e) {
+                alert("Invalid JSON: " + e.message);
+            }
+            btn.disabled = false; btn.innerText = "Upload All Questions";
+        }
+
+        // ================= REPOSITORY FETCH =================
+        async function initWrittenLibrary() {
+            setTheme(localStorage.getItem('medico_theme') || 'dark');
+            checkAdminAuth();
+
+            const checkFirebase = setInterval(async () => {
+                if (window.db && window.firestoreTools) {
+                    clearInterval(checkFirebase);
+                    try {
+                        const { collection, getDocs } = window.firestoreTools;
+                        const snap = await getDocs(collection(window.db, "written_questions"));
+                        allWrittenQuestions = [];
+                        snap.forEach(d => allWrittenQuestions.push({ id: d.id, ...d.data() }));
+                        updateAnkiBadges();
+                        renderTree();
+                        renderQuestions();
+                    } catch(err) {
+                        console.error("Error loading written questions:", err);
+                    }
+                }
+            }, 200);
+        }
+
+        function updateAnkiBadges() {
+            let missed = 0, partial = 0, mastered = 0;
+            allWrittenQuestions.forEach(q => {
+                const s = selfScores[q.id];
+                if(s === 'missed') missed++; else if(s === 'partial') partial++; else if(s === 'mastered') mastered++;
+            });
+            document.getElementById('count-missed').innerText = missed;
+            document.getElementById('count-partial').innerText = partial;
+            document.getElementById('count-mastered').innerText = mastered;
+            document.getElementById('anki-total-badge').innerText = allWrittenQuestions.length;
+        }
+
+        function renderTree() {
+            const container = document.getElementById('written-tree-container');
+            const tree = {};
+            allWrittenQuestions.forEach(q => {
+                const subj = q.subject || "General", branch = q.branch || "General Branch", topic = q.topic || "General Topic";
+                if(!tree[subj]) tree[subj] = { total: 0, branches: {} }; tree[subj].total++;
+                if(!tree[subj].branches[branch]) tree[subj].branches[branch] = { total: 0, topics: {} }; tree[subj].branches[branch].total++;
+                if(!tree[subj].branches[branch].topics[topic]) tree[subj].branches[branch].topics[topic] = 0; tree[subj].branches[branch].topics[topic]++;
+            });
+
+            let html = '';
+            Object.keys(tree).sort().forEach(subj => {
+                const subjData = tree[subj];
+                html += `<div class="glass-card rounded-xl p-2.5 border border-slate-800/80 space-y-1.5"><div class="font-bold text-slate-200 flex justify-between items-center"><label class="flex items-center gap-2 cursor-pointer select-none"><input type="checkbox" onchange="toggleSubjectCheck('${subj}', this.checked)" class="w-3.5 h-3.5 rounded accent-indigo-500"><span>${subj}</span></label><span class="text-[10px] bg-slate-950 px-2 py-0.5 rounded-full text-indigo-400 font-mono">${subjData.total}</span></div><div class="pl-4 space-y-1 border-l border-slate-800/60 mt-1">`;
+                Object.keys(subjData.branches).sort().forEach(branch => {
+                    const branchData = subjData.branches[branch];
+                    html += `<div class="space-y-1"><div class="flex justify-between items-center text-slate-300 font-semibold text-[11px]"><label class="flex items-center gap-2 cursor-pointer select-none"><input type="checkbox" onchange="toggleBranchCheck('${subj}', '${branch}', this.checked)" class="w-3 h-3 rounded accent-indigo-500"><span>${branch}</span></label><span class="font-mono text-[9px] text-slate-500">${branchData.total}</span></div><div class="pl-3 space-y-0.5 border-l border-slate-800/40 ml-1">`;
+                    Object.keys(branchData.topics).sort().forEach(topic => {
+                        const key = `${subj}||${branch}||${topic}`; const isChecked = selectedTaxonomySet.has(key);
+                        html += `<div class="flex items-center justify-between text-slate-400 text-[10px]"><label class="flex items-center gap-1.5 cursor-pointer select-none"><input type="checkbox" onchange="toggleTopicCheck('${key}', this.checked)" ${isChecked ? 'checked' : ''} class="w-3 h-3 rounded accent-indigo-500"><span>${topic}</span></label><span class="font-mono text-[9px] text-slate-600">${branchData.topics[topic]}</span></div>`;
+                    });
+                    html += `</div></div>`;
+                });
+                html += `</div></div>`;
+            });
+            container.innerHTML = html || '<p class="text-slate-500 text-center py-2">No written questions found.</p>';
+        }
+
+        function toggleSubjectCheck(subj, isChecked) { allWrittenQuestions.forEach(q => { if((q.subject || "General") === subj) { const key = `${q.subject || "General"}||${q.branch || "General Branch"}||${q.topic || "General Topic"}`; if(isChecked) selectedTaxonomySet.add(key); else selectedTaxonomySet.delete(key); } }); renderTree(); renderQuestions(); }
+        function toggleBranchCheck(subj, branch, isChecked) { allWrittenQuestions.forEach(q => { if((q.subject || "General") === subj && (q.branch || "General Branch") === branch) { const key = `${subj}||${branch}||${q.topic || "General Topic"}`; if(isChecked) selectedTaxonomySet.add(key); else selectedTaxonomySet.delete(key); } }); renderTree(); renderQuestions(); }
+        function toggleTopicCheck(key, isChecked) { if(isChecked) selectedTaxonomySet.add(key); else selectedTaxonomySet.delete(key); renderQuestions(); }
+        function selectAllTree(selectAll) { selectedTaxonomySet.clear(); if(selectAll) { allWrittenQuestions.forEach(q => { const key = `${q.subject || "General"}||${q.branch || "General Branch"}||${q.topic || "General Topic"}`; selectedTaxonomySet.add(key); }); } renderTree(); renderQuestions(); }
+
+        function getFilteredQuestionsPool() {
+            const searchVal = document.getElementById('library-search').value.toLowerCase().trim();
+            return allWrittenQuestions.filter(q => {
+                if(ankiStatusFilter) { if(selfScores[q.id] !== ankiStatusFilter) return false; }
+                const key = `${q.subject || "General"}||${q.branch || "General Branch"}||${q.topic || "General Topic"}`;
+                if(selectedTaxonomySet.size > 0 && !selectedTaxonomySet.has(key)) return false;
+                if(searchVal) { const qText = (q.question || '').toLowerCase(); const ansText = (q.modelAnswer || '').toLowerCase(); if(!qText.includes(searchVal) && !ansText.includes(searchVal)) return false; }
+                return true;
+            });
+        }
+
+        function startAnkiSession() {
+            const pool = getFilteredQuestionsPool();
+            if(pool.length === 0) return alert("No questions selected or matching your filter.");
+
+            const missedList = pool.filter(q => selfScores[q.id] === 'missed');
+            const partialList = pool.filter(q => selfScores[q.id] === 'partial');
+            const remaining = pool.filter(q => !selfScores[q.id] || selfScores[q.id] === 'unrated');
+
+            activeAnkiQueue = [...missedList, ...partialList, ...remaining];
+            if(activeAnkiQueue.length === 0) activeAnkiQueue = [...pool];
+
+            currentAnkiIndex = 0;
+            isAnkiActiveMode = true;
+
+            document.body.classList.add('anki-focus-mode');
+            document.getElementById('written-questions-list').classList.add('hidden');
+            document.getElementById('anki-single-card-view').classList.remove('hidden');
+            document.getElementById('print-btn').classList.add('hidden');
+
+            renderAnkiSingleCard();
+        }
+
+        function renderAnkiSingleCard() {
+            if(activeAnkiQueue.length === 0 || currentAnkiIndex >= activeAnkiQueue.length) {
+                document.getElementById('anki-card-container').innerHTML = `
+                <div class="glass-panel p-12 text-center space-y-4 rounded-2xl border border-emerald-500/40 w-full shadow-2xl">
+                    <i class="fa-solid fa-trophy text-amber-400 text-6xl animate-bounce"></i>
+                    <h3 class="font-extrabold text-slate-100 text-2xl">Block Completed! 🎉</h3>
+                    <p class="text-sm text-slate-300">You have reviewed all active flashcards in this queue.</p>
+                    <button onclick="exitAnkiSession()" class="mt-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-8 py-3 rounded-xl text-sm uppercase tracking-wider shadow-lg">Return to Library</button>
+                </div>`;
+                return;
+            }
+
+            const q = activeAnkiQueue[currentAnkiIndex];
+            document.getElementById('anki-current-index').innerText = currentAnkiIndex + 1;
+            document.getElementById('anki-total-cards').innerText = activeAnkiQueue.length;
+            const progress = ((currentAnkiIndex + 1) / activeAnkiQueue.length) * 100;
+            document.getElementById('anki-progress-bar').style.width = `${progress}%`;
+
+            document.getElementById('anki-card-container').innerHTML = `
+            <div class="glass-panel rounded-2xl p-6 sm:p-10 border border-indigo-500/30 shadow-2xl space-y-6 w-full">
+                <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-800 pb-4">
+                    <div class="flex items-center gap-2 text-xs font-semibold">
+                        <span class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-3 py-1 rounded-md uppercase tracking-wider">${q.subject || 'General'}</span>
+                        <span class="bg-slate-800 text-slate-300 px-3 py-1 rounded-md">${q.branch || 'General'}</span>
+                        ${q.topic ? `<span class="bg-slate-900 text-slate-400 px-2.5 py-1 rounded text-xs">${q.topic}</span>` : ''}
+                    </div>
+                    <div class="flex items-center gap-2">
+                        ${q.marks ? `<span class="text-sm font-mono font-bold text-amber-400 bg-amber-500/10 px-3 py-1 rounded border border-amber-500/20">${q.marks}</span>` : ''}
+                    </div>
+                </div>
+
+                <!-- Question Ink Area -->
+                <div class="ink-area" data-ink-id="${q.id}-question">
+                    <div class="ink-content text-slate-100 font-bold text-lg sm:text-xl leading-relaxed select-text">
+                        ${q.question}
+                    </div>
+                    <canvas class="ink-canvas ${activeTool !== 'off' ? 'active-drawing' : ''}"></canvas>
+                </div>
+
+                <div class="pt-4 border-t border-slate-800">
+                    <button onclick="toggleAnkiAnswer('${q.id}')" class="w-full text-sm bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 active:scale-95">
+                        <i class="fa-solid fa-eye"></i> <span id="btn-txt-single-${q.id}">Show Model Answer</span>
+                    </button>
+                </div>
+
+                <div id="ans-box-single-${q.id}" class="hidden mt-4 glass-card border-l-4 border-emerald-500 rounded-r-xl p-6 sm:p-8 space-y-6">
+                    <h4 class="text-sm font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2 pb-3 border-b border-slate-800">
+                        <i class="fa-solid fa-check-double"></i> Model Answer & Key Points
+                    </h4>
+                    
+                    <!-- Answer Ink Area -->
+                    <div class="ink-area" data-ink-id="${q.id}-answer">
+                        <div class="ink-content model-answer-content text-base select-text">
+                            ${q.modelAnswer || 'No model answer available.'}
+                        </div>
+                        <canvas class="ink-canvas ${activeTool !== 'off' ? 'active-drawing' : ''}"></canvas>
+                    </div>
+                    
+                    <div class="pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <span class="text-sm text-slate-400 font-bold uppercase tracking-wider">Rate Recall:</span>
+                        <div class="grid grid-cols-3 gap-3 w-full sm:w-auto">
+                            <button onclick="rateSingleAnkiCard('${q.id}', 'missed')" class="text-xs px-5 py-3 rounded-xl font-bold bg-slate-900 hover:bg-rose-950 text-rose-400 border border-rose-500/40 transition">Again</button>
+                            <button onclick="rateSingleAnkiCard('${q.id}', 'partial')" class="text-xs px-5 py-3 rounded-xl font-bold bg-slate-900 hover:bg-amber-950 text-amber-400 border border-amber-500/40 transition">Hard</button>
+                            <button onclick="rateSingleAnkiCard('${q.id}', 'mastered')" class="text-xs px-5 py-3 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg transition">Easy</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+
+            setTimeout(initInkAreas, 60);
+        }
+
+        function toggleAnkiAnswer(id) {
+            const box = document.getElementById(`ans-box-single-${id}`);
+            const btnTxt = document.getElementById(`btn-txt-single-${id}`);
+            box.classList.toggle('hidden');
+            btnTxt.innerText = box.classList.contains('hidden') ? "Show Model Answer" : "Hide Model Answer";
+            setTimeout(initInkAreas, 100);
+        }
+
+        function rateSingleAnkiCard(id, score) {
+            selfScores[id] = score;
+            localStorage.setItem('medico_written_scores', JSON.stringify(selfScores));
+            updateAnkiBadges();
+            const currentQ = activeAnkiQueue[currentAnkiIndex];
+            if(score === 'missed') {
+                const insertIdx = Math.min(currentAnkiIndex + 3, activeAnkiQueue.length);
+                activeAnkiQueue.splice(insertIdx, 0, currentQ);
+            } else if(score === 'partial') {
+                activeAnkiQueue.push(currentQ);
+            }
+            currentAnkiIndex++;
+            renderAnkiSingleCard();
+        }
+
+        function exitAnkiSession() {
+            isAnkiActiveMode = false;
+            document.body.classList.remove('anki-focus-mode');
+            document.getElementById('written-questions-list').classList.remove('hidden');
+            document.getElementById('anki-single-card-view').classList.add('hidden');
+            document.getElementById('print-btn').classList.remove('hidden');
+            document.getElementById('active-topic-title').innerText = "All Written Questions";
+            renderQuestions();
+        }
+
+        function renderQuestions() {
+            if(isAnkiActiveMode) return;
+            const container = document.getElementById('written-questions-list');
+            const filtered = getFilteredQuestionsPool();
+
+            if(filtered.length === 0) { 
+                container.innerHTML = '<p class="text-slate-400 text-center py-8">No written questions match your selection.</p>'; 
+                return; 
+            }
+
+            let html = '';
+            filtered.forEach((q, idx) => {
+                html += `
+                <div class="glass-panel rounded-2xl p-5 border border-slate-800 shadow-lg space-y-3">
+                    <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-800/80 pb-2.5">
+                        <div class="flex items-center gap-2 text-xs font-semibold">
+                            <span class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 px-2.5 py-0.5 rounded-md">${q.subject || 'General'}</span>
+                            <span class="bg-slate-800 text-slate-300 px-2.5 py-0.5 rounded-md">${q.branch || 'General'}</span>
+                            ${q.topic ? `<span class="bg-slate-900 text-slate-400 px-2 py-0.5 rounded text-[11px]">${q.topic}</span>` : ''}
+                        </div>
+                        <div class="flex items-center gap-2">
+                            ${q.marks ? `<span class="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">${q.marks}</span>` : ''}
+                            ${isAdmin ? `
+                                <button onclick="openAddQuestionModal('${q.id}')" class="text-xs bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 px-2 py-1 rounded transition" title="Edit Question"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="deleteWrittenQuestion('${q.id}')" class="text-xs bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 px-2 py-1 rounded transition" title="Delete Question"><i class="fa-solid fa-trash-can"></i></button>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <!-- Question Ink Area -->
+                    <div class="ink-area" data-ink-id="${q.id}-list-q">
+                        <div class="ink-content text-slate-100 font-medium text-sm sm:text-base leading-relaxed select-text">
+                            <span class="text-indigo-400 font-bold font-mono mr-1">Q${idx+1}.</span> ${q.question}
+                        </div>
+                        <canvas class="ink-canvas ${activeTool !== 'off' ? 'active-drawing' : ''}"></canvas>
+                    </div>
+
+                    <div class="pt-2">
+                        <button onclick="toggleAnswer('${q.id}')" class="text-xs bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white border border-indigo-500/30 px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-lightbulb"></i> <span id="btn-txt-${q.id}">Show Model Answer</span>
+                        </button>
+                    </div>
+
+                    <div id="ans-box-${q.id}" class="hidden mt-3 glass-card border-l-4 border-emerald-500 rounded-r-xl p-4 space-y-3">
+                        <div class="ink-area" data-ink-id="${q.id}-list-ans">
+                            <div class="ink-content model-answer-content overflow-x-auto select-text">${q.modelAnswer || 'No model answer available.'}</div>
+                            <canvas class="ink-canvas ${activeTool !== 'off' ? 'active-drawing' : ''}"></canvas>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+            setTimeout(initInkAreas, 60);
+        }
+
+        function toggleAnswer(id) {
+            const box = document.getElementById(`ans-box-${id}`);
+            const btnTxt = document.getElementById(`btn-txt-${id}`);
+            box.classList.toggle('hidden');
+            btnTxt.innerText = box.classList.contains('hidden') ? "Show Model Answer" : "Hide Model Answer";
+            setTimeout(initInkAreas, 80);
+        }
+
+        function filterByAnkiStatus(status) { 
+            ankiStatusFilter = status; 
+            document.getElementById('active-topic-title').innerText = `Deck: ${status.toUpperCase()} Questions`; 
+            renderQuestions(); 
+        }
+
+        function clearFilter() { 
+            selectedTaxonomySet.clear(); 
+            ankiStatusFilter = null; 
+            document.getElementById('active-topic-title').innerText = "All Written Questions"; 
+            renderTree(); 
+            renderQuestions(); 
+        }
+
+        function filterQuestions() { 
+            renderQuestions(); 
+        }
+
+        function printWrittenSheet() {
+            const printArea = document.getElementById('print-area');
+            const questions = getFilteredQuestionsPool();
+            if (questions.length === 0) return alert("No questions to print.");
+
+            let html = '<div style="padding: 25px; font-family: sans-serif; color: black; background: white;">';
+            html += '<h2 style="text-align: center; margin-bottom: 25px;">Written Questions Practice Sheet</h2>';
+
+            questions.forEach((q, idx) => {
+                html += `<div style="margin-bottom: 30px; page-break-inside: avoid; border-bottom: 1px solid #ccc; padding-bottom: 15px;">`;
+                html += `<p style="font-size: 16px; font-weight: bold;">Q${idx + 1}: ${q.question} <span style="font-size: 12px; color: #555;">(${q.marks || ''})</span></p>`;
+                html += `<div style="margin-top: 10px; font-size: 14px; color: #222;"><b>Model Answer:</b><br>${q.modelAnswer}</div>`;
+                html += `</div>`;
+            });
+
+            html += '</div>';
+            printArea.innerHTML = html;
+            setTimeout(() => { window.print(); }, 400);
+        }
+
+        window.onload = initWrittenLibrary;
+    </script>
+</body>
+</html>
