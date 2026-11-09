@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" dir="ltr" class="h-full">
 <head>
@@ -39,7 +38,7 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc, arrayUnion, serverTimestamp, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc, arrayUnion, serverTimestamp, query, orderBy, limit, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -57,7 +56,7 @@
 
         window.db = db;
         window.firebaseAuth = auth;
-        window.firestoreTools = { collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc, arrayUnion, serverTimestamp, query, orderBy, limit, where };
+        window.firestoreTools = { collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc, arrayUnion, serverTimestamp, query, orderBy, limit, where, Timestamp };
         window.authTools = { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged };
     </script>
 
@@ -97,7 +96,6 @@
         .option-btn.selected-incorrect { background-color: rgba(225, 29, 72, 0.2) !important; border-color: #e11d48 !important; color: #fb7185 !important; }
         .option-btn.actual-correct { border-color: #059669 !important; box-shadow: inset 0 0 0 1px #059669; }
         
-        /* Option elimination strikethrough */
         .option-eliminated { opacity: 0.45 !important; filter: grayscale(80%); }
         .option-eliminated .opt-text { text-decoration: line-through !important; text-decoration-thickness: 2px; }
 
@@ -117,8 +115,7 @@
         ::-webkit-scrollbar-thumb { background: #475569; border-radius: 9999px; }
         ::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
-        /* ================= FIXED HIGH-CONTRAST THEMES ================= */
-        /* 1. EYECARE (AMBOSS SEPIA) */
+        /* THEMES */
         .theme-eyecare { background-color: #f5eedc !important; color: #2c2114 !important; }
         .theme-eyecare header, .theme-eyecare footer, .theme-eyecare .glass-panel { background: #e8ddc2 !important; border-color: #d6c6a2 !important; color: #2c2114 !important; }
         .theme-eyecare .glass-card { background: #faf4e8 !important; border-color: #dfceaa !important; }
@@ -132,7 +129,6 @@
         .theme-eyecare .q-matrix-btn { background-color: #eee3cb !important; border-color: #d2c099 !important; color: #493724 !important; }
         .theme-eyecare #explanation-box { background-color: #faf4e8 !important; border-color: #dfceaa !important; }
 
-        /* 2. LIGHT (UWORLD MEDICAL CLEAN) */
         .theme-light { background-color: #f8fafc !important; color: #0f172a !important; }
         .theme-light header, .theme-light footer, .theme-light .glass-panel { background: #ffffff !important; border-color: #e2e8f0 !important; color: #0f172a !important; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04); }
         .theme-light .glass-card { background: #ffffff !important; border-color: #e2e8f0 !important; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
@@ -178,12 +174,18 @@
             </div>
 
             <div class="flex items-center gap-2 sm:gap-3">
-                <!-- Theme Switcher with Active State Indicators -->
+                <!-- Theme Switcher -->
                 <div class="flex items-center bg-slate-950/70 p-0.5 rounded-lg border border-slate-800 text-xs">
                     <button id="theme-btn-dark" onclick="setTheme('dark')" title="AMBOSS Dark" class="px-2 py-1 rounded-md text-slate-400 hover:text-indigo-400 hover:bg-slate-800/80 transition"><i class="fa-solid fa-moon"></i></button>
                     <button id="theme-btn-eyecare" onclick="setTheme('eyecare')" title="Sepia Eyecare" class="px-2 py-1 rounded-md text-slate-400 hover:text-amber-500 hover:bg-slate-800/80 transition"><i class="fa-solid fa-eye"></i></button>
                     <button id="theme-btn-light" onclick="setTheme('light')" title="UWorld Light" class="px-2 py-1 rounded-md text-slate-400 hover:text-yellow-400 hover:bg-slate-800/80 transition"><i class="fa-solid fa-sun"></i></button>
                 </div>
+
+                <!-- Instant Sync Status Badge -->
+                <button onclick="forceFullSync()" title="Force check for updates on Cloud" class="text-xs bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-indigo-400 border border-slate-700/80 px-2.5 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
+                    <i id="cloud-sync-icon" class="fa-solid fa-rotate text-xs"></i>
+                    <span id="sync-status-text" class="hidden sm:inline text-[11px]">Sync Cloud</span>
+                </button>
 
                 <div id="quiz-header-controls" class="hidden items-center gap-2">
                     <div id="timer-display" class="hidden items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-700/80 font-mono text-xs sm:text-sm font-semibold text-amber-400 shadow-inner">
@@ -328,7 +330,7 @@
                 <div class="flex flex-col sm:flex-row justify-between items-center pt-4 border-t border-slate-800 gap-4">
                     <div class="flex items-center gap-2 text-xs sm:text-sm">
                         <i class="fa-solid fa-layer-group text-indigo-400"></i>
-                        <span id="available-count" class="font-semibold text-indigo-400">Syncing with Cloud...</span>
+                        <span id="available-count" class="font-semibold text-indigo-400">Loading database...</span>
                     </div>
                     <button onclick="startQuiz()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold py-3 px-8 rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 text-sm tracking-wide">
                         <i class="fa-solid fa-play text-xs"></i> Generate Test Block
@@ -338,7 +340,9 @@
         </div>
 
         <div id="quiz-screen" class="hidden flex-grow flex flex-col lg:flex-row gap-6 items-start">
-            <div class="quiz-container flex-grow flex flex-col space-y-5 w-full glass-panel rounded-2xl p-5 sm:p-7 shadow-2xl backdrop-blur-md">
+            <div class="quiz-container flex-grow flex flex-col space-y-4 w-full glass-panel rounded-2xl p-5 sm:p-7 shadow-2xl backdrop-blur-md">
+                
+                <!-- TOP HEADER BAR: Taxonomy & Tools -->
                 <div class="flex flex-wrap justify-between items-center pb-3 border-b border-slate-800 gap-2">
                     <div class="flex flex-wrap items-center gap-2 text-xs font-semibold">
                         <span id="q-tag-branch" class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 px-2.5 py-1 rounded-md uppercase tracking-wide">Branch</span>
@@ -360,15 +364,37 @@
                     </div>
                 </div>
 
-                <div class="space-y-2">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Item <span id="q-current-num" class="text-indigo-400">1</span> of <span id="q-total-num">30</span></h3>
+                <!-- TOP NAVIGATION BAR: Placed right above the question text -->
+                <div class="flex items-center justify-between bg-slate-900/70 p-2.5 rounded-xl border border-slate-800/80">
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-widest flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                            Item <span id="q-current-num" class="text-indigo-400 text-sm font-bold">1</span> of <span id="q-total-num" class="text-slate-300">30</span>
+                        </h3>
                     </div>
+
+                    <!-- Top Direct Navigation Buttons -->
+                    <div class="flex items-center gap-2">
+                        <button onclick="navigate(-1)" class="bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 active:scale-95 shadow-sm">
+                            <i class="fa-solid fa-arrow-left text-[11px]"></i>
+                            <span class="hidden sm:inline">Prev</span>
+                        </button>
+                        <button onclick="navigate(1)" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition flex items-center gap-2 active:scale-95 shadow-md shadow-indigo-600/30">
+                            <span>Next</span>
+                            <i class="fa-solid fa-arrow-right text-[11px]"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- QUESTION TEXT -->
+                <div class="space-y-2 pt-1">
                     <p id="q-text" class="text-base sm:text-lg leading-relaxed text-slate-100 font-medium">Loading clinical question...</p>
                 </div>
 
+                <!-- OPTIONS -->
                 <div id="q-options" class="space-y-2.5 pt-2"></div>
 
+                <!-- EXPLANATION -->
                 <div id="explanation-box" class="hidden mt-6 glass-card border-l-4 border-emerald-500 rounded-r-xl border border-y-slate-800 border-r-slate-800 p-5 space-y-3.5 shadow-xl transition-all">
                     <div class="flex items-center gap-2 pb-2 border-b border-slate-800/80">
                         <span class="p-1.5 bg-emerald-500/20 text-emerald-400 rounded-md text-xs"><i class="fa-solid fa-book-medical"></i></span>
@@ -377,15 +403,20 @@
                     <div id="exp-text" class="text-sm leading-relaxed text-slate-200"></div>
                 </div>
 
+                <!-- BOTTOM CONTROLS BAR -->
                 <div class="mt-auto pt-6 border-t border-slate-800 flex flex-wrap justify-between items-center gap-2">
-                    <button onclick="navigate(-1)" class="bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 text-slate-200 px-5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2"><i class="fa-solid fa-arrow-left text-xs"></i> Previous</button>
+                    <button onclick="navigate(-1)" class="bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 text-slate-200 px-5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-left text-xs"></i> Previous
+                    </button>
                     
                     <div id="quiz-extra-actions" class="flex items-center gap-2">
                         <button id="edit-q-btn" onclick="openEditModal()" class="hidden text-xs bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-bold border border-amber-500/40 px-3.5 py-2 rounded-xl transition items-center gap-1.5"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
                         <button id="delete-q-btn" onclick="deleteCurrentQuestionFromCloud()" class="hidden text-xs bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 font-bold border border-rose-500/40 px-3.5 py-2 rounded-xl transition items-center gap-1.5"><i class="fa-solid fa-trash-can"></i> Delete</button>
                     </div>
 
-                    <button onclick="navigate(1)" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-semibold px-7 py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center gap-2 shadow-lg shadow-indigo-600/30">Next <i class="fa-solid fa-arrow-right text-xs"></i></button>
+                    <button onclick="navigate(1)" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-semibold px-7 py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center gap-2 shadow-lg shadow-indigo-600/30">
+                        Next <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
                 </div>
             </div>
 
@@ -518,7 +549,6 @@
                     <button onclick="closeManager()" class="text-slate-400 hover:text-slate-200 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
                 </div>
 
-                <!-- Filters -->
                 <div class="grid grid-cols-2 md:grid-cols-6 gap-2 shrink-0">
                     <select id="mgr-f-subject" onchange="mgrFilterChanged()" class="glass-input rounded-lg p-2 text-xs text-slate-200"></select>
                     <select id="mgr-f-branch" onchange="mgrFilterChanged()" class="glass-input rounded-lg p-2 text-xs text-slate-200"></select>
@@ -528,7 +558,6 @@
                     <input type="text" id="mgr-search" onkeyup="mgrFilterChanged()" placeholder="Search text..." class="glass-input rounded-lg p-2 text-xs text-slate-200 col-span-2 md:col-span-1">
                 </div>
 
-                <!-- Bulk actions -->
                 <div class="glass-card rounded-xl p-3 space-y-2 shrink-0">
                     <div class="flex flex-wrap items-center justify-between gap-2">
                         <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer select-none">
@@ -552,7 +581,6 @@
                     </div>
                 </div>
 
-                <!-- List -->
                 <div id="mgr-list" class="flex-grow overflow-y-auto space-y-2 pr-1 min-h-[160px]"></div>
             </div>
         </div>
@@ -645,24 +673,153 @@
         if(!userStats.correct) userStats.correct = [];
         let activeBlock = []; let currentIdx = 0; let blockState = []; let testMode = 'tutor'; let timerInterval; let timeRemaining = 0;
 
-        // System Tree State
         let expandedNodesState = {};
         let selectedTaxonomySet = new Set();
-        
-        // Font Size Scale State
         let currentFontScale = parseInt(localStorage.getItem('medico_font_scale')) || 0;
 
-        // Small helper: escape text before putting it inside HTML
         function esc(s) {
             return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
 
-        // ================= FIXED THEME HANDLER =================
+        // ================= INDEXEDDB LOCAL STORAGE & INCREMENTAL SYNC =================
+        const IDB_NAME = "MedicoQBank_DB";
+        const IDB_STORE = "questions_cache";
+
+        function openIDB() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open(IDB_NAME, 2);
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(IDB_STORE)) {
+                        db.createObjectStore(IDB_STORE, { keyPath: "id" });
+                    }
+                };
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        async function getAllFromIDB() {
+            try {
+                const db = await openIDB();
+                return new Promise((resolve) => {
+                    const tx = db.transaction(IDB_STORE, "readonly");
+                    const store = tx.objectStore(IDB_STORE);
+                    const req = store.getAll();
+                    req.onsuccess = () => resolve(req.result || []);
+                    req.onerror = () => resolve([]);
+                });
+            } catch(e) {
+                return [];
+            }
+        }
+
+        async function saveBatchToIDB(items) {
+            if (!items || items.length === 0) return;
+            try {
+                const db = await openIDB();
+                const tx = db.transaction(IDB_STORE, "readwrite");
+                const store = tx.objectStore(IDB_STORE);
+                items.forEach(it => {
+                    if (it._deleted) store.delete(it.id);
+                    else store.put(it);
+                });
+            } catch(e) {
+                console.warn("IndexedDB save failed", e);
+            }
+        }
+
+        async function clearIDB() {
+            try {
+                const db = await openIDB();
+                const tx = db.transaction(IDB_STORE, "readwrite");
+                tx.objectStore(IDB_STORE).clear();
+            } catch(e) {}
+        }
+
+        // ================= SMART INCREMENTAL SYNC (0 READS IF UNCHANGED) =================
+        async function initCloudSync() {
+            let localData = typeof questionsDatabase !== 'undefined' ? questionsDatabase : [];
+            
+            // 1. Instantly load from device local cache (Works 100% Offline with 0 Reads!)
+            const cachedCloudData = await getAllFromIDB();
+            if (cachedCloudData && cachedCloudData.length > 0) {
+                allQuestions = [...localData, ...cachedCloudData];
+                populateSourceFilter(); 
+                renderSystemsTree(); 
+                updateAvailableCount();
+            }
+
+            // 2. Background check for newly added / modified documents ONLY
+            const checkFirebase = setInterval(async () => {
+                if (window.db && window.firestoreTools) {
+                    clearInterval(checkFirebase);
+                    try {
+                        const { collection, getDocs, query, where, Timestamp } = window.firestoreTools;
+                        const lastSyncMs = parseInt(localStorage.getItem('medico_last_sync') || '0', 10);
+                        
+                        let qRef;
+                        if (lastSyncMs > 0 && cachedCloudData && cachedCloudData.length > 0) {
+                            // Incremental sync: Only documents created/updated AFTER last sync!
+                            const lastSyncDate = Timestamp.fromMillis(lastSyncMs);
+                            qRef = query(collection(window.db, "questions"), where("updatedAt", ">", lastSyncDate));
+                        } else {
+                            // Initial full sync on first visit
+                            qRef = collection(window.db, "questions");
+                        }
+
+                        const querySnapshot = await getDocs(qRef);
+                        
+                        if (!querySnapshot.empty) {
+                            const newOrModified = [];
+                            querySnapshot.forEach((d) => {
+                                const data = d.data();
+                                newOrModified.push({ ...data, id: d.id, _cloud: true });
+                            });
+
+                            // Save changes locally in IndexedDB
+                            await saveBatchToIDB(newOrModified);
+
+                            // Reload fresh merged list
+                            const updatedLocalCache = await getAllFromIDB();
+                            allQuestions = [...localData, ...updatedLocalCache];
+                            populateSourceFilter(); 
+                            renderSystemsTree(); 
+                            updateAvailableCount();
+                        }
+                        
+                        // Stamp sync timestamp
+                        localStorage.setItem('medico_last_sync', Date.now().toString());
+                    } catch (err) {
+                        console.warn("Sync skipped or offline mode active:", err.message);
+                        if (allQuestions.length === 0) {
+                            allQuestions = localData; 
+                            populateSourceFilter(); 
+                            renderSystemsTree(); 
+                            updateAvailableCount();
+                        }
+                    }
+                }
+            }, 200);
+        }
+
+        async function forceFullSync() {
+            const icon = document.getElementById('cloud-sync-icon');
+            if (icon) icon.classList.add('fa-spin');
+            localStorage.removeItem('medico_last_sync');
+            await clearIDB();
+            await initCloudSync();
+            setTimeout(() => {
+                if (icon) icon.classList.remove('fa-spin');
+                alert("Database re-synced successfully!");
+            }, 800);
+        }
+
+        // ================= THEME CONTROLLER =================
         function setTheme(mode) {
             const body = document.getElementById('app-body');
             body.classList.remove('theme-eyecare', 'theme-light');
             
-            // Highlight active button
             const darkBtn = document.getElementById('theme-btn-dark');
             const eyeBtn = document.getElementById('theme-btn-eyecare');
             const lightBtn = document.getElementById('theme-btn-light');
@@ -683,7 +840,6 @@
             localStorage.setItem('medico_theme', mode);
         }
 
-        // Font scaling helper
         function adjustFontSize(delta) {
             if (delta === 0) currentFontScale = 0;
             else currentFontScale = Math.max(-1, Math.min(2, currentFontScale + delta));
@@ -702,7 +858,6 @@
             optTexts.forEach(el => el.style.fontSize = `${baseSize * 0.95}rem`);
         }
 
-        // Search bar clear toggle
         function handleSearchInput() {
             const val = document.getElementById('search-bar').value;
             const clearBtn = document.getElementById('search-clear-btn');
@@ -729,30 +884,6 @@
                 btnText.innerText = "Focus View";
                 if (document.exitFullscreen) document.exitFullscreen().catch(e => {});
             }
-        }
-
-        async function initCloudSync() {
-            let localData = typeof questionsDatabase !== 'undefined' ? questionsDatabase : [];
-            const checkFirebase = setInterval(async () => {
-                if (window.db && window.firestoreTools) {
-                    clearInterval(checkFirebase);
-                    try {
-                        const { collection, getDocs } = window.firestoreTools;
-                        const querySnapshot = await getDocs(collection(window.db, "questions"));
-                        let cloudData = [];
-                        querySnapshot.forEach((doc) => {
-                            const d = doc.data();
-                            if (d._deleted || !d.question || !Array.isArray(d.options)) return;
-                            cloudData.push({ ...d, id: doc.id, _cloud: true });
-                        });
-                        allQuestions = [...localData, ...cloudData];
-                        populateSourceFilter(); renderSystemsTree(); updateAvailableCount();
-                    } catch (err) {
-                        console.error("Cloud fetch failed", err);
-                        allQuestions = localData; populateSourceFilter(); renderSystemsTree(); updateAvailableCount();
-                    }
-                }
-            }, 200);
         }
 
         function populateSourceFilter() {
@@ -940,7 +1071,7 @@
             if (blockSizeVal !== 'all') {
                 effectiveCount = Math.min(parseInt(blockSizeVal), pool.length);
             }
-            document.getElementById('available-count').innerText = `${pool.length} Available (${effectiveCount} selected)`; 
+            document.getElementById('available-count').innerText = `${pool.length} Available (${effectiveCount} in this block)`; 
         }
 
         function saveSession() {
@@ -1018,12 +1149,10 @@
         // ================= KEYBOARD NAVIGATION =================
         function setupKeyboardNavigation() {
             window.addEventListener('keydown', (e) => {
-                // Ignore key shortcuts if focused on input/textarea or modal is open
                 if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
                 if (!document.getElementById('quiz-screen') || document.getElementById('quiz-screen').classList.contains('hidden')) return;
 
                 const key = e.key.toUpperCase();
-                // Select Option (A, B, C, D, E) or (1, 2, 3, 4, 5)
                 const state = blockState[currentIdx];
                 if (!state.answered) {
                     let optIdx = -1;
@@ -1038,7 +1167,6 @@
                     }
                 }
 
-                // Arrow navigation
                 if (e.key === 'ArrowRight' || key === 'K') { navigate(1); }
                 else if (e.key === 'ArrowLeft' || key === 'J') { navigate(-1); }
                 else if (key === 'F') { toggleFlag(); }
@@ -1049,7 +1177,6 @@
             let pool = getFilteredQuestions(); 
             if (pool.length === 0) return alert("No questions match your criteria.");
             
-            // Apply selected block size (e.g. 10, 20, 40)
             const blockSizeVal = document.getElementById('filter-block-size')?.value || 'all';
             if (blockSizeVal !== 'all') {
                 const limitNum = parseInt(blockSizeVal);
@@ -1092,7 +1219,6 @@
             saveSession();
         }
 
-        // Toggle Strikethrough elimination for a distractor
         function toggleOptionElimination(e, optIdx) {
             e.stopPropagation();
             const state = blockState[currentIdx];
@@ -1295,12 +1421,13 @@
                     
                     if (blockQ.id && blockQ._cloud && window.db) {
                         try {
-                            const { doc, setDoc } = window.firestoreTools;
-                            let updatePayload = { subject: newSubj, branch: newBranch, subtype: newSubtype, source: newSource };
+                            const { doc, setDoc, serverTimestamp } = window.firestoreTools;
+                            let updatePayload = { subject: newSubj, branch: newBranch, subtype: newSubtype, source: newSource, updatedAt: serverTimestamp() };
                             if (i === currentIdx) { updatePayload = { ...updatePayload, question: newQ, explanation: newExp, options: newOptions, correct: selectedCorrect }; }
                             await setDoc(doc(window.db, "questions", String(blockQ.id)), updatePayload, { merge: true });
                             const orig = allQuestions.find(item => item.id === blockQ.id && item._cloud);
                             if (orig) Object.assign(orig, updatePayload);
+                            await saveBatchToIDB([{ ...blockQ, ...updatePayload }]);
                             updatedCount++;
                         } catch(e) { console.error("Update failed for", blockQ.id); }
                     }
@@ -1314,14 +1441,16 @@
                 
                 if (qId && currentQ._cloud && window.db) {
                     try {
-                        const { doc, setDoc } = window.firestoreTools;
+                        const { doc, setDoc, serverTimestamp } = window.firestoreTools;
                         const updatePayload = {
                             subject: newSubj, branch: newBranch, subtype: newSubtype, source: newSource,
-                            question: newQ, explanation: newExp, options: newOptions, correct: selectedCorrect
+                            question: newQ, explanation: newExp, options: newOptions, correct: selectedCorrect,
+                            updatedAt: serverTimestamp()
                         };
                         await setDoc(doc(window.db, "questions", String(qId)), updatePayload, { merge: true });
                         const orig = allQuestions.find(item => item.id === qId && item._cloud);
                         if (orig) Object.assign(orig, updatePayload);
+                        await saveBatchToIDB([{ ...currentQ, ...updatePayload }]);
                         alert("Changes updated directly in Cloud Database!");
                     } catch(e) { console.error("Cloud update error:", e); alert("Cloud update failed: " + e.message); }
                 }
@@ -1341,15 +1470,17 @@
             await setDoc(doc(window.db, "questions", String(docId)), {
                 _deleted: true,
                 _deletedAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
                 _deletedBy: currentAdminEmail(),
                 _reason: reason || 'manual'
             }, { merge: true });
+            await saveBatchToIDB([{ id: String(docId), _deleted: true }]);
         }
 
         async function deleteCurrentQuestionFromCloud() {
             if(!isSuperAdmin) return alert("Only Super Admin is authorized to delete questions.");
             const q = activeBlock[currentIdx];
-            if(!q || !q.id || !q._cloud) return alert("This question comes from the local data.js file, not from the cloud, so it cannot be deleted from here. Remove it from data.js (or reload the page and start a new block if you just updated).");
+            if(!q || !q.id || !q._cloud) return alert("This question comes from the local data.js file, not from the cloud, so it cannot be deleted from here. Remove it from data.js.");
 
             const preview = (q.question || '').slice(0, 120);
             if(confirm(`Delete this question?\n\n"${preview}..."\n\nIt will be moved to the Recycle Bin and can be restored.`)) {
@@ -1405,21 +1536,28 @@
             if (problem) { alert("Upload cancelled, nothing was uploaded.\n\n" + problem); return -1; }
             if (questionsArray.length === 0) { alert("The array is empty."); return -1; }
 
-            const { collection, addDoc } = window.firestoreTools;
+            const { collection, addDoc, serverTimestamp } = window.firestoreTools;
             const batchId = 'batch_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
 
             await logAdminUpload(questionsArray.length, questionsArray[0].subject, batchId);
 
             let count = 0;
+            const savedLocally = [];
             try {
                 for (const q of questionsArray) {
                     const clean = { ...q };
                     delete clean.id; delete clean.batchId; delete clean._deleted;
-                    await addDoc(collection(window.db, "questions"), { ...clean, batchId: batchId });
+                    const docRef = await addDoc(collection(window.db, "questions"), { 
+                        ...clean, 
+                        batchId: batchId, 
+                        updatedAt: serverTimestamp() 
+                    });
+                    savedLocally.push({ ...clean, id: docRef.id, batchId: batchId, _cloud: true });
                     count++;
                 }
+                await saveBatchToIDB(savedLocally);
             } catch (err) {
-                alert(`Upload stopped after ${count} of ${questionsArray.length} questions: ${err.message}\n\nThe ${count} uploaded questions appear in "Review Admin Uploads" as one batch; you can remove that batch safely and try again.`);
+                alert(`Upload stopped after ${count} of ${questionsArray.length} questions: ${err.message}`);
                 return count;
             }
             return count;
@@ -1435,7 +1573,7 @@
                 if (!Array.isArray(questionsArray)) { alert("Invalid structure. It must be an array [ ... ]."); btn.disabled=false; btn.innerText="Upload Pasted Data"; return; }
                 const count = await uploadQuestionsArray(questionsArray);
                 if (count === questionsArray.length) {
-                    alert(`Success! Uploaded ${count} questions directly to the Cloud Database.`);
+                    alert(`Success! Uploaded ${count} questions directly to Cloud.`);
                     document.getElementById('bulk-json-text').value = ''; closeCloudAdmin(); initCloudSync(); 
                 } else if (count > 0) { initCloudSync(); }
             } catch (err) { alert("Error parsing or uploading JSON: " + err.message); }
@@ -1455,7 +1593,7 @@
                     if (!Array.isArray(questionsArray)) { alert("Invalid JSON structure."); btn.disabled=false; btn.innerText="Upload File"; return; }
                     const count = await uploadQuestionsArray(questionsArray);
                     if (count === questionsArray.length) {
-                        alert(`Success! Uploaded ${count} questions to the Cloud Database.`);
+                        alert(`Success! Uploaded ${count} questions to the Cloud.`);
                         fileInput.value = ''; closeCloudAdmin(); initCloudSync(); 
                     } else if (count > 0) { initCloudSync(); }
                 } catch (err) { alert("Error uploading JSON file: " + err.message); }
@@ -1511,7 +1649,7 @@
                     const dateStr = log.timestamp ? new Date(log.timestamp.toDate()).toLocaleString() : "Recently";
                     const tag = log.batchId
                         ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 ml-1">tracked</span>'
-                        : '<span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-700 text-slate-300 border border-slate-600 ml-1" title="Uploaded before batch tracking: its questions cannot be identified safely">legacy</span>';
+                        : '<span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-700 text-slate-300 border border-slate-600 ml-1">legacy</span>';
                     
                     if(log.isolated) {
                         isolatedHTML += `
@@ -1522,7 +1660,7 @@
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <span class="text-[10px] text-slate-500">${dateStr}</span>
-                                    <button onclick="toggleLogIsolation('${log.id}', false)" title="Un-isolate (Restore to Active)" class="text-xs bg-indigo-600/20 hover:bg-indigo-600 text-indigo-400 hover:text-white w-8 h-8 rounded-lg border border-indigo-500/30 transition flex items-center justify-center">
+                                    <button onclick="toggleLogIsolation('${log.id}', false)" title="Un-isolate" class="text-xs bg-indigo-600/20 hover:bg-indigo-600 text-indigo-400 hover:text-white w-8 h-8 rounded-lg border border-indigo-500/30 transition flex items-center justify-center">
                                         <i class="fa-solid fa-rotate-left"></i>
                                     </button>
                                 </div>
@@ -1539,7 +1677,7 @@
                                     <button onclick="toggleLogIsolation('${log.id}', true)" title="Isolate & Protect" class="text-xs bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white w-8 h-8 rounded-lg border border-emerald-500/30 transition flex items-center justify-center">
                                         <i class="fa-solid fa-check"></i>
                                     </button>
-                                    <button onclick="deleteBatchQuestions('${log.id}')" title="Delete this batch (to Recycle Bin)" class="text-xs bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white w-8 h-8 rounded-lg border border-rose-500/30 transition flex items-center justify-center">
+                                    <button onclick="deleteBatchQuestions('${log.id}')" title="Delete this batch" class="text-xs bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white w-8 h-8 rounded-lg border border-rose-500/30 transition flex items-center justify-center">
                                         <i class="fa-solid fa-xmark"></i>
                                     </button>
                                 </div>
@@ -1575,32 +1713,30 @@
                 snap.size = snap.docs.length; snap.empty = snap.docs.length === 0;
 
                 if (snap.empty) {
-                    if (confirm("No questions are linked to this upload (it is a legacy upload from before batch tracking, or it was already deleted).\n\nFor safety, NO questions will be deleted.\n\nRemove only this log entry from the list?")) {
+                    if (confirm("No questions found for this batch. Remove log entry?")) {
                         await deleteDoc(doc(window.db, "activity_logs", logId));
                         openActivityLogModal();
                     }
                     return;
                 }
 
-                if (!confirm(`Delete exactly ${snap.size} questions that belong to this upload?\n\nThey will be moved to the Recycle Bin and can be restored.`)) return;
+                if (!confirm(`Delete exactly ${snap.size} questions from this upload?`)) return;
 
                 let deletedIds = []; let failed = 0;
                 for (const d of snap.docs) {
                     try { await archiveAndDelete(d.id, d.data(), 'batch:' + logId); deletedIds.push(d.id); }
-                    catch (e) { failed++; console.error("Archive/delete failed for", d.id, e); }
+                    catch (e) { failed++; console.error("Delete failed for", d.id, e); }
                 }
 
                 if (failed === 0) { await deleteDoc(doc(window.db, "activity_logs", logId)); }
                 allQuestions = allQuestions.filter(item => !deletedIds.includes(item.id));
 
-                alert(failed === 0
-                    ? `Batch moved to the Recycle Bin: ${deletedIds.length} questions.`
-                    : `Moved ${deletedIds.length} questions. ${failed} failed and were left untouched (log entry kept so you can retry).`);
+                alert(`Moved ${deletedIds.length} questions to Recycle Bin.`);
                 openActivityLogModal();
                 updateAvailableCount();
                 renderSystemsTree();
             } catch(err) { 
-                alert("Error deleting batch (nothing else was touched): " + err.message); 
+                alert("Error deleting batch: " + err.message); 
             }
         }
 
@@ -1644,8 +1780,8 @@
         function closeTrashModal() { document.getElementById('trash-modal').classList.add('hidden'); }
 
         async function restoreOneFromTrash(id) {
-            const { doc, setDoc } = window.firestoreTools;
-            await setDoc(doc(window.db, "questions", String(id)), { _deleted: false, _deletedAt: null, _deletedBy: null, _reason: null }, { merge: true });
+            const { doc, setDoc, serverTimestamp } = window.firestoreTools;
+            await setDoc(doc(window.db, "questions", String(id)), { _deleted: false, _deletedAt: null, _deletedBy: null, _reason: null, updatedAt: serverTimestamp() }, { merge: true });
         }
 
         async function restoreFromTrash(id) {
@@ -1677,6 +1813,7 @@
             try {
                 const { doc, deleteDoc } = window.firestoreTools;
                 await deleteDoc(doc(window.db, "questions", String(id)));
+                await saveBatchToIDB([{ id: String(id), _deleted: true }]);
                 openTrashModal();
             } catch (e) { alert("Error: " + e.message); }
         }
@@ -1851,12 +1988,13 @@
 
             const btn = document.getElementById('mgr-apply-btn');
             btn.disabled = true;
-            const { doc, setDoc } = window.firestoreTools;
+            const { doc, setDoc, serverTimestamp } = window.firestoreTools;
             let ok = 0, fail = 0, lastErr = '';
             for (const id of ids) {
                 try {
-                    await setDoc(doc(window.db, "questions", String(id)), changes, { merge: true });
+                    await setDoc(doc(window.db, "questions", String(id)), { ...changes, updatedAt: serverTimestamp() }, { merge: true });
                     mgrSyncLocal(id, changes);
+                    await saveBatchToIDB([{ id: String(id), ...changes }]);
                     ok++;
                 } catch (e) { fail++; lastErr = e.message; console.error(e); }
                 btn.innerText = `Applying ${ok + fail} / ${ids.length}...`;
@@ -1882,7 +2020,7 @@
             try {
                 await mgrSoftDelete(id, 'manager');
                 mgrRefreshApp();
-            } catch (e) { alert("Delete failed (nothing was deleted): " + e.message); }
+            } catch (e) { alert("Delete failed: " + e.message); }
         }
 
         async function mgrDeleteSelected() {
@@ -1954,9 +2092,10 @@
             const btn = document.getElementById('mgr-e-save-btn');
             btn.disabled = true; btn.innerText = "Saving...";
             try {
-                const { doc, setDoc } = window.firestoreTools;
-                await setDoc(doc(window.db, "questions", String(mgrEditId)), payload, { merge: true });
+                const { doc, setDoc, serverTimestamp } = window.firestoreTools;
+                await setDoc(doc(window.db, "questions", String(mgrEditId)), { ...payload, updatedAt: serverTimestamp() }, { merge: true });
                 mgrSyncLocal(mgrEditId, payload);
+                await saveBatchToIDB([{ id: String(mgrEditId), ...payload }]);
                 mgrCloseEdit();
                 mgrRefreshApp();
             } catch (e) { alert("Save failed: " + e.message); }
@@ -1969,3 +2108,9 @@
     <script src="student-features.js"></script>
 </body>
 </html>
+
+
+
+
+
+
