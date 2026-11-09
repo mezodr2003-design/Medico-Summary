@@ -645,7 +645,12 @@
                         const { collection, getDocs } = window.firestoreTools;
                         const querySnapshot = await getDocs(collection(window.db, "questions"));
                         let cloudData = [];
-                        querySnapshot.forEach((doc) => { const d = doc.data(); if (d._deleted) return; cloudData.push({ id: doc.id, _cloud: true, ...d }); });
+                        querySnapshot.forEach((doc) => {
+                            const d = doc.data();
+                            if (d._deleted || !d.question || !Array.isArray(d.options)) return;
+                            // FIXED: ...d comes FIRST so Firestore's real doc.id is never overwritten
+                            cloudData.push({ ...d, id: doc.id, _cloud: true });
+                        });
                         allQuestions = [...localData, ...cloudData];
                         populateSourceFilter(); renderSystemsTree(); updateAvailableCount();
                     } catch (err) {
@@ -1044,31 +1049,37 @@
                         blockQ.question = newQ; blockQ.explanation = newExp; blockQ.options = newOptions; blockQ.correct = selectedCorrect;
                     }
                     
-                    if (blockQ.id && window.db) {
+                    if (blockQ.id && blockQ._cloud && window.db) {
                         try {
                             const { doc, setDoc } = window.firestoreTools;
                             let updatePayload = { subject: newSubj, branch: newBranch, subtype: newSubtype, source: newSource };
                             if (i === currentIdx) { updatePayload = { ...updatePayload, question: newQ, explanation: newExp, options: newOptions, correct: selectedCorrect }; }
-                            await setDoc(doc(window.db, "questions", blockQ.id), updatePayload, { merge: true });
+                            await setDoc(doc(window.db, "questions", String(blockQ.id)), updatePayload, { merge: true });
+                            const orig = allQuestions.find(item => item.id === blockQ.id && item._cloud);
+                            if (orig) Object.assign(orig, updatePayload);
                             updatedCount++;
                         } catch(e) { console.error("Update failed for", blockQ.id); }
                     }
                 }
                 alert(`Successfully updated taxonomy for ${updatedCount} questions in the block!`);
             } else {
-                const qId = activeBlock[currentIdx].id;
-                activeBlock[currentIdx].subject = newSubj; activeBlock[currentIdx].branch = newBranch; activeBlock[currentIdx].subtype = newSubtype; activeBlock[currentIdx].source = newSource;
-                activeBlock[currentIdx].question = newQ; activeBlock[currentIdx].explanation = newExp; activeBlock[currentIdx].options = newOptions; activeBlock[currentIdx].correct = selectedCorrect; 
+                const currentQ = activeBlock[currentIdx];
+                const qId = currentQ.id;
+                currentQ.subject = newSubj; currentQ.branch = newBranch; currentQ.subtype = newSubtype; currentQ.source = newSource;
+                currentQ.question = newQ; currentQ.explanation = newExp; currentQ.options = newOptions; currentQ.correct = selectedCorrect; 
                 
-                if (qId && window.db) {
+                if (qId && currentQ._cloud && window.db) {
                     try {
                         const { doc, setDoc } = window.firestoreTools;
-                        await setDoc(doc(window.db, "questions", qId), {
+                        const updatePayload = {
                             subject: newSubj, branch: newBranch, subtype: newSubtype, source: newSource,
                             question: newQ, explanation: newExp, options: newOptions, correct: selectedCorrect
-                        }, { merge: true });
+                        };
+                        await setDoc(doc(window.db, "questions", String(qId)), updatePayload, { merge: true });
+                        const orig = allQuestions.find(item => item.id === qId && item._cloud);
+                        if (orig) Object.assign(orig, updatePayload);
                         alert("Changes updated directly in Cloud Database!");
-                    } catch(e) { console.error("Cloud update error:", e); }
+                    } catch(e) { console.error("Cloud update error:", e); alert("Cloud update failed: " + e.message); }
                 }
             }
             
@@ -1089,7 +1100,7 @@
 
         async function archiveAndDelete(docId, data, reason) {
             const { doc, setDoc, serverTimestamp } = window.firestoreTools;
-            await setDoc(doc(window.db, "questions", docId), {
+            await setDoc(doc(window.db, "questions", String(docId)), {
                 _deleted: true,
                 _deletedAt: serverTimestamp(),
                 _deletedBy: currentAdminEmail(),
@@ -1171,7 +1182,7 @@
             try {
                 for (const q of questionsArray) {
                     const clean = { ...q };
-                    delete clean.id; delete clean.batchId;
+                    delete clean.id; delete clean.batchId; delete clean._deleted;
                     await addDoc(collection(window.db, "questions"), { ...clean, batchId: batchId });
                     count++;
                 }
@@ -1230,6 +1241,7 @@
                 const seen = new Set(); let duplicates = [];
                 querySnapshot.forEach((document) => {
                     const data = document.data();
+                    if (data._deleted || !data.question) return; // Skip already deleted or empty docs
                     const uniqueKey = `${data.subject || ''}|${data.branch || ''}|${data.subtype || ''}|${data.question || ''}`.trim().toLowerCase();
                     if (seen.has(uniqueKey)) { duplicates.push({ id: document.id, data: data }); } else { seen.add(uniqueKey); }
                 });
@@ -1263,7 +1275,8 @@
                 
                 let activeHTML = ''; let isolatedHTML = '';
                 let logs = [];
-                querySnapshot.forEach(d => logs.push({ id: d.id, ...d.data() }));
+                // FIXED: ...d.data() comes FIRST so d.id is never overwritten
+                querySnapshot.forEach(d => logs.push({ ...d.data(), id: d.id }));
                 logs.sort((a, b) => ((b.timestamp && b.timestamp.seconds) || 0) - ((a.timestamp && a.timestamp.seconds) || 0));
                 
                 logs.forEach(log => {
@@ -1379,7 +1392,8 @@
                 const { collection, getDocs } = window.firestoreTools;
                 const snap = await getDocs(collection(window.db, "questions"));
                 let items = [];
-                snap.forEach(d => { const x = d.data(); if (x._deleted) items.push({ id: d.id, ...x }); });
+                // FIXED: ...x comes FIRST so d.id is never overwritten
+                snap.forEach(d => { const x = d.data(); if (x._deleted) items.push({ ...x, id: d.id }); });
                 items.sort((a, b) => ((b._deletedAt && b._deletedAt.seconds) || 0) - ((a._deletedAt && a._deletedAt.seconds) || 0));
 
                 document.getElementById('trash-restore-all-btn').classList.toggle('hidden', items.length === 0);
@@ -1409,7 +1423,7 @@
 
         async function restoreOneFromTrash(id) {
             const { doc, setDoc } = window.firestoreTools;
-            await setDoc(doc(window.db, "questions", id), { _deleted: false, _deletedAt: null, _deletedBy: null, _reason: null }, { merge: true });
+            await setDoc(doc(window.db, "questions", String(id)), { _deleted: false, _deletedAt: null, _deletedBy: null, _reason: null }, { merge: true });
         }
 
         async function restoreFromTrash(id) {
@@ -1440,7 +1454,7 @@
             if (!confirm("Delete this question FOREVER? This cannot be undone.")) return;
             try {
                 const { doc, deleteDoc } = window.firestoreTools;
-                await deleteDoc(doc(window.db, "questions", id));
+                await deleteDoc(doc(window.db, "questions", String(id)));
                 openTrashModal();
             } catch (e) { alert("Error: " + e.message); }
         }
@@ -1466,7 +1480,11 @@
                 const { collection, getDocs } = window.firestoreTools;
                 const snap = await getDocs(collection(window.db, "questions"));
                 mgrAll = [];
-                snap.forEach(d => { const x = d.data(); if (!x._deleted) mgrAll.push({ id: d.id, ...x }); });
+                // FIXED: ...x comes FIRST so Firestore's real d.id is never overwritten
+                snap.forEach(d => {
+                    const x = d.data();
+                    if (!x._deleted && x.question) mgrAll.push({ ...x, id: d.id });
+                });
                 mgrSelected.clear();
                 mgrLimit = 100;
                 MGR_FIELDS.forEach(f => { document.getElementById('mgr-f-' + f).dataset.keep = ''; });
@@ -1622,7 +1640,7 @@
             let ok = 0, fail = 0, lastErr = '';
             for (const id of ids) {
                 try {
-                    await setDoc(doc(window.db, "questions", id), changes, { merge: true });
+                    await setDoc(doc(window.db, "questions", String(id)), changes, { merge: true });
                     mgrSyncLocal(id, changes);
                     ok++;
                 } catch (e) { fail++; lastErr = e.message; console.error(e); }
@@ -1723,7 +1741,7 @@
             btn.disabled = true; btn.innerText = "Saving...";
             try {
                 const { doc, setDoc } = window.firestoreTools;
-                await setDoc(doc(window.db, "questions", mgrEditId), payload, { merge: true });
+                await setDoc(doc(window.db, "questions", String(mgrEditId)), payload, { merge: true });
                 mgrSyncLocal(mgrEditId, payload);
                 mgrCloseEdit();
                 mgrRefreshApp();
