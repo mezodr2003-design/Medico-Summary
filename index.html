@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" dir="ltr" class="h-full">
 <head>
@@ -96,6 +97,10 @@
         .option-btn.selected-incorrect { background-color: rgba(225, 29, 72, 0.2) !important; border-color: #e11d48 !important; color: #fb7185 !important; }
         .option-btn.actual-correct { border-color: #059669 !important; box-shadow: inset 0 0 0 1px #059669; }
         
+        /* Option elimination strikethrough */
+        .option-eliminated { opacity: 0.45 !important; filter: grayscale(80%); }
+        .option-eliminated .opt-text { text-decoration: line-through !important; text-decoration-thickness: 2px; }
+
         #exp-text p { margin-bottom: 0.75rem; line-height: 1.65; }
         #exp-text ul, #exp-text ol { margin: 0.5rem 0 0.75rem 1.25rem; }
         #exp-text ul { list-style-type: disc; }
@@ -112,23 +117,34 @@
         ::-webkit-scrollbar-thumb { background: #475569; border-radius: 9999px; }
         ::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
-        .theme-eyecare { background-color: #f4ebd9 !important; color: #2e2417 !important; }
-        .theme-eyecare header, .theme-eyecare footer, .theme-eyecare .glass-panel, .theme-eyecare .bg-slate-900, .theme-eyecare .bg-slate-900\/70 { background-color: #e7dbbf !important; border-color: #d4c29d !important; color: #2e2417 !important; }
-        .theme-eyecare select, .theme-eyecare input, .theme-eyecare textarea, .theme-eyecare .glass-card, .theme-eyecare .glass-input, .theme-eyecare .bg-slate-950, .theme-eyecare .bg-slate-950\/80, .theme-eyecare .bg-slate-950\/70, .theme-eyecare .bg-slate-950\/60 { background-color: #faf5eb !important; border-color: #d4c29d !important; color: #2e2417 !important; }
-        .theme-eyecare .text-slate-400, .theme-eyecare .text-slate-500, .theme-eyecare .text-slate-300, .theme-eyecare .text-slate-200, .theme-eyecare .text-slate-100 { color: #4a3b2c !important; }
-        .theme-eyecare .border-slate-700, .theme-eyecare .border-slate-600, .theme-eyecare .border-slate-800 { border-color: #d4c29d !important; }
-        .theme-eyecare .option-btn { background-color: #faf5eb !important; border-color: #d4c29d !important; color: #2e2417 !important; }
-        .theme-eyecare .option-btn:hover:not(:disabled) { background-color: #e4d7bc !important; border-color: #b59f74 !important; }
-        .theme-eyecare .q-matrix-btn { background-color: #ede3cc !important; border-color: #d4c29d !important; color: #5c4a36 !important; }
+        /* ================= FIXED HIGH-CONTRAST THEMES ================= */
+        /* 1. EYECARE (AMBOSS SEPIA) */
+        .theme-eyecare { background-color: #f5eedc !important; color: #2c2114 !important; }
+        .theme-eyecare header, .theme-eyecare footer, .theme-eyecare .glass-panel { background: #e8ddc2 !important; border-color: #d6c6a2 !important; color: #2c2114 !important; }
+        .theme-eyecare .glass-card { background: #faf4e8 !important; border-color: #dfceaa !important; }
+        .theme-eyecare select, .theme-eyecare input, .theme-eyecare textarea, .theme-eyecare .glass-input { background: #fffdf9 !important; border-color: #cbb88f !important; color: #2c2114 !important; }
+        .theme-eyecare .text-white, .theme-eyecare .text-slate-100, .theme-eyecare .text-slate-200, .theme-eyecare .text-slate-300 { color: #23190e !important; }
+        .theme-eyecare .text-slate-400, .theme-eyecare .text-slate-500 { color: #5a4632 !important; }
+        .theme-eyecare .border-slate-800, .theme-eyecare .border-slate-700, .theme-eyecare .border-slate-600 { border-color: #dfceaa !important; }
+        .theme-eyecare .bg-slate-950, .theme-eyecare .bg-slate-900 { background-color: #ede2c9 !important; }
+        .theme-eyecare .option-btn { background-color: #faf4e8 !important; border-color: #d9c7a0 !important; color: #2c2114 !important; }
+        .theme-eyecare .option-btn:hover:not(:disabled) { background-color: #ebdcb9 !important; border-color: #c29d66 !important; }
+        .theme-eyecare .q-matrix-btn { background-color: #eee3cb !important; border-color: #d2c099 !important; color: #493724 !important; }
+        .theme-eyecare #explanation-box { background-color: #faf4e8 !important; border-color: #dfceaa !important; }
 
+        /* 2. LIGHT (UWORLD MEDICAL CLEAN) */
         .theme-light { background-color: #f8fafc !important; color: #0f172a !important; }
-        .theme-light header, .theme-light footer, .theme-light .glass-panel, .theme-light .bg-slate-900, .theme-light .bg-slate-900\/70 { background-color: #ffffff !important; border-color: #e2e8f0 !important; color: #0f172a !important; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); }
-        .theme-light select, .theme-light input, .theme-light textarea, .theme-light .glass-card, .theme-light .glass-input, .theme-light .bg-slate-950, .theme-light .bg-slate-950\/80, .theme-light .bg-slate-950\/70, .theme-light .bg-slate-950\/60 { background-color: #f1f5f9 !important; border-color: #cbd5e1 !important; color: #0f172a !important; }
-        .theme-light .text-slate-400, .theme-light .text-slate-500, .theme-light .text-slate-300, .theme-light .text-slate-200, .theme-light .text-slate-100 { color: #334155 !important; }
-        .theme-light .border-slate-700, .theme-light .border-slate-600, .theme-light .border-slate-800 { border-color: #e2e8f0 !important; }
+        .theme-light header, .theme-light footer, .theme-light .glass-panel { background: #ffffff !important; border-color: #e2e8f0 !important; color: #0f172a !important; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04); }
+        .theme-light .glass-card { background: #ffffff !important; border-color: #e2e8f0 !important; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
+        .theme-light select, .theme-light input, .theme-light textarea, .theme-light .glass-input { background: #f8fafc !important; border-color: #cbd5e1 !important; color: #0f172a !important; }
+        .theme-light .text-white, .theme-light .text-slate-100, .theme-light .text-slate-200, .theme-light .text-slate-300 { color: #0f172a !important; }
+        .theme-light .text-slate-400, .theme-light .text-slate-500 { color: #475569 !important; }
+        .theme-light .border-slate-800, .theme-light .border-slate-700, .theme-light .border-slate-600 { border-color: #e2e8f0 !important; }
+        .theme-light .bg-slate-950, .theme-light .bg-slate-900 { background-color: #f1f5f9 !important; }
         .theme-light .option-btn { background-color: #ffffff !important; border-color: #cbd5e1 !important; color: #1e293b !important; }
-        .theme-light .option-btn:hover:not(:disabled) { background-color: #f8fafc !important; border-color: #6366f1 !important; }
-        .theme-light .q-matrix-btn { background-color: #ffffff !important; border-color: #cbd5e1 !important; color: #475569 !important; }
+        .theme-light .option-btn:hover:not(:disabled) { background-color: #f1f5f9 !important; border-color: #6366f1 !important; }
+        .theme-light .q-matrix-btn { background-color: #f8fafc !important; border-color: #cbd5e1 !important; color: #334155 !important; }
+        .theme-light #explanation-box { background-color: #ffffff !important; border-color: #e2e8f0 !important; }
 
         body.focus-mode header, body.focus-mode footer, body.focus-mode #matrix-sidebar, body.focus-mode #quiz-extra-actions { display: none !important; }
         body.focus-mode #quiz-screen { max-width: 1000px !important; margin: 0 auto; padding-top: 2rem; }
@@ -162,10 +178,11 @@
             </div>
 
             <div class="flex items-center gap-2 sm:gap-3">
-                <div class="hidden sm:flex items-center bg-slate-950/70 p-0.5 rounded-lg border border-slate-800 text-xs">
-                    <button onclick="setTheme('dark')" title="AMBOSS Dark" class="px-2 py-1 rounded-md text-slate-400 hover:text-indigo-400 hover:bg-slate-800/80 transition"><i class="fa-solid fa-moon"></i></button>
-                    <button onclick="setTheme('eyecare')" title="Sepia Eyecare" class="px-2 py-1 rounded-md text-slate-400 hover:text-amber-500 hover:bg-slate-800/80 transition"><i class="fa-solid fa-eye"></i></button>
-                    <button onclick="setTheme('light')" title="UWorld Light" class="px-2 py-1 rounded-md text-slate-400 hover:text-yellow-400 hover:bg-slate-800/80 transition"><i class="fa-solid fa-sun"></i></button>
+                <!-- Theme Switcher with Active State Indicators -->
+                <div class="flex items-center bg-slate-950/70 p-0.5 rounded-lg border border-slate-800 text-xs">
+                    <button id="theme-btn-dark" onclick="setTheme('dark')" title="AMBOSS Dark" class="px-2 py-1 rounded-md text-slate-400 hover:text-indigo-400 hover:bg-slate-800/80 transition"><i class="fa-solid fa-moon"></i></button>
+                    <button id="theme-btn-eyecare" onclick="setTheme('eyecare')" title="Sepia Eyecare" class="px-2 py-1 rounded-md text-slate-400 hover:text-amber-500 hover:bg-slate-800/80 transition"><i class="fa-solid fa-eye"></i></button>
+                    <button id="theme-btn-light" onclick="setTheme('light')" title="UWorld Light" class="px-2 py-1 rounded-md text-slate-400 hover:text-yellow-400 hover:bg-slate-800/80 transition"><i class="fa-solid fa-sun"></i></button>
                 </div>
 
                 <div id="quiz-header-controls" class="hidden items-center gap-2">
@@ -230,13 +247,16 @@
 
                 <div>
                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">Global Keyword Search</label>
-                    <div class="relative">
-                        <input type="text" id="search-bar" onkeyup="updateAvailableCount()" placeholder="Search keywords in questions or explanations..." class="w-full glass-input p-3 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-slate-200 pl-10 transition">
-                        <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-500 text-sm pointer-events-none"></i>
+                    <div class="relative flex items-center">
+                        <input type="text" id="search-bar" onkeyup="handleSearchInput()" placeholder="Search keywords in questions or explanations..." class="w-full glass-input p-3 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-slate-200 pl-10 pr-10 transition">
+                        <i class="fa-solid fa-search absolute left-3.5 text-slate-500 text-sm pointer-events-none"></i>
+                        <button type="button" id="search-clear-btn" onclick="clearGlobalSearch()" class="hidden absolute right-3 w-6 h-6 rounded-md hover:bg-slate-700/80 text-slate-400 hover:text-rose-400 flex items-center justify-center transition text-xs" title="Clear Search">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Test Mode</label>
                         <div class="grid grid-cols-2 gap-2">
@@ -249,6 +269,15 @@
                                 <span class="ml-2 text-xs font-semibold text-slate-200">Timed Exam</span>
                             </label>
                         </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Block Size (Question Count)</label>
+                        <select id="filter-block-size" onchange="updateAvailableCount()" class="w-full glass-input rounded-xl p-3 text-xs text-slate-200 outline-none focus:border-indigo-500">
+                            <option value="all">All Available Questions</option>
+                            <option value="10">10 Questions (Quick Review)</option>
+                            <option value="20">20 Questions (Standard Quiz)</option>
+                            <option value="40" selected>40 Questions (Official Block Size)</option>
+                        </select>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Filter Source / QBank</label>
@@ -316,6 +345,12 @@
                         <span id="q-tag-subtype" class="bg-slate-800 text-slate-300 border border-slate-700 px-2.5 py-1 rounded-md">Subtype</span>
                     </div>
                     <div class="flex items-center gap-2">
+                        <!-- Font Size Adjuster Controls -->
+                        <div class="flex items-center bg-slate-900/80 rounded-lg border border-slate-700/80 p-0.5 text-xs">
+                            <button onclick="adjustFontSize(-1)" title="Decrease Font Size" class="px-2 py-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 font-bold transition">A-</button>
+                            <button onclick="adjustFontSize(0)" title="Reset Font Size" class="px-2 py-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 font-bold transition">A</button>
+                            <button onclick="adjustFontSize(1)" title="Increase Font Size" class="px-2 py-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 font-bold transition">A+</button>
+                        </div>
                         <button onclick="toggleFocusMode()" class="hidden md:flex text-xs items-center gap-1.5 px-3 py-1.5 rounded-lg border border-indigo-500/40 bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600 hover:text-white transition font-semibold">
                             <i class="fa-solid fa-expand"></i> <span id="focus-btn-text">Focus View</span>
                         </button>
@@ -369,6 +404,10 @@
                     </div>
 
                     <div id="matrix-grid" class="flex flex-wrap gap-1.5 justify-start max-h-[380px] overflow-y-auto pr-1"></div>
+                    
+                    <div class="mt-4 pt-3 border-t border-slate-800 text-[10px] text-slate-400 text-center flex items-center justify-center gap-2">
+                        <i class="fa-regular fa-keyboard text-indigo-400"></i> Keys: <b>A-E</b> (Answer), <b>←/→</b> (Nav), <b>F</b> (Flag)
+                    </div>
                 </div>
             </div>
         </div>
@@ -609,18 +648,74 @@
         // System Tree State
         let expandedNodesState = {};
         let selectedTaxonomySet = new Set();
+        
+        // Font Size Scale State
+        let currentFontScale = parseInt(localStorage.getItem('medico_font_scale')) || 0;
 
         // Small helper: escape text before putting it inside HTML
         function esc(s) {
             return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
 
+        // ================= FIXED THEME HANDLER =================
         function setTheme(mode) {
             const body = document.getElementById('app-body');
             body.classList.remove('theme-eyecare', 'theme-light');
-            if(mode === 'eyecare') body.classList.add('theme-eyecare');
-            if(mode === 'light') body.classList.add('theme-light');
+            
+            // Highlight active button
+            const darkBtn = document.getElementById('theme-btn-dark');
+            const eyeBtn = document.getElementById('theme-btn-eyecare');
+            const lightBtn = document.getElementById('theme-btn-light');
+            
+            [darkBtn, eyeBtn, lightBtn].forEach(b => {
+                if(b) b.classList.remove('bg-indigo-600/30', 'text-indigo-400', 'font-bold', 'ring-1', 'ring-indigo-500/50');
+            });
+
+            if(mode === 'eyecare') {
+                body.classList.add('theme-eyecare');
+                if(eyeBtn) eyeBtn.classList.add('bg-indigo-600/30', 'text-amber-500', 'font-bold', 'ring-1', 'ring-amber-500/50');
+            } else if(mode === 'light') {
+                body.classList.add('theme-light');
+                if(lightBtn) lightBtn.classList.add('bg-indigo-600/30', 'text-yellow-500', 'font-bold', 'ring-1', 'ring-yellow-500/50');
+            } else {
+                if(darkBtn) darkBtn.classList.add('bg-indigo-600/30', 'text-indigo-400', 'font-bold', 'ring-1', 'ring-indigo-500/50');
+            }
             localStorage.setItem('medico_theme', mode);
+        }
+
+        // Font scaling helper
+        function adjustFontSize(delta) {
+            if (delta === 0) currentFontScale = 0;
+            else currentFontScale = Math.max(-1, Math.min(2, currentFontScale + delta));
+            localStorage.setItem('medico_font_scale', currentFontScale);
+            applyFontScale();
+        }
+
+        function applyFontScale() {
+            const qText = document.getElementById('q-text');
+            const expText = document.getElementById('exp-text');
+            const optTexts = document.querySelectorAll('.opt-text');
+
+            const baseSize = 1 + (currentFontScale * 0.12);
+            if (qText) qText.style.fontSize = `${baseSize * 1.1}rem`;
+            if (expText) expText.style.fontSize = `${baseSize * 0.9}rem`;
+            optTexts.forEach(el => el.style.fontSize = `${baseSize * 0.95}rem`);
+        }
+
+        // Search bar clear toggle
+        function handleSearchInput() {
+            const val = document.getElementById('search-bar').value;
+            const clearBtn = document.getElementById('search-clear-btn');
+            if (val.trim()) clearBtn.classList.remove('hidden');
+            else clearBtn.classList.add('hidden');
+            updateAvailableCount();
+        }
+
+        function clearGlobalSearch() {
+            const input = document.getElementById('search-bar');
+            input.value = '';
+            document.getElementById('search-clear-btn').classList.add('hidden');
+            updateAvailableCount();
         }
 
         function toggleFocusMode() {
@@ -648,7 +743,6 @@
                         querySnapshot.forEach((doc) => {
                             const d = doc.data();
                             if (d._deleted || !d.question || !Array.isArray(d.options)) return;
-                            // FIXED: ...d comes FIRST so Firestore's real doc.id is never overwritten
                             cloudData.push({ ...d, id: doc.id, _cloud: true });
                         });
                         allQuestions = [...localData, ...cloudData];
@@ -673,7 +767,6 @@
             if (!container) return;
             const selectedSource = document.getElementById('filter-source').value;
 
-            // Build 3-tier taxonomy tree (Subject -> Branch -> Subtype)
             const tree = {};
             allQuestions.forEach(q => {
                 if (selectedSource !== 'all' && q.source !== selectedSource) return;
@@ -841,8 +934,13 @@
         }
 
         function updateAvailableCount() { 
-            const count = getFilteredQuestions().length; 
-            document.getElementById('available-count').innerText = `${count} Questions Available`; 
+            const pool = getFilteredQuestions(); 
+            const blockSizeVal = document.getElementById('filter-block-size')?.value || 'all';
+            let effectiveCount = pool.length;
+            if (blockSizeVal !== 'all') {
+                effectiveCount = Math.min(parseInt(blockSizeVal), pool.length);
+            }
+            document.getElementById('available-count').innerText = `${pool.length} Available (${effectiveCount} selected)`; 
         }
 
         function saveSession() {
@@ -863,7 +961,10 @@
 
         function initApp() { 
             const savedTheme = localStorage.getItem('medico_theme') || 'dark'; 
-            setTheme(savedTheme); initCloudSync(); restoreSession(); 
+            setTheme(savedTheme); 
+            initCloudSync(); 
+            restoreSession(); 
+            setupKeyboardNavigation();
             
             const checkAuth = setInterval(() => {
                 if (window.authTools && window.firebaseAuth) {
@@ -914,53 +1015,196 @@
             }, 200);
         }
 
+        // ================= KEYBOARD NAVIGATION =================
+        function setupKeyboardNavigation() {
+            window.addEventListener('keydown', (e) => {
+                // Ignore key shortcuts if focused on input/textarea or modal is open
+                if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+                if (!document.getElementById('quiz-screen') || document.getElementById('quiz-screen').classList.contains('hidden')) return;
+
+                const key = e.key.toUpperCase();
+                // Select Option (A, B, C, D, E) or (1, 2, 3, 4, 5)
+                const state = blockState[currentIdx];
+                if (!state.answered) {
+                    let optIdx = -1;
+                    if (['A', '1'].includes(key)) optIdx = 0;
+                    else if (['B', '2'].includes(key)) optIdx = 1;
+                    else if (['C', '3'].includes(key)) optIdx = 2;
+                    else if (['D', '4'].includes(key)) optIdx = 3;
+                    else if (['E', '5'].includes(key)) optIdx = 4;
+                    if (optIdx >= 0 && activeBlock[currentIdx]?.options[optIdx] !== undefined) {
+                        submitAnswer(optIdx);
+                        return;
+                    }
+                }
+
+                // Arrow navigation
+                if (e.key === 'ArrowRight' || key === 'K') { navigate(1); }
+                else if (e.key === 'ArrowLeft' || key === 'J') { navigate(-1); }
+                else if (key === 'F') { toggleFlag(); }
+            });
+        }
+
         function startQuiz() {
-            const pool = getFilteredQuestions(); if (pool.length === 0) return alert("No questions match your criteria.");
-            activeBlock = pool; blockState = activeBlock.map(q => ({ answered: false, selected: null, correct: false })); currentIdx = 0; testMode = document.querySelector('input[name="test-mode"]:checked').value;
-            document.getElementById('dashboard-screen').classList.add('hidden'); document.getElementById('quiz-screen').classList.remove('hidden'); document.getElementById('quiz-screen').classList.add('flex');
-            if (testMode === 'timed') { document.getElementById('quiz-header-controls').classList.remove('hidden'); document.getElementById('quiz-header-controls').classList.add('flex'); timeRemaining = activeBlock.length * 90; document.getElementById('timer-display').classList.remove('hidden'); document.getElementById('timer-display').classList.add('flex'); timerInterval = setInterval(updateTimer, 1000); } 
-            else { document.getElementById('quiz-header-controls').classList.remove('hidden'); document.getElementById('quiz-header-controls').classList.add('flex'); document.getElementById('timer-display').classList.add('hidden'); document.getElementById('timer-display').classList.remove('flex'); }
+            let pool = getFilteredQuestions(); 
+            if (pool.length === 0) return alert("No questions match your criteria.");
+            
+            // Apply selected block size (e.g. 10, 20, 40)
+            const blockSizeVal = document.getElementById('filter-block-size')?.value || 'all';
+            if (blockSizeVal !== 'all') {
+                const limitNum = parseInt(blockSizeVal);
+                pool = pool.slice(0, limitNum);
+            }
+
+            activeBlock = pool; 
+            blockState = activeBlock.map(q => ({ answered: false, selected: null, correct: false, eliminated: [] })); 
+            currentIdx = 0; 
+            testMode = document.querySelector('input[name="test-mode"]:checked').value;
+            
+            document.getElementById('dashboard-screen').classList.add('hidden'); 
+            document.getElementById('quiz-screen').classList.remove('hidden'); 
+            document.getElementById('quiz-screen').classList.add('flex');
+            
+            if (testMode === 'timed') { 
+                document.getElementById('quiz-header-controls').classList.remove('hidden'); 
+                document.getElementById('quiz-header-controls').classList.add('flex'); 
+                timeRemaining = activeBlock.length * 90; 
+                document.getElementById('timer-display').classList.remove('hidden'); 
+                document.getElementById('timer-display').classList.add('flex'); 
+                timerInterval = setInterval(updateTimer, 1000); 
+            } else { 
+                document.getElementById('quiz-header-controls').classList.remove('hidden'); 
+                document.getElementById('quiz-header-controls').classList.add('flex'); 
+                document.getElementById('timer-display').classList.add('hidden'); 
+                document.getElementById('timer-display').classList.remove('flex'); 
+            }
             
             if(isAdmin) { 
-                document.getElementById('edit-q-btn').classList.remove('hidden'); document.getElementById('edit-q-btn').classList.add('flex'); 
+                document.getElementById('edit-q-btn').classList.remove('hidden'); 
+                document.getElementById('edit-q-btn').classList.add('flex'); 
                 if(isSuperAdmin) {
-                    document.getElementById('delete-q-btn').classList.remove('hidden'); document.getElementById('delete-q-btn').classList.add('flex');
+                    document.getElementById('delete-q-btn').classList.remove('hidden'); 
+                    document.getElementById('delete-q-btn').classList.add('flex');
                 }
             }
-            renderMatrix(); loadQuestion(); saveSession();
+            renderMatrix(); 
+            loadQuestion(); 
+            saveSession();
+        }
+
+        // Toggle Strikethrough elimination for a distractor
+        function toggleOptionElimination(e, optIdx) {
+            e.stopPropagation();
+            const state = blockState[currentIdx];
+            if (!state.eliminated) state.eliminated = [];
+            
+            const index = state.eliminated.indexOf(optIdx);
+            if (index > -1) state.eliminated.splice(index, 1);
+            else state.eliminated.push(optIdx);
+            
+            loadQuestion();
         }
 
         function loadQuestion() {
-            const q = activeBlock[currentIdx]; const state = blockState[currentIdx]; const isFlagged = userStats.flagged.includes(q.id);
-            document.getElementById('q-current-num').innerText = currentIdx + 1; document.getElementById('q-total-num').innerText = activeBlock.length; document.getElementById('q-tag-branch').innerText = q.branch || "General"; document.getElementById('q-tag-subtype').innerText = q.subtype || "General"; document.getElementById('q-text').innerText = q.question;
+            const q = activeBlock[currentIdx]; 
+            const state = blockState[currentIdx]; 
+            if (!state.eliminated) state.eliminated = [];
+            const isFlagged = userStats.flagged.includes(q.id);
+
+            document.getElementById('q-current-num').innerText = currentIdx + 1; 
+            document.getElementById('q-total-num').innerText = activeBlock.length; 
+            document.getElementById('q-tag-branch').innerText = q.branch || "General"; 
+            document.getElementById('q-tag-subtype').innerText = q.subtype || "General"; 
+            document.getElementById('q-text').innerText = q.question;
+            
             const flagBtn = document.getElementById('flag-btn');
-            if(isFlagged) { flagBtn.innerHTML = `<i class="fa-solid fa-bookmark"></i> <span class="font-bold">Flagged</span>`; flagBtn.classList.add('text-amber-500'); flagBtn.classList.remove('text-slate-400'); } 
-            else { flagBtn.innerHTML = `<i class="fa-regular fa-bookmark"></i> <span>Flag Question</span>`; flagBtn.classList.remove('text-amber-500'); flagBtn.classList.add('text-slate-400'); }
-            const optsBox = document.getElementById('q-options'); optsBox.innerHTML = '';
+            if(isFlagged) { 
+                flagBtn.innerHTML = `<i class="fa-solid fa-bookmark"></i> <span class="font-bold">Flagged</span>`; 
+                flagBtn.classList.add('text-amber-500'); 
+                flagBtn.classList.remove('text-slate-400'); 
+            } else { 
+                flagBtn.innerHTML = `<i class="fa-regular fa-bookmark"></i> <span>Flag Question</span>`; 
+                flagBtn.classList.remove('text-amber-500'); 
+                flagBtn.classList.add('text-slate-400'); 
+            }
+
+            const optsBox = document.getElementById('q-options'); 
+            optsBox.innerHTML = '';
+            
             q.options.forEach((opt, idx) => {
-                const btn = document.createElement('button'); const letter = String.fromCharCode(65 + idx);
-                btn.className = 'option-btn w-full text-left p-4 rounded-xl flex items-start gap-4 cursor-pointer font-medium';
-                btn.innerHTML = `<span class="flex-shrink-0 w-8 h-8 rounded-full border border-slate-600 flex items-center justify-center font-bold">${letter}</span> <span class="mt-1">${opt}</span>`;
+                const btn = document.createElement('button'); 
+                const letter = String.fromCharCode(65 + idx);
+                const isEliminated = state.eliminated.includes(idx);
+                
+                btn.className = `option-btn w-full text-left p-4 rounded-xl flex items-center justify-between gap-3 cursor-pointer font-medium ${isEliminated ? 'option-eliminated' : ''}`;
+                
+                btn.innerHTML = `
+                    <div class="flex items-start gap-3.5 flex-grow min-w-0">
+                        <span class="flex-shrink-0 w-8 h-8 rounded-full border border-slate-600 flex items-center justify-center font-bold text-xs">${letter}</span> 
+                        <span class="opt-text mt-1 leading-relaxed">${opt}</span>
+                    </div>
+                    ${!state.answered ? `
+                    <button type="button" onclick="toggleOptionElimination(event, ${idx})" title="Rule Out / Eliminate Distractor" class="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-slate-800/80 rounded-md transition text-xs shrink-0">
+                        <i class="fa-solid ${isEliminated ? 'fa-arrow-rotate-left' : 'fa-strikethrough'}"></i>
+                    </button>
+                    ` : ''}
+                `;
+                
                 if (state.answered) {
-                    btn.disabled = true; btn.classList.add('cursor-default');
+                    btn.disabled = true; 
+                    btn.classList.add('cursor-default');
                     if (testMode === 'tutor') {
-                        if (idx === q.correct) { btn.classList.add('actual-correct'); btn.querySelector('span').classList.add('bg-emerald-600', 'text-white', 'border-emerald-600'); }
-                        if (idx === state.selected && !state.correct) { btn.classList.add('selected-incorrect'); btn.querySelector('span').classList.add('bg-rose-600', 'text-white', 'border-rose-600'); }
-                    } else { if (idx === state.selected) { btn.classList.add('bg-slate-700', 'border-slate-500'); btn.querySelector('span').classList.add('bg-slate-500', 'text-white'); } }
-                } else { btn.onclick = () => submitAnswer(idx); } optsBox.appendChild(btn);
+                        if (idx === q.correct) { 
+                            btn.classList.add('actual-correct'); 
+                            btn.querySelector('span').classList.add('bg-emerald-600', 'text-white', 'border-emerald-600'); 
+                        }
+                        if (idx === state.selected && !state.correct) { 
+                            btn.classList.add('selected-incorrect'); 
+                            btn.querySelector('span').classList.add('bg-rose-600', 'text-white', 'border-rose-600'); 
+                        }
+                    } else { 
+                        if (idx === state.selected) { 
+                            btn.classList.add('bg-slate-700', 'border-slate-500'); 
+                            btn.querySelector('span').classList.add('bg-slate-500', 'text-white'); 
+                        } 
+                    }
+                } else { 
+                    btn.onclick = () => submitAnswer(idx); 
+                } 
+                optsBox.appendChild(btn);
             });
+
             const expBox = document.getElementById('explanation-box');
-            if (state.answered && testMode === 'tutor') { document.getElementById('exp-text').innerHTML = typeof q.explanation === 'object' ? q.explanation.correctChoiceAnalysis || "Correct Answer" : q.explanation; expBox.classList.remove('hidden'); } else { expBox.classList.add('hidden'); }
-            updateMatrixUI(); saveSession();
+            if (state.answered && testMode === 'tutor') { 
+                document.getElementById('exp-text').innerHTML = typeof q.explanation === 'object' ? q.explanation.correctChoiceAnalysis || "Correct Answer" : q.explanation; 
+                expBox.classList.remove('hidden'); 
+            } else { 
+                expBox.classList.add('hidden'); 
+            }
+
+            applyFontScale();
+            updateMatrixUI(); 
+            saveSession();
         }
 
         function submitAnswer(selectedIndex) {
-            const q = activeBlock[currentIdx]; const isCorrect = (selectedIndex === q.correct); blockState[currentIdx] = { answered: true, selected: selectedIndex, correct: isCorrect };
-            if (isCorrect) { if (!userStats.correct.includes(q.id)) userStats.correct.push(q.id); userStats.incorrect = userStats.incorrect.filter(id => id !== q.id); } 
-            else { if (!userStats.incorrect.includes(q.id)) userStats.incorrect.push(q.id); userStats.correct = userStats.correct.filter(id => id !== q.id); }
+            const q = activeBlock[currentIdx]; 
+            const isCorrect = (selectedIndex === q.correct); 
+            blockState[currentIdx].answered = true;
+            blockState[currentIdx].selected = selectedIndex;
+            blockState[currentIdx].correct = isCorrect;
+            
+            if (isCorrect) { 
+                if (!userStats.correct.includes(q.id)) userStats.correct.push(q.id); 
+                userStats.incorrect = userStats.incorrect.filter(id => id !== q.id); 
+            } else { 
+                if (!userStats.incorrect.includes(q.id)) userStats.incorrect.push(q.id); 
+                userStats.correct = userStats.correct.filter(id => id !== q.id); 
+            }
             saveStats(); 
             if (typeof onStudentAnswer === 'function') { onStudentAnswer(q.id, isCorrect, userStats.flagged.includes(q.id)); }
-            loadQuestion(); updateMatrixUI();
+            loadQuestion(); 
+            updateMatrixUI();
         }
 
         function toggleFlag() { const qId = activeBlock[currentIdx].id; const idx = userStats.flagged.indexOf(qId); if (idx > -1) { userStats.flagged.splice(idx, 1); } else { userStats.flagged.push(qId); } saveStats(); loadQuestion(); }
@@ -1083,16 +1327,10 @@
                 }
             }
             
-            blockState[currentIdx] = { answered: false, selected: null, correct: false }; 
+            blockState[currentIdx] = { answered: false, selected: null, correct: false, eliminated: [] }; 
             loadQuestion(); closeEditModal(); 
         }
 
-        // =====================================================
-        //   SAFE DELETE (soft delete): a deleted question is only
-        //   flagged _deleted:true inside the same "questions"
-        //   collection, so it needs no extra Firestore rules and can
-        //   be restored from the Recycle Bin.
-        // =====================================================
         function currentAdminEmail() {
             const u = window.firebaseAuth && window.firebaseAuth.currentUser;
             return u ? u.email : 'unknown';
@@ -1141,11 +1379,6 @@
         function openCloudAdmin() { document.getElementById('cloud-admin-modal').classList.remove('hidden'); }
         function closeCloudAdmin() { document.getElementById('cloud-admin-modal').classList.add('hidden'); }
 
-        // =====================================================
-        //   UPLOADS: every upload gets a unique batchId that is
-        //   stored on each question AND on the activity log, so a
-        //   batch delete can only touch that exact batch.
-        // =====================================================
         function validateQuestionsArray(arr) {
             for (let i = 0; i < arr.length; i++) {
                 const q = arr[i];
@@ -1175,7 +1408,6 @@
             const { collection, addDoc } = window.firestoreTools;
             const batchId = 'batch_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
 
-            // Log FIRST, so even a half-finished upload can be found and removed safely later
             await logAdminUpload(questionsArray.length, questionsArray[0].subject, batchId);
 
             let count = 0;
@@ -1241,7 +1473,7 @@
                 const seen = new Set(); let duplicates = [];
                 querySnapshot.forEach((document) => {
                     const data = document.data();
-                    if (data._deleted || !data.question) return; // Skip already deleted or empty docs
+                    if (data._deleted || !data.question) return;
                     const uniqueKey = `${data.subject || ''}|${data.branch || ''}|${data.subtype || ''}|${data.question || ''}`.trim().toLowerCase();
                     if (seen.has(uniqueKey)) { duplicates.push({ id: document.id, data: data }); } else { seen.add(uniqueKey); }
                 });
@@ -1258,9 +1490,6 @@
             btn.disabled = false; btn.innerText = "Scan & Deduplicate";
         }
 
-        // =====================================================
-        //                ADMIN UPLOAD LOG / BATCHES
-        // =====================================================
         async function openActivityLogModal() {
             document.getElementById('activity-log-modal').classList.remove('hidden');
             const activeList = document.getElementById('activity-log-list');
@@ -1275,7 +1504,6 @@
                 
                 let activeHTML = ''; let isolatedHTML = '';
                 let logs = [];
-                // FIXED: ...d.data() comes FIRST so d.id is never overwritten
                 querySnapshot.forEach(d => logs.push({ ...d.data(), id: d.id }));
                 logs.sort((a, b) => ((b.timestamp && b.timestamp.seconds) || 0) - ((a.timestamp && a.timestamp.seconds) || 0));
                 
@@ -1334,13 +1562,11 @@
             } catch(err) { alert("Error changing isolation state: " + err.message); }
         }
 
-        // Deletes ONLY the questions stamped with this exact batchId.
         async function deleteBatchQuestions(logId) {
             if(!isSuperAdmin) return alert("Only Super Admin can delete batches.");
             try {
                 const { collection, getDocs, getDoc, deleteDoc, doc, query, where } = window.firestoreTools;
 
-                // Safety: never touch an isolated (protected) batch
                 const logSnap = await getDoc(doc(window.db, "activity_logs", logId));
                 if (logSnap.exists() && logSnap.data().isolated) return alert("This batch is isolated (protected). Un-isolate it first.");
 
@@ -1380,9 +1606,6 @@
 
         function closeActivityLogModal() { document.getElementById('activity-log-modal').classList.add('hidden'); }
 
-        // =====================================================
-        //                     RECYCLE BIN
-        // =====================================================
         async function openTrashModal() {
             if(!isSuperAdmin) return alert("Only Super Admin can open the Recycle Bin.");
             document.getElementById('trash-modal').classList.remove('hidden');
@@ -1392,7 +1615,6 @@
                 const { collection, getDocs } = window.firestoreTools;
                 const snap = await getDocs(collection(window.db, "questions"));
                 let items = [];
-                // FIXED: ...x comes FIRST so d.id is never overwritten
                 snap.forEach(d => { const x = d.data(); if (x._deleted) items.push({ ...x, id: d.id }); });
                 items.sort((a, b) => ((b._deletedAt && b._deletedAt.seconds) || 0) - ((a._deletedAt && a._deletedAt.seconds) || 0));
 
@@ -1459,11 +1681,6 @@
             } catch (e) { alert("Error: " + e.message); }
         }
 
-        // =====================================================
-        //                  QUESTION MANAGER
-        //  Browse / filter every cloud question, edit one or many,
-        //  change Subject / Branch / Subtype / Source in bulk, delete.
-        // =====================================================
         const MGR_FIELDS = ['subject', 'branch', 'subtype', 'source'];
         let mgrAll = [];
         let mgrSelected = new Set();
@@ -1480,7 +1697,6 @@
                 const { collection, getDocs } = window.firestoreTools;
                 const snap = await getDocs(collection(window.db, "questions"));
                 mgrAll = [];
-                // FIXED: ...x comes FIRST so Firestore's real d.id is never overwritten
                 snap.forEach(d => {
                     const x = d.data();
                     if (!x._deleted && x.question) mgrAll.push({ ...x, id: d.id });
@@ -1609,7 +1825,6 @@
 
         function mgrClearSelection() { mgrSelected.clear(); mgrRender(); }
 
-        // Keep the rest of the app (test builder tree, counts) in sync after changes
         function mgrSyncLocal(id, changes) {
             const m = mgrAll.find(q => q.id === id);
             if (m) Object.assign(m, changes);
@@ -1689,7 +1904,6 @@
             mgrRefreshApp();
         }
 
-        // ---------- single question editor ----------
         function mgrAddOptionRow(text, isCorrect) {
             const box = document.getElementById('mgr-e-options');
             const row = document.createElement('div');
