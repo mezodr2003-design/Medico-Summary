@@ -38,7 +38,7 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc, arrayUnion, serverTimestamp, query, orderBy, limit, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc, arrayUnion, serverTimestamp, query, orderBy, limit, where, Timestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -56,7 +56,7 @@
 
         window.db = db;
         window.firebaseAuth = auth;
-        window.firestoreTools = { collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc, arrayUnion, serverTimestamp, query, orderBy, limit, where, Timestamp };
+        window.firestoreTools = { collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc, arrayUnion, serverTimestamp, query, orderBy, limit, where, Timestamp, onSnapshot };
         window.authTools = { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged };
     </script>
 
@@ -671,6 +671,7 @@
         let isAdmin = false; let isSuperAdmin = false; let allQuestions = []; 
         let userStats = JSON.parse(localStorage.getItem('medico_stats')) || { correct: [], incorrect: [], flagged: [] };
         if(!userStats.correct) userStats.correct = [];
+        if(!userStats.incorrect) userStats.incorrect = []; if(!userStats.flagged) userStats.flagged = []; if(!userStats.ts) userStats.ts = {}; if(!userStats.fts) userStats.fts = {};
         let activeBlock = []; let currentIdx = 0; let blockState = []; let testMode = 'tutor'; let timerInterval; let timeRemaining = 0;
 
         let expandedNodesState = {};
@@ -1111,6 +1112,7 @@
                         const superAdminTrashBtn = document.getElementById('super-admin-trash-btn');
 
                         if (user) {
+                            startCloudSync(user);
                             if (ADMIN_EMAILS.includes(user.email)) {
                                 isAdmin = true; isSuperAdmin = (user.email === SUPER_ADMIN_EMAIL);
                                 adminBtnText.innerText = isSuperAdmin ? "Super Admin Active" : "Admin Active";
@@ -1129,9 +1131,9 @@
                                 superAdminTrashBtn.classList.add('hidden');
                                 studentBtnText.innerText = "Logout (" + user.email.split('@')[0] + ")";
                                 studentAuthBtn.onclick = logoutStudent;
-                                if (typeof fetchStudentProgressFromCloud === 'function') { fetchStudentProgressFromCloud(user); }
                             }
                         } else {
+                            stopCloudSync(); cloudPending = { q: {}, f: {} };
                             isAdmin = false; isSuperAdmin = false;
                             adminBtnText.innerText = "Admin Access"; cloudToolsBtn.classList.add('hidden');
                             editQBtn.classList.add('hidden'); editQBtn.classList.remove('flex');
@@ -1328,17 +1330,153 @@
                 userStats.correct = userStats.correct.filter(id => id !== q.id); 
             }
             saveStats(); 
-            if (typeof onStudentAnswer === 'function') { onStudentAnswer(q.id, isCorrect, userStats.flagged.includes(q.id)); }
+            cloudSyncQuestion(q.id, isCorrect ? 'c' : 'i');
             loadQuestion(); 
             updateMatrixUI();
         }
 
-        function toggleFlag() { const qId = activeBlock[currentIdx].id; const idx = userStats.flagged.indexOf(qId); if (idx > -1) { userStats.flagged.splice(idx, 1); } else { userStats.flagged.push(qId); } saveStats(); loadQuestion(); }
+        function toggleFlag() { const qId = activeBlock[currentIdx].id; const idx = userStats.flagged.indexOf(qId); if (idx > -1) { userStats.flagged.splice(idx, 1); } else { userStats.flagged.push(qId); } saveStats(); cloudSyncFlag(qId, userStats.flagged.includes(qId)); loadQuestion(); }
+        // ================= CROSS-DEVICE PROGRESS SYNC =================
+        // Cloud doc: users/{uid}.sync = { q: { id: {s:'c'|'i', t:ms} }, f: { id: {on:bool, t:ms} } }
+        // For every question the most recent action (by timestamp) wins on every device,
+        // so Correct -> Incorrect (and back) follows the account everywhere. Works for admins and students.
+        let cloudUnsub = null;
+        let cloudPending = { q: {}, f: {} };
+        let cloudFlushTimer = null;
+
+        function statsMeta() {
+            if (!userStats.correct) userStats.correct = [];
+            if (!userStats.incorrect) userStats.incorrect = [];
+            if (!userStats.flagged) userStats.flagged = [];
+            if (!userStats.ts) userStats.ts = {};
+            if (!userStats.fts) userStats.fts = {};
+            return userStats;
+        }
+
+        function scheduleCloudFlush() { clearTimeout(cloudFlushTimer); cloudFlushTimer = setTimeout(flushCloudPending, 800); }
+
+        function cloudSyncQuestion(id, s) {
+            statsMeta().ts[id] = Date.now();
+            saveStats();
+            cloudPending.q[id] = { s: s, t: userStats.ts[id] };
+            scheduleCloudFlush();
+        }
+
+        function cloudSyncFlag(id, on) {
+            statsMeta().fts[id] = Date.now();
+            saveStats();
+            cloudPending.f[id] = { on: on, t: userStats.fts[id] };
+            scheduleCloudFlush();
+        }
+
+        async function flushCloudPending() {
+            const user = window.firebaseAuth && window.firebaseAuth.currentUser;
+            if (!user || !window.db || !window.firestoreTools) return;
+            if (!Object.keys(cloudPending.q).length && !Object.keys(cloudPending.f).length) return;
+            const batch = cloudPending;
+            cloudPending = { q: {}, f: {} };
+            try {
+                const { doc, setDoc, serverTimestamp } = window.firestoreTools;
+                await setDoc(doc(window.db, "users", user.uid), { sync: batch, lastSavedAt: serverTimestamp() }, { merge: true });
+            } catch (e) {
+                console.error("Progress sync error (will retry):", e);
+                cloudPending.q = Object.assign({}, batch.q, cloudPending.q);
+                cloudPending.f = Object.assign({}, batch.f, cloudPending.f);
+                clearTimeout(cloudFlushTimer);
+                cloudFlushTimer = setTimeout(flushCloudPending, 15000);
+            }
+        }
+
+        function mergeCloudIntoLocal(data) {
+            const u = statsMeta();
+            const cs = (data && data.sync) || {};
+            const cq = cs.q || {}, cf = cs.f || {};
+            // Arrays written by older versions (no timestamps): treated as oldest data
+            const lc = new Set((data && data.correct) || []);
+            const li = new Set((data && data.incorrect) || []);
+            const lf = new Set((data && data.flagged) || []);
+
+            const cSet = new Set(u.correct), iSet = new Set(u.incorrect), fSet = new Set(u.flagged);
+            const push = { q: {}, f: {} };
+            let changed = false;
+
+            const qIds = new Set([...cSet, ...iSet, ...Object.keys(cq), ...lc, ...li]);
+            qIds.forEach(id => {
+                const ls = cSet.has(id) ? 'c' : (iSet.has(id) ? 'i' : null);
+                const lt = (u.ts[id] !== undefined) ? u.ts[id] : (ls ? 0 : -1);
+                let rs = null, rt = -1;
+                if (cq[id] && cq[id].s) { rs = cq[id].s; rt = cq[id].t || 0; }
+                else if (lc.has(id)) { rs = 'c'; rt = 0; }
+                else if (li.has(id)) { rs = 'i'; rt = 0; }
+
+                if (rs === null) {
+                    if (ls) push.q[id] = { s: ls, t: Math.max(lt, 0) };
+                } else if (rt > lt || (rt === lt && rs !== ls)) {
+                    cSet.delete(id); iSet.delete(id);
+                    if (rs === 'c') cSet.add(id); else iSet.add(id);
+                    u.ts[id] = rt; changed = true;
+                } else if (lt > rt && ls) {
+                    push.q[id] = { s: ls, t: lt };
+                }
+            });
+
+            const fIds = new Set([...fSet, ...Object.keys(cf), ...lf]);
+            fIds.forEach(id => {
+                const lon = fSet.has(id);
+                const lt = (u.fts[id] !== undefined) ? u.fts[id] : (lon ? 0 : -1);
+                let ron = null, rt = -1;
+                if (cf[id]) { ron = !!cf[id].on; rt = cf[id].t || 0; }
+                else if (lf.has(id)) { ron = true; rt = 0; }
+
+                if (ron === null) {
+                    if (lon) push.f[id] = { on: true, t: Math.max(lt, 0) };
+                } else if (rt > lt || (rt === lt && ron !== lon)) {
+                    if (ron) fSet.add(id); else fSet.delete(id);
+                    u.fts[id] = rt; changed = true;
+                } else if (lt > rt) {
+                    push.f[id] = { on: lon, t: lt };
+                }
+            });
+
+            u.correct = [...cSet]; u.incorrect = [...iSet]; u.flagged = [...fSet];
+            if (changed) {
+                saveStats();
+                if (typeof updateAvailableCount === 'function') updateAvailableCount();
+                const qs = document.getElementById('quiz-screen');
+                if (qs && !qs.classList.contains('hidden') && typeof updateMatrixUI === 'function') updateMatrixUI();
+            }
+            if (Object.keys(push.q).length || Object.keys(push.f).length) {
+                Object.assign(cloudPending.q, push.q);
+                Object.assign(cloudPending.f, push.f);
+                scheduleCloudFlush();
+            }
+        }
+
+        function stopCloudSync() { if (cloudUnsub) { cloudUnsub(); cloudUnsub = null; } }
+
+        function startCloudSync(user) {
+            stopCloudSync();
+            try {
+                // Never mix progress of two different accounts on the same browser
+                const prev = localStorage.getItem('medico_stats_uid');
+                if (prev && prev !== user.uid) { userStats = { correct: [], incorrect: [], flagged: [], ts: {}, fts: {} }; saveStats(); }
+                localStorage.setItem('medico_stats_uid', user.uid);
+            } catch (e) {}
+            const { doc, onSnapshot } = window.firestoreTools;
+            cloudUnsub = onSnapshot(doc(window.db, "users", user.uid), (snap) => {
+                if (snap.metadata.hasPendingWrites) return; // echo of our own write
+                mergeCloudIntoLocal(snap.exists() ? snap.data() : {});
+            }, (err) => console.error("Progress listener error:", err));
+        }
+
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushCloudPending(); });
+        window.addEventListener('pagehide', () => { flushCloudPending(); });
+        // ================= END CROSS-DEVICE SYNC =================
         function navigate(dir) { const newIdx = currentIdx + dir; if (newIdx >= 0 && newIdx < activeBlock.length) { currentIdx = newIdx; loadQuestion(); } }
         function renderMatrix() { const grid = document.getElementById('matrix-grid'); grid.innerHTML = ''; activeBlock.forEach((q, i) => { const btn = document.createElement('button'); btn.className = 'q-matrix-btn relative'; btn.id = `mat-btn-${i}`; btn.innerText = i + 1; btn.onclick = () => { currentIdx = i; loadQuestion(); }; grid.appendChild(btn); }); }
         function updateMatrixUI() { let answeredCount = 0; activeBlock.forEach((q, i) => { const btn = document.getElementById(`mat-btn-${i}`); const state = blockState[i]; const isFlagged = userStats.flagged.includes(q.id); btn.className = 'q-matrix-btn relative'; if (i === currentIdx) btn.classList.add('active'); if (state.answered) { answeredCount++; if (testMode === 'tutor') { btn.classList.add(state.correct ? 'correct' : 'incorrect'); } else { btn.classList.add('bg-slate-700'); } } btn.innerHTML = `<span>${i+1}</span>` + (isFlagged ? `<i class="fa-solid fa-bookmark flag-marker"></i>` : ''); }); document.getElementById('answered-count').innerText = `${answeredCount} / ${activeBlock.length} Answered`; }
         function saveStats() { localStorage.setItem('medico_stats', JSON.stringify(userStats)); }
-        function updateTimer() { if (timeRemaining <= 0) { clearInterval(timerInterval); alert("Time is up! Switching to review mode."); testMode = 'tutor'; loadQuestion(); return; } timeRemaining--; const hrs = Math.floor(timeRemaining / 3600).toString().padStart(2, '0'); const mins = Math.floor((timeRemaining % 3600) / 60).toString().padStart(2, '0'); const secs = (timeRemaining % 60).toString().padStart(2, '0'); document.getElementById('time-left').innerText = `${hrs}:${mins}:${secs}`; saveSession(); }
+        function updateTimer() { if (timeRemaining <= 0) { clearInterval(timerInterval); alert("Time is up! Switching to review mode."); testMode = 'tutor'; loadQuestion(); return; } timeRemaining--; const hrs = Math.floor(timeRemaining / 3600).toString().padStart(2, '0'); const mins = Math.floor((timeRemaining % 3600) / 60).toString().padStart(2, '0'); const secs = (timeRemaining % 60).toString().padStart(2, '0'); document.getElementById('time-left').innerText = `${hrs}:${mins}:${secs}`; if (timeRemaining % 15 === 0) saveSession(); }
         function endQuizEarly() { if(confirm("Are you sure you want to exit this block?")) { goHome(); } }
         function goHome() { clearInterval(timerInterval); document.getElementById('app-body').classList.remove('focus-mode'); document.getElementById('quiz-screen').classList.add('hidden'); document.getElementById('quiz-screen').classList.remove('flex'); document.getElementById('quiz-header-controls').classList.add('hidden'); document.getElementById('quiz-header-controls').classList.remove('flex'); document.getElementById('dashboard-screen').classList.remove('hidden'); sessionStorage.removeItem('medico_session'); updateAvailableCount(); }
         
