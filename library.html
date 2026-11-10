@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medico Summary - Written Library Hub</title>
+    <title>Medico Summary - Written Library & Anki</title>
     <link rel="icon" type="image/png" href="logo.png">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,12 +12,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
-    <!-- Load Admins Configuration FIRST in HEAD -->
-    <script src="admins.js" onerror="console.log('No admins.js found, using default admin')"></script>
+    <!-- Load Admins Config -->
+    <script src="admins.js" onerror="console.log('No admins.js found')"></script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc, serverTimestamp, query, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -35,62 +35,65 @@
 
         window.db = db;
         window.firebaseAuth = auth;
-        window.firestoreTools = { collection, addDoc, getDocs, deleteDoc, doc, setDoc, serverTimestamp };
+        window.firestoreTools = { collection, addDoc, getDocs, deleteDoc, doc, setDoc, serverTimestamp, query, where, Timestamp };
         window.authTools = { onAuthStateChanged, signOut };
     </script>
 
     <style>
         .glass-panel { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); }
-        .glass-card { background: rgba(30, 41, 59, 0.55); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .glass-card { background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.08); }
         .glass-input { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.12); }
 
-        body.anki-focus-mode header { display: none !important; }
-        body.anki-focus-mode #sidebar-panel { display: none !important; }
-        body.anki-focus-mode #admin-toolbar { display: none !important; }
-        body.anki-focus-mode main { max-width: 1000px !important; margin: 0 auto; width: 100%; padding-top: 1rem; justify-content: center; }
+        /* Full Screen Focus Mode */
+        body.anki-focus-mode header, body.anki-focus-mode #decks-view, body.anki-focus-mode #admin-toolbar { display: none !important; }
+        body.anki-focus-mode #study-session-view { display: flex !important; }
+        body.anki-focus-mode main { max-width: 1024px !important; margin: 0 auto; width: 100%; padding: 1rem; }
 
-        /* Inking Canvas Layer */
-        .ink-area { position: relative; width: 100%; min-height: 80px; }
-        .ink-content { position: relative; z-index: 1; user-select: text; }
-        .ink-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; touch-action: none; }
-        .ink-canvas.active-drawing { pointer-events: auto !important; }
+        /* True Translucent Highlighting (Never covers text) */
+        mark.hl-yellow { background-color: rgba(250, 204, 21, 0.35) !important; color: inherit !important; padding: 2px 3px; border-radius: 4px; border-bottom: 2px solid #eab308; }
+        mark.hl-green { background-color: rgba(52, 211, 153, 0.35) !important; color: inherit !important; padding: 2px 3px; border-radius: 4px; border-bottom: 2px solid #10b981; }
+        mark.hl-pink { background-color: rgba(244, 114, 182, 0.35) !important; color: inherit !important; padding: 2px 3px; border-radius: 4px; border-bottom: 2px solid #ec4899; }
+
+        /* Scratchpad Canvas */
+        .scratchpad-canvas { touch-action: none; background: repeating-linear-gradient(transparent, transparent 31px, rgba(255, 255, 255, 0.06) 31px, rgba(255, 255, 255, 0.06) 32px); }
 
         /* Model Answer Tables */
-        .model-answer-content { font-family: 'Inter', sans-serif !important; line-height: 1.75 !important; white-space: pre-line !important; position: relative; }
+        .model-answer-content { font-family: 'Inter', sans-serif !important; line-height: 1.8 !important; white-space: pre-line !important; }
         .model-answer-content b, .model-answer-content strong { color: #38bdf8 !important; font-weight: 700 !important; }
         .model-answer-content table { width: 100% !important; border-collapse: separate !important; border-spacing: 0 !important; margin: 1.25rem 0 !important; border-radius: 12px !important; overflow: hidden !important; border: 1px solid rgba(255, 255, 255, 0.15) !important; background-color: rgba(15, 23, 42, 0.6) !important; white-space: normal !important; }
-        .model-answer-content th { background: rgba(30, 41, 59, 0.95) !important; color: #38bdf8 !important; font-weight: 700 !important; font-size: 0.85rem !important; text-transform: uppercase !important; padding: 12px 16px !important; border-bottom: 2px solid rgba(255, 255, 255, 0.15) !important; border-right: 1px solid rgba(255, 255, 255, 0.08) !important; text-align: left !important; }
-        .model-answer-content td { padding: 12px 16px !important; font-size: 0.875rem !important; color: #e2e8f0 !important; border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important; border-right: 1px solid rgba(255, 255, 255, 0.08) !important; vertical-align: top !important; }
+        .model-answer-content th { background: rgba(30, 41, 59, 0.95) !important; color: #38bdf8 !important; font-weight: 700 !important; font-size: 0.85rem !important; text-transform: uppercase !important; padding: 10px 14px !important; border-bottom: 2px solid rgba(255, 255, 255, 0.15) !important; text-align: left !important; }
+        .model-answer-content td { padding: 10px 14px !important; font-size: 0.875rem !important; color: #e2e8f0 !important; border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important; vertical-align: top !important; }
 
         /* High Contrast Themes */
         .theme-eyecare { background-color: #f5eedc !important; color: #2c2114 !important; }
-        .theme-eyecare .glass-panel { background-color: #e8ddc2 !important; border-color: #d6c6a2 !important; color: #2c2114 !important; }
-        .theme-eyecare .glass-card { background-color: #faf4e8 !important; border-color: #dfceaa !important; }
+        .theme-eyecare header, .theme-eyecare .glass-panel { background: #e8ddc2 !important; border-color: #d6c6a2 !important; color: #2c2114 !important; }
+        .theme-eyecare .glass-card { background: #faf4e8 !important; border-color: #dfceaa !important; }
         .theme-eyecare .text-white, .theme-eyecare .text-slate-100, .theme-eyecare .text-slate-200 { color: #23190e !important; }
         .theme-eyecare .text-slate-400 { color: #5a4632 !important; }
-        .theme-eyecare .model-answer-content table { background-color: #faf4e8 !important; border-color: #d4c29d !important; }
+        .theme-eyecare .scratchpad-canvas { background: repeating-linear-gradient(transparent, transparent 31px, rgba(44, 33, 20, 0.08) 31px, rgba(44, 33, 20, 0.08) 32px); }
 
         .theme-light { background-color: #f8fafc !important; color: #0f172a !important; }
-        .theme-light .glass-panel { background-color: #ffffff !important; border-color: #e2e8f0 !important; color: #0f172a !important; }
-        .theme-light .glass-card { background-color: #ffffff !important; border-color: #e2e8f0 !important; }
+        .theme-light header, .theme-light .glass-panel { background: #ffffff !important; border-color: #e2e8f0 !important; color: #0f172a !important; }
+        .theme-light .glass-card { background: #ffffff !important; border-color: #e2e8f0 !important; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
         .theme-light .text-white, .theme-light .text-slate-100, .theme-light .text-slate-200 { color: #0f172a !important; }
         .theme-light .text-slate-400 { color: #475569 !important; }
-        .theme-light .model-answer-content table { background-color: #ffffff !important; border-color: #cbd5e1 !important; }
+        .theme-light .scratchpad-canvas { background: repeating-linear-gradient(transparent, transparent 31px, rgba(15, 23, 42, 0.06) 31px, rgba(15, 23, 42, 0.06) 32px); }
 
-        @media print { body * { display: none !important; } #print-area, #print-area * { display: block !important; } #print-area { position: absolute; left: 0; top: 0; width: 100%; background: white; color: black; font-family: sans-serif; } }
+        @media print { body * { display: none !important; } #print-area, #print-area * { display: block !important; } #print-area { position: absolute; left: 0; top: 0; width: 100%; background: white; color: black; } }
     </style>
 </head>
 <body id="app-body" class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col transition-colors duration-200 select-text relative">
 
     <div id="print-area" class="hidden"></div>
 
+    <!-- MAIN HEADER -->
     <header class="glass-panel sticky top-0 z-50 shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex justify-between items-center gap-3">
-            <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='index.html'">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="exitStudySession()">
                 <img src="logo.png" alt="Logo" class="w-9 h-9 rounded-full object-cover ring-1 ring-slate-700">
                 <div class="flex flex-col">
                     <h1 class="font-bold text-sm tracking-tight text-slate-100">Medico Summary</h1>
-                    <span class="text-[10px] text-indigo-400 leading-none">Written Library & Flashcards</span>
+                    <span class="text-[10px] text-indigo-400 leading-none">Spaced Repetition Written Hub</span>
                 </div>
             </div>
 
@@ -102,21 +105,26 @@
                     <button onclick="setTheme('light')" class="px-2 py-1 text-slate-400 hover:text-yellow-400"><i class="fa-solid fa-sun"></i></button>
                 </div>
 
-                <!-- Admin Status Indicator Badge -->
+                <!-- Sync Button -->
+                <button onclick="syncWithCloud(true)" title="Check for cloud updates" class="text-xs bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-indigo-400 border border-slate-700/80 px-2.5 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
+                    <i id="sync-icon" class="fa-solid fa-rotate text-xs"></i>
+                    <span class="hidden sm:inline text-[11px]">Sync</span>
+                </button>
+
                 <div id="admin-badge-indicator" class="hidden items-center gap-1.5 text-xs bg-amber-500/10 border border-amber-500/30 text-amber-400 px-3 py-1.5 rounded-lg font-semibold">
                     <i class="fa-solid fa-shield-halved text-amber-400 animate-pulse"></i>
                     <span>Admin Active</span>
                 </div>
 
                 <a href="index.html" class="text-xs bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white border border-indigo-500/30 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
-                    <i class="fa-solid fa-arrow-left"></i> <span>MCQ QBank</span>
+                    <i class="fa-solid fa-arrow-left"></i> <span class="hidden sm:inline">MCQ QBank</span>
                 </a>
             </div>
         </div>
     </header>
 
-    <!-- ADMIN TOOLBAR: Automatically reveals when admin session is detected -->
-    <div id="admin-toolbar" class="hidden bg-slate-900 border-b border-indigo-500/30 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs shadow-md">
+    <!-- ADMIN FLOATING TOOLBAR -->
+    <div id="admin-toolbar" class="hidden bg-slate-900/95 border-b border-indigo-500/30 px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs shadow-md">
         <div class="flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
             <span class="font-bold text-amber-400 uppercase tracking-wider">Faculty Cloud Control Panel</span>
@@ -131,135 +139,162 @@
         </div>
     </div>
 
-    <!-- UNIVERSAL STYLUS & TOUCH TOOLBAR -->
-    <div class="bg-slate-900/95 border-b border-slate-800 px-4 py-2.5 sticky top-14 z-40 backdrop-blur-md shadow-md">
-        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex flex-col justify-start">
+
+        <!-- ================= VIEW 1: CLEAN DECKS DASHBOARD ================= -->
+        <div id="decks-view" class="space-y-6 w-full max-w-5xl mx-auto">
             
-            <!-- Tools -->
-            <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="text-slate-400 font-bold uppercase text-[10px] tracking-wider mr-1">Tool:</span>
-                <button onclick="setDrawingTool('pen-blue')" id="tool-pen-blue" class="px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-blue-400 font-bold flex items-center gap-1 hover:bg-slate-700 transition">
-                    <i class="fa-solid fa-pen"></i> Blue Pen
-                </button>
-                <button onclick="setDrawingTool('pen-red')" id="tool-pen-red" class="px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-rose-400 font-bold flex items-center gap-1 hover:bg-slate-700 transition">
-                    <i class="fa-solid fa-pen"></i> Red Pen
-                </button>
-                <button onclick="setDrawingTool('highlighter')" id="tool-highlighter" class="px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-amber-300 font-bold flex items-center gap-1 hover:bg-slate-700 transition">
-                    <i class="fa-solid fa-highlighter"></i> Marker
-                </button>
-                <button onclick="setDrawingTool('eraser')" id="tool-eraser" class="px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold flex items-center gap-1 hover:bg-slate-700 transition">
-                    <i class="fa-solid fa-eraser"></i> Eraser
-                </button>
-                <button onclick="clearCurrentCanvas()" class="px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-400 hover:text-white font-bold flex items-center gap-1 hover:bg-slate-700 transition" title="Clear page ink">
-                    <i class="fa-solid fa-trash-can"></i> Clear
-                </button>
-                <button onclick="setDrawingTool('off')" id="tool-off" class="px-3 py-1.5 rounded-lg border border-indigo-500 bg-indigo-600 text-white font-bold flex items-center gap-1 shadow">
-                    <i class="fa-solid fa-arrow-pointer"></i> Read / Scroll
-                </button>
+            <!-- Global Recall Counter -->
+            <div class="glass-panel rounded-2xl p-5 shadow-xl flex flex-wrap items-center justify-between gap-4 border border-indigo-500/20">
+                <div>
+                    <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-brain text-indigo-400"></i> Active Recall Flashcard Decks
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Select a medical specialty deck to enter full-screen practice mode.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="startSessionWithFilter('again')" class="px-3 py-2 rounded-xl glass-card border-rose-500/30 text-rose-400 hover:bg-rose-950/40 text-xs font-bold transition flex items-center gap-2">
+                        <span id="stat-again-count" class="font-mono text-sm">0</span> Again (Due)
+                    </button>
+                    <button onclick="startSessionWithFilter('all')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-5 py-2 rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-indigo-600/30 transition">
+                        <i class="fa-solid fa-bolt"></i> Practice All Cards
+                    </button>
+                </div>
             </div>
 
-            <!-- Stylus Pen vs Touch Screen Switch -->
-            <div class="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
-                <span class="text-[10px] text-slate-400 uppercase font-bold px-1.5">Input:</span>
-                <button id="input-mode-touch" onclick="setInputMode('touch')" class="px-2.5 py-1 rounded-lg font-bold text-[11px] bg-indigo-600 text-white shadow transition" title="For capacitive stylus, touch screen, fingers, or mouse">
-                    <i class="fa-solid fa-hand-pointer mr-1"></i> Touch / Any Stylus
-                </button>
-                <button id="input-mode-spen" onclick="setInputMode('spen')" class="px-2.5 py-1 rounded-lg font-bold text-[11px] text-slate-400 hover:text-white transition" title="Only active S-Pen / Apple Pencil writes, hand can rest on screen">
-                    <i class="fa-solid fa-pen-fancy mr-1"></i> S-Pen Only
-                </button>
+            <!-- Search and Filter Bar -->
+            <div class="relative">
+                <input type="text" id="deck-search-input" oninput="renderDecksGrid()" placeholder="Search topics, questions, or keywords..." class="w-full glass-input py-3 pl-10 pr-4 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-slate-200">
+                <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-500 text-sm pointer-events-none"></i>
+            </div>
+
+            <!-- Decks Grid -->
+            <div id="decks-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <p class="col-span-full text-center text-slate-400 py-12">Loading flashcard decks from local storage...</p>
             </div>
         </div>
-    </div>
 
-    <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex flex-col md:flex-row gap-6">
-        
-        <!-- Sidebar -->
-        <div id="sidebar-panel" class="w-full md:w-80 flex-shrink-0 space-y-4">
-            <div class="glass-panel rounded-2xl p-4 shadow-xl border border-indigo-500/30 space-y-3">
-                <h3 class="font-bold text-xs uppercase tracking-wider text-indigo-300 flex items-center justify-between">
-                    <span><i class="fa-solid fa-layer-group text-indigo-400"></i> Active Recall Decks</span>
-                    <span id="anki-total-badge" class="font-mono text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/30">0</span>
-                </h3>
+        <!-- ================= VIEW 2: FULL-SCREEN STUDY SESSION ================= -->
+        <div id="study-session-view" class="hidden flex-col space-y-4 w-full">
+            
+            <!-- Top Controls in Fullscreen Mode -->
+            <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900/90 backdrop-blur-md p-3 rounded-2xl border border-slate-800 shadow-xl">
+                <div class="flex items-center gap-3">
+                    <button onclick="exitStudySession()" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-arrow-left"></i> Exit Full Screen
+                    </button>
+                    <span id="session-deck-name" class="text-xs font-bold text-indigo-400 tracking-wide uppercase">General Surgery</span>
+                </div>
+
+                <!-- Text Highlighter Tools (Native Translucent Highlight) -->
+                <div class="flex items-center gap-1.5 bg-slate-950/80 px-2.5 py-1 rounded-xl border border-slate-800 text-xs">
+                    <span class="text-slate-400 text-[10px] font-bold uppercase mr-1"><i class="fa-solid fa-highlighter text-amber-400"></i> Mark:</span>
+                    <button onclick="setHighlightColor('yellow')" id="hl-yellow" class="w-5 h-5 rounded-full bg-yellow-400/80 border border-yellow-300 hover:scale-110 transition shadow"></button>
+                    <button onclick="setHighlightColor('green')" id="hl-green" class="w-5 h-5 rounded-full bg-emerald-400/80 border border-emerald-300 hover:scale-110 transition shadow"></button>
+                    <button onclick="setHighlightColor('pink')" id="hl-pink" class="w-5 h-5 rounded-full bg-pink-400/80 border border-pink-300 hover:scale-110 transition shadow"></button>
+                    <button onclick="setHighlightColor('off')" id="hl-off" class="text-[10px] text-slate-400 hover:text-white px-1.5 py-0.5 rounded font-bold">OFF</button>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-mono text-slate-400"><b id="card-index-display" class="text-indigo-400">1</b> / <span id="card-total-display">10</span></span>
+                    <div class="w-24 sm:w-32 bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
+                        <div id="session-progress-bar" class="bg-indigo-500 h-full transition-all duration-300" style="width: 10%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Single Anki Card Area -->
+            <div id="single-card-box" class="glass-panel rounded-3xl p-6 sm:p-8 border border-indigo-500/30 shadow-2xl space-y-6 w-full">
                 
-                <div class="grid grid-cols-3 gap-2 text-center text-xs">
-                    <button onclick="filterByAnkiStatus('missed')" class="glass-card p-2 rounded-xl border-rose-500/30 hover:bg-rose-950/40 transition">
-                        <span class="block font-bold text-rose-400 text-sm font-mono" id="count-missed">0</span>
-                        <span class="text-[10px] text-slate-400">Again</span>
-                    </button>
-                    <button onclick="filterByAnkiStatus('partial')" class="glass-card p-2 rounded-xl border-amber-500/30 hover:bg-amber-950/40 transition">
-                        <span class="block font-bold text-amber-400 text-sm font-mono" id="count-partial">0</span>
-                        <span class="text-[10px] text-slate-400">Hard</span>
-                    </button>
-                    <button onclick="filterByAnkiStatus('mastered')" class="glass-card p-2 rounded-xl border-emerald-500/30 hover:bg-emerald-950/40 transition">
-                        <span class="block font-bold text-emerald-400 text-sm font-mono" id="count-mastered">0</span>
-                        <span class="text-[10px] text-slate-400">Easy</span>
-                    </button>
-                </div>
-
-                <button onclick="startAnkiSession()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition active:scale-95">
-                    <i class="fa-solid fa-play"></i> Start Anki Practice Block
-                </button>
-            </div>
-
-            <div class="glass-panel rounded-2xl p-4 shadow-xl space-y-3">
-                <div class="flex justify-between items-center pb-2 border-b border-slate-800">
-                    <h3 class="font-bold text-xs uppercase tracking-wider text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-folder-tree text-indigo-400"></i> Topics Filter
-                    </h3>
-                    <div class="flex gap-2 text-[11px]">
-                        <button onclick="selectAllTree(true)" class="text-indigo-400 hover:underline">Select All</button>
-                        <span class="text-slate-600">|</span>
-                        <button onclick="selectAllTree(false)" class="text-slate-400 hover:underline">Reset</button>
+                <!-- Taxonomy & Marks -->
+                <div class="flex flex-wrap justify-between items-center gap-2 pb-3 border-b border-slate-800">
+                    <div class="flex items-center gap-2 text-xs font-semibold">
+                        <span id="card-subject-tag" class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-3 py-1 rounded-md uppercase tracking-wider">Subject</span>
+                        <span id="card-branch-tag" class="bg-slate-800 text-slate-300 px-3 py-1 rounded-md">Branch</span>
+                        <span id="card-topic-tag" class="bg-slate-900 text-slate-400 px-2.5 py-1 rounded text-xs">Topic</span>
                     </div>
-                </div>
-
-                <div class="relative">
-                    <input type="text" id="library-search" onkeyup="filterQuestions()" placeholder="Search written questions..." class="w-full glass-input p-2 rounded-xl text-xs text-slate-200 pl-8 focus:outline-none focus:border-indigo-500">
-                    <i class="fa-solid fa-search absolute left-2.5 top-2.5 text-slate-500 text-xs"></i>
-                </div>
-
-                <div id="written-tree-container" class="space-y-2 max-h-[380px] overflow-y-auto pr-1 text-xs">
-                    <p class="text-slate-400 text-center py-4">Loading topics...</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="flex-grow space-y-4 w-full relative">
-            
-            <div class="flex flex-wrap justify-between items-center pb-2 border-b border-slate-800 gap-2">
-                <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
-                    <h2 id="active-topic-title" class="text-lg font-bold text-slate-100">All Written Questions</h2>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button id="print-btn" onclick="printWrittenSheet()" class="text-xs bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/30 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
-                        <i class="fa-solid fa-print"></i> Print Sheet
-                    </button>
-                </div>
-            </div>
-
-            <!-- Standard List Mode -->
-            <div id="written-questions-list" class="space-y-4 w-full">
-                <p class="text-slate-400 text-center py-8">Fetching written repository...</p>
-            </div>
-
-            <!-- Anki Full Screen Focus Mode -->
-            <div id="anki-single-card-view" class="hidden space-y-3 w-full">
-                <div class="flex justify-between items-center text-xs text-slate-400 font-mono bg-slate-900/60 p-3 rounded-xl border border-slate-800">
-                    <span class="flex items-center gap-2"><i class="fa-solid fa-fire text-amber-500"></i> Active Card: <b id="anki-current-index" class="text-indigo-400">1</b> of <b id="anki-total-cards">10</b></span>
-                    <div class="flex items-center gap-3">
-                        <div class="w-36 sm:w-48 bg-slate-950 rounded-full h-2.5 overflow-hidden border border-slate-800">
-                            <div id="anki-progress-bar" class="bg-indigo-500 h-full transition-all duration-300" style="width: 0%"></div>
+                    <div class="flex items-center gap-2">
+                        <span id="card-marks-tag" class="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded border border-amber-500/20">5 Marks</span>
+                        <div id="card-admin-actions" class="hidden items-center gap-1.5">
+                            <button onclick="editCurrentActiveCard()" class="text-xs bg-amber-500/20 text-amber-300 hover:bg-amber-500 hover:text-white px-2 py-1 rounded-lg transition"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteCurrentActiveCard()" class="text-xs bg-rose-500/20 text-rose-300 hover:bg-rose-500 hover:text-white px-2 py-1 rounded-lg transition"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
-                        <button onclick="exitAnkiSession()" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-600/20 text-rose-400 border border-rose-500/30 hover:bg-rose-600 hover:text-white transition">Exit</button>
                     </div>
                 </div>
 
-                <!-- Single Card Container -->
-                <div id="anki-card-container" class="w-full"></div>
-            </div>
+                <!-- Question Prompt -->
+                <div class="space-y-1">
+                    <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest font-mono">Clinical Vignette Question:</span>
+                    <p id="card-question-text" class="text-slate-100 font-bold text-base sm:text-xl leading-relaxed select-text"></p>
+                </div>
 
+                <!-- DEDICATED S-PEN & TOUCH SCRATCHPAD (Write your answer before revealing) -->
+                <div class="glass-card rounded-2xl p-3 border border-slate-800 space-y-2">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-pen-nib text-indigo-400"></i> Scratchpad (Write Your Recall)
+                            </span>
+                            <span class="text-[10px] text-slate-500 hidden sm:inline">| Practice writing with Pen or Touch before checking</span>
+                        </div>
+                        <!-- Canvas Controls -->
+                        <div class="flex items-center gap-1 text-xs">
+                            <button onclick="setScratchpadColor('#38bdf8')" class="w-5 h-5 rounded-full bg-sky-400 border border-sky-300" title="Blue Pen"></button>
+                            <button onclick="setScratchpadColor('#ef4444')" class="w-5 h-5 rounded-full bg-rose-500 border border-rose-300" title="Red Pen"></button>
+                            <button onclick="setScratchpadColor('#ffffff')" class="w-5 h-5 rounded-full bg-white border border-slate-300" title="White Pen"></button>
+                            <button onclick="clearScratchpad()" class="px-2 py-1 text-slate-400 hover:text-rose-400 text-xs ml-1 font-bold" title="Clear Pad"><i class="fa-solid fa-trash-can"></i> Clear</button>
+                            
+                            <!-- Touch / S-Pen mode switch -->
+                            <button id="spen-toggle-btn" onclick="toggleSpenMode()" class="ml-2 px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:border-indigo-500 transition">
+                                Touch / Any Pen
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Handwriting Canvas Area -->
+                    <div class="relative w-full h-44 rounded-xl overflow-hidden">
+                        <canvas id="scratchpad" class="scratchpad-canvas w-full h-full rounded-xl cursor-crosshair"></canvas>
+                    </div>
+                </div>
+
+                <!-- Reveal Button -->
+                <div id="reveal-btn-container" class="pt-2">
+                    <button onclick="revealModelAnswer()" class="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm tracking-wide shadow-lg shadow-indigo-600/30 transition active:scale-95 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-eye"></i> Show Official Model Answer
+                    </button>
+                </div>
+
+                <!-- Model Answer Box (Revealed) -->
+                <div id="model-answer-box" class="hidden space-y-6 pt-4 border-t border-slate-800 animate-fadeIn">
+                    <div class="glass-card border-l-4 border-emerald-500 rounded-r-2xl p-5 sm:p-7 space-y-3">
+                        <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2 pb-2 border-b border-slate-800/80">
+                            <i class="fa-solid fa-check-double"></i> Model Answer & Scoring Breakdown
+                        </h4>
+                        <div id="card-answer-html" class="model-answer-content text-sm sm:text-base leading-relaxed select-text"></div>
+                    </div>
+
+                    <!-- Spaced Repetition Recall Rating (SM-2) -->
+                    <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Rate Your Active Recall:</span>
+                        <div class="grid grid-cols-3 gap-3 w-full sm:w-auto">
+                            <button onclick="rateCard('again')" class="px-5 py-3 rounded-2xl font-bold text-xs bg-slate-900 hover:bg-rose-950 text-rose-400 border border-rose-500/40 transition flex flex-col items-center">
+                                <span>Again</span>
+                                <span class="text-[9px] font-mono opacity-60">< 10 min</span>
+                            </button>
+                            <button onclick="rateCard('hard')" class="px-5 py-3 rounded-2xl font-bold text-xs bg-slate-900 hover:bg-amber-950 text-amber-400 border border-amber-500/40 transition flex flex-col items-center">
+                                <span>Hard</span>
+                                <span class="text-[9px] font-mono opacity-60">1 day</span>
+                            </button>
+                            <button onclick="rateCard('easy')" class="px-6 py-3 rounded-2xl font-bold text-xs bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg transition flex flex-col items-center">
+                                <span>Easy</span>
+                                <span class="text-[9px] font-mono opacity-80">4 days</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
+
     </main>
 
     <!-- ADD / EDIT WRITTEN QUESTION MODAL (Admin Only) -->
@@ -278,24 +313,24 @@
                 <div><label class="text-[10px] text-slate-400 block mb-1">Subject</label><input type="text" id="edit-q-subject" placeholder="e.g. Surgery" class="w-full glass-input p-2 rounded-lg text-xs text-slate-200"></div>
                 <div><label class="text-[10px] text-slate-400 block mb-1">Branch</label><input type="text" id="edit-q-branch" placeholder="e.g. GI" class="w-full glass-input p-2 rounded-lg text-xs text-slate-200"></div>
                 <div><label class="text-[10px] text-slate-400 block mb-1">Topic</label><input type="text" id="edit-q-topic" placeholder="e.g. Appendicitis" class="w-full glass-input p-2 rounded-lg text-xs text-slate-200"></div>
-                <div><label class="text-[10px] text-slate-400 block mb-1">Marks (Optional)</label><input type="text" id="edit-q-marks" placeholder="e.g. 5 Marks" class="w-full glass-input p-2 rounded-lg text-xs text-slate-200"></div>
+                <div><label class="text-[10px] text-slate-400 block mb-1">Marks</label><input type="text" id="edit-q-marks" placeholder="e.g. 5 Marks" class="w-full glass-input p-2 rounded-lg text-xs text-slate-200"></div>
             </div>
 
             <div>
-                <label class="text-[11px] font-semibold text-slate-400 block mb-1">Question Prompt / Case Scenario:</label>
-                <textarea id="edit-q-text" class="w-full glass-input p-3 rounded-xl text-xs sm:text-sm h-24 focus:outline-none focus:border-indigo-500 text-slate-200 placeholder:text-slate-500" placeholder="Enter written clinical question here..."></textarea>
+                <label class="text-[11px] font-semibold text-slate-400 block mb-1">Question Scenario / Vignette:</label>
+                <textarea id="edit-q-text" class="w-full glass-input p-3 rounded-xl text-xs sm:text-sm h-24 focus:outline-none focus:border-indigo-500 text-slate-200" placeholder="Type question here..."></textarea>
             </div>
 
             <div>
-                <label class="text-[11px] font-semibold text-slate-400 block mb-1">Model Answer / Key Points / Tables (Supports HTML & Tables):</label>
-                <textarea id="edit-q-model-answer" class="w-full glass-input p-3 rounded-xl text-xs sm:text-sm h-36 focus:outline-none focus:border-indigo-500 text-slate-200 font-mono" placeholder="Enter model answer or table HTML..."></textarea>
+                <label class="text-[11px] font-semibold text-slate-400 block mb-1">Model Answer / Key Points / HTML Table:</label>
+                <textarea id="edit-q-model-answer" class="w-full glass-input p-3 rounded-xl text-xs sm:text-sm h-36 focus:outline-none focus:border-indigo-500 text-slate-200 font-mono" placeholder="Enter model answer or table..."></textarea>
             </div>
 
-            <button id="save-written-btn" onclick="saveWrittenQuestion()" class="w-full bg-indigo-600 hover:bg-indigo-500 font-bold py-2.5 rounded-xl text-white transition text-xs uppercase tracking-wider shadow">Save to Library Hub</button>
+            <button id="save-written-btn" onclick="saveWrittenQuestion()" class="w-full bg-indigo-600 hover:bg-indigo-500 font-bold py-2.5 rounded-xl text-white transition text-xs uppercase tracking-wider shadow">Save to Library</button>
         </div>
     </div>
 
-    <!-- BULK JSON MODAL (Admin Only) -->
+    <!-- BULK JSON MODAL -->
     <div id="bulk-json-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
         <div class="glass-panel border-emerald-500/40 rounded-2xl p-6 w-full max-w-2xl shadow-2xl space-y-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -304,9 +339,9 @@
                 </h3>
                 <button onclick="closeBulkJSONModal()" class="text-slate-400 hover:text-slate-200 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <p class="text-xs text-slate-400">Paste your written questions JSON array `[ { subject, branch, topic, marks, question, modelAnswer } ]` below:</p>
+            <p class="text-xs text-slate-400">Paste your questions JSON array `[ { subject, branch, topic, marks, question, modelAnswer } ]`:</p>
             <textarea id="bulk-json-text" class="w-full glass-input p-3 rounded-xl text-xs font-mono h-48 focus:border-emerald-500 text-slate-200 outline-none" placeholder="Paste array here..."></textarea>
-            <button id="bulk-upload-btn" onclick="uploadBulkWrittenJSON()" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-2.5 rounded-xl text-white transition text-xs uppercase tracking-wider shadow">Upload All Questions</button>
+            <button id="bulk-upload-btn" onclick="uploadBulkWrittenJSON()" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-2.5 rounded-xl text-white transition text-xs uppercase tracking-wider shadow">Upload Questions</button>
         </div>
     </div>
 
@@ -316,15 +351,14 @@
 
         let isAdmin = false;
         let allWrittenQuestions = [];
-        let activeAnkiQueue = [];
-        let currentAnkiIndex = 0;
-        let isAnkiActiveMode = false;
-        let selectedTaxonomySet = new Set();
-        let ankiStatusFilter = null;
-        let selfScores = JSON.parse(localStorage.getItem('medico_written_scores')) || {};
+        let activeSessionQueue = [];
+        let currentQueueIndex = 0;
+        let cardScores = JSON.parse(localStorage.getItem('medico_written_scores')) || {};
 
-        let activeTool = 'off';
-        let drawingInputMode = 'touch'; // 'touch' for capacitive stylus/finger, 'spen' for active stylus
+        // Canvas / Scratchpad State
+        let padColor = '#38bdf8';
+        let isSpenOnly = false;
+        let activeHlColor = 'off';
 
         function setTheme(mode) {
             const body = document.getElementById('app-body');
@@ -334,177 +368,382 @@
             localStorage.setItem('medico_theme', mode);
         }
 
-        function setDrawingTool(tool) {
-            activeTool = tool;
-            ['pen-blue', 'pen-red', 'highlighter', 'eraser', 'off'].forEach(t => {
-                const btn = document.getElementById('tool-' + t);
-                if (!btn) return;
-                if (t === tool) {
-                    btn.classList.add('ring-2', 'ring-indigo-400', 'bg-indigo-600/30');
-                } else {
-                    btn.classList.remove('ring-2', 'ring-indigo-400', 'bg-indigo-600/30');
-                }
-            });
+        // ================= INDEXEDDB LOCAL-FIRST ENGINE (0 READS) =================
+        const IDB_NAME = "MedicoWritten_DB";
+        const IDB_STORE = "written_questions";
 
-            document.querySelectorAll('.ink-canvas').forEach(cv => {
-                if (activeTool === 'off') cv.classList.remove('active-drawing');
-                else cv.classList.add('active-drawing');
-            });
-        }
-
-        function setInputMode(mode) {
-            drawingInputMode = mode;
-            const touchBtn = document.getElementById('input-mode-touch');
-            const spenBtn = document.getElementById('input-mode-spen');
-
-            if (mode === 'touch') {
-                touchBtn.className = "px-2.5 py-1 rounded-lg font-bold text-[11px] bg-indigo-600 text-white shadow transition";
-                spenBtn.className = "px-2.5 py-1 rounded-lg font-bold text-[11px] text-slate-400 hover:text-white transition";
-            } else {
-                spenBtn.className = "px-2.5 py-1 rounded-lg font-bold text-[11px] bg-indigo-600 text-white shadow transition";
-                touchBtn.className = "px-2.5 py-1 rounded-lg font-bold text-[11px] text-slate-400 hover:text-white transition";
-            }
-        }
-
-        function clearCurrentCanvas() {
-            if (!confirm("Clear drawings on this card?")) return;
-            document.querySelectorAll('.ink-area').forEach(area => {
-                const cv = area.querySelector('.ink-canvas');
-                if (cv && area.offsetParent !== null) { // visible card
-                    const ctx = cv.getContext('2d');
-                    ctx.clearRect(0, 0, cv.width, cv.height);
-                    if (area.dataset.inkId) localStorage.removeItem('ink_' + area.dataset.inkId);
-                }
-            });
-        }
-
-        // ================= INK ENGINE (WORKS WITH TOUCH SCREEN & S-PEN) =================
-        function initInkAreas() {
-            document.querySelectorAll('.ink-area').forEach(area => {
-                if (area.dataset.inkInitialized) return;
-                area.dataset.inkInitialized = 'true';
-
-                const canvas = area.querySelector('.ink-canvas');
-                if (!canvas) return;
-                const ctx = canvas.getContext('2d');
-                const inkId = area.dataset.inkId;
-
-                let drawing = false;
-                let lastX = 0, lastY = 0;
-
-                function resizeCanvas() {
-                    const rect = area.getBoundingClientRect();
-                    if (!rect.width || !rect.height) return;
-
-                    const dataURL = canvas.toDataURL();
-                    canvas.width = rect.width * (window.devicePixelRatio || 1);
-                    canvas.height = rect.height * (window.devicePixelRatio || 1);
-                    canvas.style.width = rect.width + 'px';
-                    canvas.style.height = rect.height + 'px';
-
-                    ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
-
-                    const saved = localStorage.getItem('ink_' + inkId);
-                    if (saved) {
-                        const img = new Image();
-                        img.onload = () => ctx.drawImage(img, 0, 0, rect.width, rect.height);
-                        img.src = saved;
-                    } else if (dataURL && dataURL !== 'data:,') {
-                        const img = new Image();
-                        img.onload = () => ctx.drawImage(img, 0, 0, rect.width, rect.height);
-                        img.src = dataURL;
+        function openIDB() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open(IDB_NAME, 1);
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(IDB_STORE)) {
+                        db.createObjectStore(IDB_STORE, { keyPath: "id" });
                     }
-                }
-
-                function getCoords(e) {
-                    const rect = canvas.getBoundingClientRect();
-                    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
-                }
-
-                function applyToolStyle() {
-                    ctx.globalCompositeOperation = 'source-over';
-                    if (activeTool === 'pen-blue') {
-                        ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
-                    } else if (activeTool === 'pen-red') {
-                        ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
-                    } else if (activeTool === 'highlighter') {
-                        ctx.strokeStyle = 'rgba(250, 204, 21, 0.45)'; ctx.lineWidth = 16; ctx.lineCap = 'square';
-                    } else if (activeTool === 'eraser') {
-                        ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = 22; ctx.lineCap = 'round';
-                    }
-                }
-
-                canvas.addEventListener('pointerdown', e => {
-                    if (activeTool === 'off') return;
-                    if (drawingInputMode === 'spen' && e.pointerType !== 'pen') return;
-
-                    e.preventDefault();
-                    drawing = true;
-                    applyToolStyle();
-                    const pos = getCoords(e);
-                    lastX = pos.x; lastY = pos.y;
-                    ctx.beginPath();
-                    ctx.moveTo(lastX, lastY);
-                });
-
-                canvas.addEventListener('pointermove', e => {
-                    if (!drawing || activeTool === 'off') return;
-                    if (drawingInputMode === 'spen' && e.pointerType !== 'pen') return;
-
-                    e.preventDefault();
-                    const pos = getCoords(e);
-                    ctx.lineTo(pos.x, pos.y);
-                    ctx.stroke();
-                    lastX = pos.x; lastY = pos.y;
-                });
-
-                function stopDrawing() {
-                    if (!drawing) return;
-                    drawing = false;
-                    localStorage.setItem('ink_' + inkId, canvas.toDataURL());
-                }
-
-                canvas.addEventListener('pointerup', stopDrawing);
-                canvas.addEventListener('pointercancel', stopDrawing);
-
-                resizeCanvas();
-                new ResizeObserver(resizeCanvas).observe(area);
+                };
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
             });
         }
 
-        // ================= AUTOMATIC ADMIN AUTH DETECTION =================
-        function checkAdminAuth() {
+        async function getCachedWrittenFromIDB() {
+            try {
+                const db = await openIDB();
+                return new Promise((resolve) => {
+                    const tx = db.transaction(IDB_STORE, "readonly");
+                    const store = tx.objectStore(IDB_STORE);
+                    const req = store.getAll();
+                    req.onsuccess = () => resolve(req.result || []);
+                    req.onerror = () => resolve([]);
+                });
+            } catch(e) { return []; }
+        }
+
+        async function saveBatchToIDB(items) {
+            try {
+                const db = await openIDB();
+                const tx = db.transaction(IDB_STORE, "readwrite");
+                const store = tx.objectStore(IDB_STORE);
+                items.forEach(it => {
+                    if (it._deleted) store.delete(it.id);
+                    else store.put(it);
+                });
+            } catch(e) { console.warn("IDB Save failed", e); }
+        }
+
+        async function clearWrittenIDB() {
+            try {
+                const db = await openIDB();
+                const tx = db.transaction(IDB_STORE, "readwrite");
+                tx.objectStore(IDB_STORE).clear();
+            } catch(e) {}
+        }
+
+        // ================= BACKGROUND CLOUD SYNC =================
+        async function syncWithCloud(forceAll = false) {
+            const icon = document.getElementById('sync-icon');
+            if (icon) icon.classList.add('fa-spin');
+
+            const checkFirebase = setInterval(async () => {
+                if (window.db && window.firestoreTools) {
+                    clearInterval(checkFirebase);
+                    try {
+                        const { collection, getDocs, query, where, Timestamp } = window.firestoreTools;
+                        const lastSync = parseInt(localStorage.getItem('medico_written_last_sync') || '0', 10);
+                        let qRef;
+
+                        if (!forceAll && lastSync > 0 && allWrittenQuestions.length > 0) {
+                            qRef = query(collection(window.db, "written_questions"), where("updatedAt", ">", Timestamp.fromMillis(lastSync)));
+                        } else {
+                            qRef = collection(window.db, "written_questions");
+                        }
+
+                        const snap = await getDocs(qRef);
+                        if (!snap.empty) {
+                            const newOrModified = [];
+                            snap.forEach(d => newOrModified.push({ id: d.id, ...d.data() }));
+                            await saveBatchToIDB(newOrModified);
+                            allWrittenQuestions = await getCachedWrittenFromIDB();
+                            renderDecksGrid();
+                        }
+
+                        localStorage.setItem('medico_written_last_sync', Date.now().toString());
+                    } catch(e) {
+                        console.warn("Cloud sync offline:", e.message);
+                    }
+                    if (icon) icon.classList.remove('fa-spin');
+                }
+            }, 100);
+        }
+
+        // ================= AUTH CHECK =================
+        function checkAdminSession() {
             const checkAuth = setInterval(() => {
                 if (window.authTools && window.firebaseAuth) {
                     clearInterval(checkAuth);
                     window.authTools.onAuthStateChanged(window.firebaseAuth, (user) => {
                         const adminToolbar = document.getElementById('admin-toolbar');
                         const adminBadge = document.getElementById('admin-badge-indicator');
+                        const cardActions = document.getElementById('card-admin-actions');
 
                         if (user && ADMIN_EMAILS.includes((user.email || '').toLowerCase().trim())) {
                             isAdmin = true;
-                            if (adminBadge) { adminBadge.classList.remove('hidden'); adminBadge.classList.add('flex'); }
+                            if (adminBadge) adminBadge.classList.replace('hidden', 'flex');
                             if (adminToolbar) adminToolbar.classList.remove('hidden');
+                            if (cardActions) cardActions.classList.replace('hidden', 'flex');
                         } else {
                             isAdmin = false;
-                            if (adminBadge) { adminBadge.classList.add('hidden'); adminBadge.classList.remove('flex'); }
+                            if (adminBadge) adminBadge.classList.replace('flex', 'hidden');
                             if (adminToolbar) adminToolbar.classList.add('hidden');
+                            if (cardActions) cardActions.classList.replace('flex', 'hidden');
                         }
-                        renderQuestions();
                     });
                 }
             }, 150);
         }
 
-        // ================= CRUD OPERATIONS (ADMIN ONLY) =================
-        function openAddQuestionModal(qId = null) {
-            if (!isAdmin) return alert("Admin access required.");
+        // ================= VIEW 1: RENDER DECKS GRID =================
+        function renderDecksGrid() {
+            const grid = document.getElementById('decks-grid');
+            const searchVal = document.getElementById('deck-search-input').value.toLowerCase().trim();
+
+            let againTotal = 0;
+            const decks = {};
+
+            allWrittenQuestions.forEach(q => {
+                const status = cardScores[q.id] || 'new';
+                if (status === 'again') againTotal++;
+
+                const key = `${q.subject || 'General'} - ${q.branch || 'General'}`;
+                if (!decks[key]) decks[key] = { subject: q.subject || 'General', branch: q.branch || 'General', questions: [], again: 0 };
+                
+                decks[key].questions.push(q);
+                if (status === 'again') decks[key].again++;
+            });
+
+            document.getElementById('stat-again-count').innerText = againTotal;
+
+            const filteredDeckKeys = Object.keys(decks).sort().filter(key => {
+                if (!searchVal) return true;
+                return key.toLowerCase().includes(searchVal) || decks[key].questions.some(q => (q.question + q.modelAnswer).toLowerCase().includes(searchVal));
+            });
+
+            if (filteredDeckKeys.length === 0) {
+                grid.innerHTML = '<p class="col-span-full text-center text-slate-400 py-12">No matching decks found.</p>';
+                return;
+            }
+
+            let html = '';
+            filteredDeckKeys.forEach(key => {
+                const d = decks[key];
+                html += `
+                <div class="glass-card rounded-2xl p-5 border border-slate-800 hover:border-indigo-500/50 transition shadow-lg flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between gap-2 pb-2 border-b border-slate-800/80">
+                            <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">${d.subject}</span>
+                            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-slate-900 text-slate-300 border border-slate-800">${d.questions.length} Cards</span>
+                        </div>
+                        <h3 class="font-bold text-base text-slate-100 mt-2">${d.branch}</h3>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2">
+                        <span class="text-xs font-semibold ${d.again > 0 ? 'text-rose-400' : 'text-slate-400'}">
+                            <i class="fa-solid fa-clock-rotate-left mr-1"></i> ${d.again} Due for Review
+                        </span>
+                        <button onclick="startDeckSession('${key}')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-xl transition shadow active:scale-95">
+                            Practice Deck <i class="fa-solid fa-arrow-right text-[10px] ml-1"></i>
+                        </button>
+                    </div>
+                </div>`;
+            });
+            grid.innerHTML = html;
+        }
+
+        // ================= VIEW 2: STUDY SESSION ENGINE =================
+        function startDeckSession(deckKey) {
+            const queue = allWrittenQuestions.filter(q => `${q.subject || 'General'} - ${q.branch || 'General'}` === deckKey);
+            if (queue.length === 0) return alert("Deck is empty.");
+            activeSessionQueue = queue;
+            currentQueueIndex = 0;
+            document.getElementById('session-deck-name').innerText = deckKey;
+            enterStudyMode();
+        }
+
+        function startSessionWithFilter(filter) {
+            let queue = [];
+            if (filter === 'again') {
+                queue = allWrittenQuestions.filter(q => cardScores[q.id] === 'again');
+                if (queue.length === 0) return alert("No cards currently due for review!");
+                document.getElementById('session-deck-name').innerText = "Due Cards Review";
+            } else {
+                queue = [...allWrittenQuestions];
+                if (queue.length === 0) return alert("No written questions loaded.");
+                document.getElementById('session-deck-name').innerText = "All Decks Combined";
+            }
+            activeSessionQueue = queue;
+            currentQueueIndex = 0;
+            enterStudyMode();
+        }
+
+        function enterStudyMode() {
+            document.body.classList.add('anki-focus-mode');
+            renderActiveCard();
+        }
+
+        function exitStudySession() {
+            document.body.classList.remove('anki-focus-mode');
+            renderDecksGrid();
+        }
+
+        function renderActiveCard() {
+            if (currentQueueIndex >= activeSessionQueue.length) {
+                alert("Deck Session Completed! Well done. 🎉");
+                exitStudySession();
+                return;
+            }
+
+            const q = activeSessionQueue[currentQueueIndex];
+
+            // Progress & Counters
+            document.getElementById('card-index-display').innerText = currentQueueIndex + 1;
+            document.getElementById('card-total-display').innerText = activeSessionQueue.length;
+            const progress = ((currentQueueIndex + 1) / activeSessionQueue.length) * 100;
+            document.getElementById('session-progress-bar').style.width = `${progress}%`;
+
+            // Tags & Texts
+            document.getElementById('card-subject-tag').innerText = q.subject || 'General';
+            document.getElementById('card-branch-tag').innerText = q.branch || 'General';
+            document.getElementById('card-topic-tag').innerText = q.topic || 'General Topic';
+            document.getElementById('card-marks-tag').innerText = q.marks ? `${q.marks}` : 'Written';
+            document.getElementById('card-question-text').innerText = q.question;
+
+            // Model answer
+            document.getElementById('card-answer-html').innerHTML = q.modelAnswer || 'No model answer provided.';
+            document.getElementById('model-answer-box').classList.add('hidden');
+            document.getElementById('reveal-btn-container').classList.remove('hidden');
+
+            // Setup Scratchpad Canvas
+            initScratchpadCanvas(q.id);
+        }
+
+        function revealModelAnswer() {
+            document.getElementById('model-answer-box').classList.remove('hidden');
+            document.getElementById('reveal-btn-container').classList.add('hidden');
+        }
+
+        function rateCard(rating) {
+            const q = activeSessionQueue[currentQueueIndex];
+            cardScores[q.id] = rating; // 'again', 'hard', 'easy'
+            localStorage.setItem('medico_written_scores', JSON.stringify(cardScores));
+
+            if (rating === 'again') {
+                // Insert again within next 3 cards like Anki
+                const insertAt = Math.min(currentQueueIndex + 3, activeSessionQueue.length);
+                activeSessionQueue.splice(insertAt, 0, q);
+            }
+
+            currentQueueIndex++;
+            renderActiveCard();
+        }
+
+        // ================= SCRATCHPAD ENGINE (CANVAS) =================
+        let canvas, ctx, isDrawing = false;
+        let lastX = 0, lastY = 0;
+
+        function initScratchpadCanvas(cardId) {
+            canvas = document.getElementById('scratchpad');
+            if (!canvas) return;
+            ctx = canvas.getContext('2d');
+
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * (window.devicePixelRatio || 1);
+            canvas.height = rect.height * (window.devicePixelRatio || 1);
+            ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
+
+            // Restore saved handwriting for this card
+            const savedInk = localStorage.getItem(`ink_card_${cardId}`);
+            if (savedInk) {
+                const img = new Image();
+                img.onload = () => ctx.drawImage(img, 0, 0, rect.width, rect.height);
+                img.src = savedInk;
+            }
+
+            canvas.onpointerdown = (e) => {
+                if (isSpenOnly && e.pointerType !== 'pen') return;
+                e.preventDefault();
+                isDrawing = true;
+                const pos = getPos(e);
+                lastX = pos.x; lastY = pos.y;
+                ctx.strokeStyle = padColor;
+                ctx.lineWidth = 2.5;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+            };
+
+            canvas.onpointermove = (e) => {
+                if (!isDrawing) return;
+                if (isSpenOnly && e.pointerType !== 'pen') return;
+                e.preventDefault();
+                const pos = getPos(e);
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+                lastX = pos.x; lastY = pos.y;
+            };
+
+            const stopDraw = () => {
+                if (!isDrawing) return;
+                isDrawing = false;
+                localStorage.setItem(`ink_card_${cardId}`, canvas.toDataURL());
+            };
+            canvas.onpointerup = stopDraw;
+            canvas.onpointercancel = stopDraw;
+        }
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        }
+
+        function setScratchpadColor(color) { padColor = color; }
+
+        function clearScratchpad() {
+            if (!canvas || !ctx) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const q = activeSessionQueue[currentQueueIndex];
+            if (q) localStorage.removeItem(`ink_card_${q.id}`);
+        }
+
+        function toggleSpenMode() {
+            isSpenOnly = !isSpenOnly;
+            const btn = document.getElementById('spen-toggle-btn');
+            if (isSpenOnly) {
+                btn.className = "ml-2 px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-indigo-600 text-white shadow";
+                btn.innerText = "S-Pen Only (Palm Rejection)";
+            } else {
+                btn.className = "ml-2 px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700";
+                btn.innerText = "Touch / Any Pen";
+            }
+        }
+
+        // ================= TEXT HIGHLIGHTER (CLEAN MARK TAGS) =================
+        function setHighlightColor(color) {
+            activeHlColor = color;
+            ['yellow', 'green', 'pink'].forEach(c => {
+                const btn = document.getElementById('hl-' + c);
+                if (btn) btn.classList.toggle('ring-2', c === color);
+            });
+        }
+
+        document.addEventListener('mouseup', applyTextHighlight);
+        document.addEventListener('touchend', applyTextHighlight);
+
+        function applyTextHighlight() {
+            if (activeHlColor === 'off') return;
+            const sel = window.getSelection();
+            if (!sel.rangeCount || sel.isCollapsed) return;
+
+            const text = sel.toString().trim();
+            if (!text) return;
+
+            const range = sel.getRangeAt(0);
+            try {
+                const mark = document.createElement('mark');
+                mark.className = `hl-${activeHlColor}`;
+                mark.appendChild(range.extractContents());
+                range.insertNode(mark);
+            } catch(e) { console.warn("Highlight failed", e); }
+            sel.removeAllRanges();
+        }
+
+        // ================= CRUD (ADMIN ONLY) =================
+        function openAddQuestionModal(editQ = null) {
+            if (!isAdmin) return alert("Faculty admin access required.");
             document.getElementById('written-edit-modal').classList.remove('hidden');
 
-            if (qId) {
-                const editQ = allWrittenQuestions.find(q => q.id === qId);
-                if (!editQ) return;
-                document.getElementById('edit-modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Edit Written Question';
+            if (editQ) {
+                document.getElementById('edit-modal-title').innerText = "Edit Written Question";
                 document.getElementById('edit-q-id').value = editQ.id;
                 document.getElementById('edit-q-subject').value = editQ.subject || '';
                 document.getElementById('edit-q-branch').value = editQ.branch || '';
@@ -513,7 +752,7 @@
                 document.getElementById('edit-q-text').value = editQ.question || '';
                 document.getElementById('edit-q-model-answer').value = editQ.modelAnswer || '';
             } else {
-                document.getElementById('edit-modal-title').innerHTML = '<i class="fa-solid fa-plus"></i> Add Written Question';
+                document.getElementById('edit-modal-title').innerText = "Add Written Question";
                 document.getElementById('edit-q-id').value = '';
                 document.getElementById('edit-q-subject').value = '';
                 document.getElementById('edit-q-branch').value = '';
@@ -524,9 +763,7 @@
             }
         }
 
-        function closeAddQuestionModal() { 
-            document.getElementById('written-edit-modal').classList.add('hidden'); 
-        }
+        function closeAddQuestionModal() { document.getElementById('written-edit-modal').classList.add('hidden'); }
 
         async function saveWrittenQuestion() {
             const qId = document.getElementById('edit-q-id').value;
@@ -552,60 +789,55 @@
                     if (localQ) Object.assign(localQ, payload);
                 } else {
                     const docRef = await addDoc(collection(window.db, "written_questions"), payload);
-                    allWrittenQuestions.unshift({ id: docRef.id, ...payload });
+                    payload.id = docRef.id;
+                    allWrittenQuestions.unshift(payload);
                 }
 
-                alert("Question saved successfully!");
+                await saveBatchToIDB([payload]);
                 closeAddQuestionModal();
-                updateAnkiBadges();
-                renderTree();
-                renderQuestions();
+                renderDecksGrid();
+                alert("Question saved successfully!");
             } catch(e) {
                 alert("Error saving: " + e.message);
             }
-            btn.disabled = false; btn.innerText = "Save to Library Hub";
+            btn.disabled = false; btn.innerText = "Save to Library";
         }
 
-        async function deleteWrittenQuestion(id) {
-            if (!isAdmin) return alert("Only Admins can delete questions.");
-            if (!confirm("Are you sure you want to permanently delete this written question?")) return;
+        function editCurrentActiveCard() {
+            const q = activeSessionQueue[currentQueueIndex];
+            if (q) openAddQuestionModal(q);
+        }
 
+        async function deleteCurrentActiveCard() {
+            const q = activeSessionQueue[currentQueueIndex];
+            if (!q || !confirm("Permanently delete this written question?")) return;
             try {
                 const { doc, deleteDoc } = window.firestoreTools;
-                await deleteDoc(doc(window.db, "written_questions", id));
-                allWrittenQuestions = allWrittenQuestions.filter(q => q.id !== id);
-                alert("Question deleted.");
-                updateAnkiBadges();
-                renderTree();
-                renderQuestions();
-            } catch(e) {
-                alert("Delete failed: " + e.message);
-            }
+                await deleteDoc(doc(window.db, "written_questions", q.id));
+                allWrittenQuestions = allWrittenQuestions.filter(item => item.id !== q.id);
+                activeSessionQueue.splice(currentQueueIndex, 1);
+                await saveBatchToIDB([{ id: q.id, _deleted: true }]);
+                alert("Deleted.");
+                renderActiveCard();
+            } catch(e) { alert("Delete failed: " + e.message); }
         }
 
-        // ================= BULK JSON UPLOAD (FOR PDF IMPORT) =================
-        function openBulkJSONModal() {
-            if (!isAdmin) return alert("Admin access required.");
-            document.getElementById('bulk-json-modal').classList.remove('hidden');
-        }
-
-        function closeBulkJSONModal() { 
-            document.getElementById('bulk-json-modal').classList.add('hidden'); 
-        }
+        function openBulkJSONModal() { document.getElementById('bulk-json-modal').classList.remove('hidden'); }
+        function closeBulkJSONModal() { document.getElementById('bulk-json-modal').classList.add('hidden'); }
 
         async function uploadBulkWrittenJSON() {
             const rawText = document.getElementById('bulk-json-text').value.trim();
-            if (!rawText) return alert("Please paste JSON array first.");
+            if (!rawText) return alert("Paste JSON first.");
 
             const btn = document.getElementById('bulk-upload-btn');
-            btn.disabled = true; btn.innerText = "Uploading questions...";
+            btn.disabled = true; btn.innerText = "Uploading...";
 
             try {
                 const arr = JSON.parse(rawText);
-                if (!Array.isArray(arr)) throw new Error("JSON must be an array: [ { ... }, { ... } ]");
+                if (!Array.isArray(arr)) throw new Error("JSON must be an array: [ { ... } ]");
 
                 const { collection, addDoc, serverTimestamp } = window.firestoreTools;
-                let count = 0;
+                const saved = [];
 
                 for (const item of arr) {
                     if (!item.question) continue;
@@ -619,330 +851,33 @@
                         updatedAt: serverTimestamp()
                     };
                     const docRef = await addDoc(collection(window.db, "written_questions"), clean);
-                    allWrittenQuestions.push({ id: docRef.id, ...clean });
-                    count++;
+                    clean.id = docRef.id;
+                    saved.push(clean);
+                    allWrittenQuestions.push(clean);
                 }
 
-                alert(`Successfully uploaded ${count} written questions!`);
-                document.getElementById('bulk-json-text').value = '';
+                await saveBatchToIDB(saved);
                 closeBulkJSONModal();
-                updateAnkiBadges();
-                renderTree();
-                renderQuestions();
-            } catch(e) {
-                alert("Invalid JSON: " + e.message);
-            }
-            btn.disabled = false; btn.innerText = "Upload All Questions";
+                renderDecksGrid();
+                alert(`Uploaded ${saved.length} questions successfully!`);
+            } catch(e) { alert("Upload error: " + e.message); }
+            btn.disabled = false; btn.innerText = "Upload Questions";
         }
 
-        // ================= REPOSITORY FETCH =================
-        async function initWrittenLibrary() {
+        // ================= INITIALIZATION =================
+        async function initApp() {
             setTheme(localStorage.getItem('medico_theme') || 'dark');
-            checkAdminAuth();
+            checkAdminSession();
 
-            const checkFirebase = setInterval(async () => {
-                if (window.db && window.firestoreTools) {
-                    clearInterval(checkFirebase);
-                    try {
-                        const { collection, getDocs } = window.firestoreTools;
-                        const snap = await getDocs(collection(window.db, "written_questions"));
-                        allWrittenQuestions = [];
-                        snap.forEach(d => allWrittenQuestions.push({ id: d.id, ...d.data() }));
-                        updateAnkiBadges();
-                        renderTree();
-                        renderQuestions();
-                    } catch(err) {
-                        console.error("Error loading written questions:", err);
-                    }
-                }
-            }, 200);
+            // 1. Instant Local-First Load from IndexedDB (0 Reads!)
+            allWrittenQuestions = await getCachedWrittenFromIDB();
+            renderDecksGrid();
+
+            // 2. Background cloud delta sync
+            syncWithCloud(false);
         }
 
-        function updateAnkiBadges() {
-            let missed = 0, partial = 0, mastered = 0;
-            allWrittenQuestions.forEach(q => {
-                const s = selfScores[q.id];
-                if(s === 'missed') missed++; else if(s === 'partial') partial++; else if(s === 'mastered') mastered++;
-            });
-            document.getElementById('count-missed').innerText = missed;
-            document.getElementById('count-partial').innerText = partial;
-            document.getElementById('count-mastered').innerText = mastered;
-            document.getElementById('anki-total-badge').innerText = allWrittenQuestions.length;
-        }
-
-        function renderTree() {
-            const container = document.getElementById('written-tree-container');
-            const tree = {};
-            allWrittenQuestions.forEach(q => {
-                const subj = q.subject || "General", branch = q.branch || "General Branch", topic = q.topic || "General Topic";
-                if(!tree[subj]) tree[subj] = { total: 0, branches: {} }; tree[subj].total++;
-                if(!tree[subj].branches[branch]) tree[subj].branches[branch] = { total: 0, topics: {} }; tree[subj].branches[branch].total++;
-                if(!tree[subj].branches[branch].topics[topic]) tree[subj].branches[branch].topics[topic] = 0; tree[subj].branches[branch].topics[topic]++;
-            });
-
-            let html = '';
-            Object.keys(tree).sort().forEach(subj => {
-                const subjData = tree[subj];
-                html += `<div class="glass-card rounded-xl p-2.5 border border-slate-800/80 space-y-1.5"><div class="font-bold text-slate-200 flex justify-between items-center"><label class="flex items-center gap-2 cursor-pointer select-none"><input type="checkbox" onchange="toggleSubjectCheck('${subj}', this.checked)" class="w-3.5 h-3.5 rounded accent-indigo-500"><span>${subj}</span></label><span class="text-[10px] bg-slate-950 px-2 py-0.5 rounded-full text-indigo-400 font-mono">${subjData.total}</span></div><div class="pl-4 space-y-1 border-l border-slate-800/60 mt-1">`;
-                Object.keys(subjData.branches).sort().forEach(branch => {
-                    const branchData = subjData.branches[branch];
-                    html += `<div class="space-y-1"><div class="flex justify-between items-center text-slate-300 font-semibold text-[11px]"><label class="flex items-center gap-2 cursor-pointer select-none"><input type="checkbox" onchange="toggleBranchCheck('${subj}', '${branch}', this.checked)" class="w-3 h-3 rounded accent-indigo-500"><span>${branch}</span></label><span class="font-mono text-[9px] text-slate-500">${branchData.total}</span></div><div class="pl-3 space-y-0.5 border-l border-slate-800/40 ml-1">`;
-                    Object.keys(branchData.topics).sort().forEach(topic => {
-                        const key = `${subj}||${branch}||${topic}`; const isChecked = selectedTaxonomySet.has(key);
-                        html += `<div class="flex items-center justify-between text-slate-400 text-[10px]"><label class="flex items-center gap-1.5 cursor-pointer select-none"><input type="checkbox" onchange="toggleTopicCheck('${key}', this.checked)" ${isChecked ? 'checked' : ''} class="w-3 h-3 rounded accent-indigo-500"><span>${topic}</span></label><span class="font-mono text-[9px] text-slate-600">${branchData.topics[topic]}</span></div>`;
-                    });
-                    html += `</div></div>`;
-                });
-                html += `</div></div>`;
-            });
-            container.innerHTML = html || '<p class="text-slate-500 text-center py-2">No written questions found.</p>';
-        }
-
-        function toggleSubjectCheck(subj, isChecked) { allWrittenQuestions.forEach(q => { if((q.subject || "General") === subj) { const key = `${q.subject || "General"}||${q.branch || "General Branch"}||${q.topic || "General Topic"}`; if(isChecked) selectedTaxonomySet.add(key); else selectedTaxonomySet.delete(key); } }); renderTree(); renderQuestions(); }
-        function toggleBranchCheck(subj, branch, isChecked) { allWrittenQuestions.forEach(q => { if((q.subject || "General") === subj && (q.branch || "General Branch") === branch) { const key = `${subj}||${branch}||${q.topic || "General Topic"}`; if(isChecked) selectedTaxonomySet.add(key); else selectedTaxonomySet.delete(key); } }); renderTree(); renderQuestions(); }
-        function toggleTopicCheck(key, isChecked) { if(isChecked) selectedTaxonomySet.add(key); else selectedTaxonomySet.delete(key); renderQuestions(); }
-        function selectAllTree(selectAll) { selectedTaxonomySet.clear(); if(selectAll) { allWrittenQuestions.forEach(q => { const key = `${q.subject || "General"}||${q.branch || "General Branch"}||${q.topic || "General Topic"}`; selectedTaxonomySet.add(key); }); } renderTree(); renderQuestions(); }
-
-        function getFilteredQuestionsPool() {
-            const searchVal = document.getElementById('library-search').value.toLowerCase().trim();
-            return allWrittenQuestions.filter(q => {
-                if(ankiStatusFilter) { if(selfScores[q.id] !== ankiStatusFilter) return false; }
-                const key = `${q.subject || "General"}||${q.branch || "General Branch"}||${q.topic || "General Topic"}`;
-                if(selectedTaxonomySet.size > 0 && !selectedTaxonomySet.has(key)) return false;
-                if(searchVal) { const qText = (q.question || '').toLowerCase(); const ansText = (q.modelAnswer || '').toLowerCase(); if(!qText.includes(searchVal) && !ansText.includes(searchVal)) return false; }
-                return true;
-            });
-        }
-
-        function startAnkiSession() {
-            const pool = getFilteredQuestionsPool();
-            if(pool.length === 0) return alert("No questions selected or matching your filter.");
-
-            const missedList = pool.filter(q => selfScores[q.id] === 'missed');
-            const partialList = pool.filter(q => selfScores[q.id] === 'partial');
-            const remaining = pool.filter(q => !selfScores[q.id] || selfScores[q.id] === 'unrated');
-
-            activeAnkiQueue = [...missedList, ...partialList, ...remaining];
-            if(activeAnkiQueue.length === 0) activeAnkiQueue = [...pool];
-
-            currentAnkiIndex = 0;
-            isAnkiActiveMode = true;
-
-            document.body.classList.add('anki-focus-mode');
-            document.getElementById('written-questions-list').classList.add('hidden');
-            document.getElementById('anki-single-card-view').classList.remove('hidden');
-            document.getElementById('print-btn').classList.add('hidden');
-
-            renderAnkiSingleCard();
-        }
-
-        function renderAnkiSingleCard() {
-            if(activeAnkiQueue.length === 0 || currentAnkiIndex >= activeAnkiQueue.length) {
-                document.getElementById('anki-card-container').innerHTML = `
-                <div class="glass-panel p-12 text-center space-y-4 rounded-2xl border border-emerald-500/40 w-full shadow-2xl">
-                    <i class="fa-solid fa-trophy text-amber-400 text-6xl animate-bounce"></i>
-                    <h3 class="font-extrabold text-slate-100 text-2xl">Block Completed! 🎉</h3>
-                    <p class="text-sm text-slate-300">You have reviewed all active flashcards in this queue.</p>
-                    <button onclick="exitAnkiSession()" class="mt-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-8 py-3 rounded-xl text-sm uppercase tracking-wider shadow-lg">Return to Library</button>
-                </div>`;
-                return;
-            }
-
-            const q = activeAnkiQueue[currentAnkiIndex];
-            document.getElementById('anki-current-index').innerText = currentAnkiIndex + 1;
-            document.getElementById('anki-total-cards').innerText = activeAnkiQueue.length;
-            const progress = ((currentAnkiIndex + 1) / activeAnkiQueue.length) * 100;
-            document.getElementById('anki-progress-bar').style.width = `${progress}%`;
-
-            document.getElementById('anki-card-container').innerHTML = `
-            <div class="glass-panel rounded-2xl p-6 sm:p-10 border border-indigo-500/30 shadow-2xl space-y-6 w-full">
-                <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-800 pb-4">
-                    <div class="flex items-center gap-2 text-xs font-semibold">
-                        <span class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-3 py-1 rounded-md uppercase tracking-wider">${q.subject || 'General'}</span>
-                        <span class="bg-slate-800 text-slate-300 px-3 py-1 rounded-md">${q.branch || 'General'}</span>
-                        ${q.topic ? `<span class="bg-slate-900 text-slate-400 px-2.5 py-1 rounded text-xs">${q.topic}</span>` : ''}
-                    </div>
-                    <div class="flex items-center gap-2">
-                        ${q.marks ? `<span class="text-sm font-mono font-bold text-amber-400 bg-amber-500/10 px-3 py-1 rounded border border-amber-500/20">${q.marks}</span>` : ''}
-                    </div>
-                </div>
-
-                <!-- Question Ink Area -->
-                <div class="ink-area" data-ink-id="${q.id}-question">
-                    <div class="ink-content text-slate-100 font-bold text-lg sm:text-xl leading-relaxed select-text">
-                        ${q.question}
-                    </div>
-                    <canvas class="ink-canvas ${activeTool !== 'off' ? 'active-drawing' : ''}"></canvas>
-                </div>
-
-                <div class="pt-4 border-t border-slate-800">
-                    <button onclick="toggleAnkiAnswer('${q.id}')" class="w-full text-sm bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 active:scale-95">
-                        <i class="fa-solid fa-eye"></i> <span id="btn-txt-single-${q.id}">Show Model Answer</span>
-                    </button>
-                </div>
-
-                <div id="ans-box-single-${q.id}" class="hidden mt-4 glass-card border-l-4 border-emerald-500 rounded-r-xl p-6 sm:p-8 space-y-6">
-                    <h4 class="text-sm font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2 pb-3 border-b border-slate-800">
-                        <i class="fa-solid fa-check-double"></i> Model Answer & Key Points
-                    </h4>
-                    
-                    <!-- Answer Ink Area -->
-                    <div class="ink-area" data-ink-id="${q.id}-answer">
-                        <div class="ink-content model-answer-content text-base select-text">
-                            ${q.modelAnswer || 'No model answer available.'}
-                        </div>
-                        <canvas class="ink-canvas ${activeTool !== 'off' ? 'active-drawing' : ''}"></canvas>
-                    </div>
-                    
-                    <div class="pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <span class="text-sm text-slate-400 font-bold uppercase tracking-wider">Rate Recall:</span>
-                        <div class="grid grid-cols-3 gap-3 w-full sm:w-auto">
-                            <button onclick="rateSingleAnkiCard('${q.id}', 'missed')" class="text-xs px-5 py-3 rounded-xl font-bold bg-slate-900 hover:bg-rose-950 text-rose-400 border border-rose-500/40 transition">Again</button>
-                            <button onclick="rateSingleAnkiCard('${q.id}', 'partial')" class="text-xs px-5 py-3 rounded-xl font-bold bg-slate-900 hover:bg-amber-950 text-amber-400 border border-amber-500/40 transition">Hard</button>
-                            <button onclick="rateSingleAnkiCard('${q.id}', 'mastered')" class="text-xs px-5 py-3 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg transition">Easy</button>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-
-            setTimeout(initInkAreas, 60);
-        }
-
-        function toggleAnkiAnswer(id) {
-            const box = document.getElementById(`ans-box-single-${id}`);
-            const btnTxt = document.getElementById(`btn-txt-single-${id}`);
-            box.classList.toggle('hidden');
-            btnTxt.innerText = box.classList.contains('hidden') ? "Show Model Answer" : "Hide Model Answer";
-            setTimeout(initInkAreas, 100);
-        }
-
-        function rateSingleAnkiCard(id, score) {
-            selfScores[id] = score;
-            localStorage.setItem('medico_written_scores', JSON.stringify(selfScores));
-            updateAnkiBadges();
-            const currentQ = activeAnkiQueue[currentAnkiIndex];
-            if(score === 'missed') {
-                const insertIdx = Math.min(currentAnkiIndex + 3, activeAnkiQueue.length);
-                activeAnkiQueue.splice(insertIdx, 0, currentQ);
-            } else if(score === 'partial') {
-                activeAnkiQueue.push(currentQ);
-            }
-            currentAnkiIndex++;
-            renderAnkiSingleCard();
-        }
-
-        function exitAnkiSession() {
-            isAnkiActiveMode = false;
-            document.body.classList.remove('anki-focus-mode');
-            document.getElementById('written-questions-list').classList.remove('hidden');
-            document.getElementById('anki-single-card-view').classList.add('hidden');
-            document.getElementById('print-btn').classList.remove('hidden');
-            document.getElementById('active-topic-title').innerText = "All Written Questions";
-            renderQuestions();
-        }
-
-        function renderQuestions() {
-            if(isAnkiActiveMode) return;
-            const container = document.getElementById('written-questions-list');
-            const filtered = getFilteredQuestionsPool();
-
-            if(filtered.length === 0) { 
-                container.innerHTML = '<p class="text-slate-400 text-center py-8">No written questions match your selection.</p>'; 
-                return; 
-            }
-
-            let html = '';
-            filtered.forEach((q, idx) => {
-                html += `
-                <div class="glass-panel rounded-2xl p-5 border border-slate-800 shadow-lg space-y-3">
-                    <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-800/80 pb-2.5">
-                        <div class="flex items-center gap-2 text-xs font-semibold">
-                            <span class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 px-2.5 py-0.5 rounded-md">${q.subject || 'General'}</span>
-                            <span class="bg-slate-800 text-slate-300 px-2.5 py-0.5 rounded-md">${q.branch || 'General'}</span>
-                            ${q.topic ? `<span class="bg-slate-900 text-slate-400 px-2 py-0.5 rounded text-[11px]">${q.topic}</span>` : ''}
-                        </div>
-                        <div class="flex items-center gap-2">
-                            ${q.marks ? `<span class="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">${q.marks}</span>` : ''}
-                            ${isAdmin ? `
-                                <button onclick="openAddQuestionModal('${q.id}')" class="text-xs bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 px-2 py-1 rounded transition" title="Edit Question"><i class="fa-solid fa-pen"></i></button>
-                                <button onclick="deleteWrittenQuestion('${q.id}')" class="text-xs bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 px-2 py-1 rounded transition" title="Delete Question"><i class="fa-solid fa-trash-can"></i></button>
-                            ` : ''}
-                        </div>
-                    </div>
-
-                    <!-- Question Ink Area -->
-                    <div class="ink-area" data-ink-id="${q.id}-list-q">
-                        <div class="ink-content text-slate-100 font-medium text-sm sm:text-base leading-relaxed select-text">
-                            <span class="text-indigo-400 font-bold font-mono mr-1">Q${idx+1}.</span> ${q.question}
-                        </div>
-                        <canvas class="ink-canvas ${activeTool !== 'off' ? 'active-drawing' : ''}"></canvas>
-                    </div>
-
-                    <div class="pt-2">
-                        <button onclick="toggleAnswer('${q.id}')" class="text-xs bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white border border-indigo-500/30 px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-lightbulb"></i> <span id="btn-txt-${q.id}">Show Model Answer</span>
-                        </button>
-                    </div>
-
-                    <div id="ans-box-${q.id}" class="hidden mt-3 glass-card border-l-4 border-emerald-500 rounded-r-xl p-4 space-y-3">
-                        <div class="ink-area" data-ink-id="${q.id}-list-ans">
-                            <div class="ink-content model-answer-content overflow-x-auto select-text">${q.modelAnswer || 'No model answer available.'}</div>
-                            <canvas class="ink-canvas ${activeTool !== 'off' ? 'active-drawing' : ''}"></canvas>
-                        </div>
-                    </div>
-                </div>`;
-            });
-            container.innerHTML = html;
-            setTimeout(initInkAreas, 60);
-        }
-
-        function toggleAnswer(id) {
-            const box = document.getElementById(`ans-box-${id}`);
-            const btnTxt = document.getElementById(`btn-txt-${id}`);
-            box.classList.toggle('hidden');
-            btnTxt.innerText = box.classList.contains('hidden') ? "Show Model Answer" : "Hide Model Answer";
-            setTimeout(initInkAreas, 80);
-        }
-
-        function filterByAnkiStatus(status) { 
-            ankiStatusFilter = status; 
-            document.getElementById('active-topic-title').innerText = `Deck: ${status.toUpperCase()} Questions`; 
-            renderQuestions(); 
-        }
-
-        function clearFilter() { 
-            selectedTaxonomySet.clear(); 
-            ankiStatusFilter = null; 
-            document.getElementById('active-topic-title').innerText = "All Written Questions"; 
-            renderTree(); 
-            renderQuestions(); 
-        }
-
-        function filterQuestions() { 
-            renderQuestions(); 
-        }
-
-        function printWrittenSheet() {
-            const printArea = document.getElementById('print-area');
-            const questions = getFilteredQuestionsPool();
-            if (questions.length === 0) return alert("No questions to print.");
-
-            let html = '<div style="padding: 25px; font-family: sans-serif; color: black; background: white;">';
-            html += '<h2 style="text-align: center; margin-bottom: 25px;">Written Questions Practice Sheet</h2>';
-
-            questions.forEach((q, idx) => {
-                html += `<div style="margin-bottom: 30px; page-break-inside: avoid; border-bottom: 1px solid #ccc; padding-bottom: 15px;">`;
-                html += `<p style="font-size: 16px; font-weight: bold;">Q${idx + 1}: ${q.question} <span style="font-size: 12px; color: #555;">(${q.marks || ''})</span></p>`;
-                html += `<div style="margin-top: 10px; font-size: 14px; color: #222;"><b>Model Answer:</b><br>${q.modelAnswer}</div>`;
-                html += `</div>`;
-            });
-
-            html += '</div>';
-            printArea.innerHTML = html;
-            setTimeout(() => { window.print(); }, 400);
-        }
-
-        window.onload = initWrittenLibrary;
+        window.onload = initApp;
     </script>
 </body>
-</html>
+                                </html>
