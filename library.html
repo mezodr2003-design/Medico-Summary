@@ -43,13 +43,13 @@
         body.anki-focus-mode #study-session-view { display: flex !important; }
         body.anki-focus-mode main { max-width: 1040px !important; margin: 0 auto; width: 100%; padding: 0.5rem; }
 
-        /* Anki Overlay Canvas (Full Card) */
-        .whiteboard-overlay-container { position: relative; width: 100%; min-height: 480px; }
+        /* Anki Overlay Canvas (Strictly bounded to text area, never touches buttons) */
+        .whiteboard-overlay-container { position: relative; width: 100%; min-height: 260px; }
         .whiteboard-content-layer { position: relative; z-index: 10; user-select: text; }
         .whiteboard-canvas-layer { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 30; touch-action: none; pointer-events: auto; }
         .whiteboard-canvas-layer.pointer-disabled { pointer-events: none !important; }
 
-        /* Highlights */
+        /* True Text Highlighter */
         mark.hl-yellow { background-color: rgba(250, 204, 21, 0.38) !important; color: inherit !important; border-bottom: 2px solid #eab308; border-radius: 3px; padding: 1px 3px; }
         mark.hl-green { background-color: rgba(52, 211, 153, 0.38) !important; color: inherit !important; border-bottom: 2px solid #10b981; border-radius: 3px; padding: 1px 3px; }
         mark.hl-pink { background-color: rgba(244, 114, 182, 0.38) !important; color: inherit !important; border-bottom: 2px solid #ec4899; border-radius: 3px; padding: 1px 3px; }
@@ -72,7 +72,7 @@
         .theme-light .text-white, .theme-light .text-slate-100, .theme-light .text-slate-200 { color: #0f172a !important; }
         .theme-light .text-slate-400 { color: #475569 !important; }
 
-        /* MODERN CLINICAL PRINT ENGINE */
+        /* Modern Print Engine */
         @media print {
             body * { display: none !important; }
             #print-area, #print-area * { display: block !important; }
@@ -177,7 +177,6 @@
                 <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-500 text-sm pointer-events-none"></i>
             </div>
 
-            <!-- Decks Grid with New, Due, Review badges -->
             <div id="decks-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </div>
 
@@ -185,7 +184,7 @@
         <div id="study-session-view" class="hidden flex-col space-y-3 w-full">
             
             <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-900/90 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl border border-slate-800 shadow-xl">
-                <!-- Mobile-First Back to Decks Button -->
+                <!-- Back & Undo Buttons -->
                 <div class="flex items-center gap-2">
                     <button onclick="exitStudySession()" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white border border-indigo-500/40 transition flex items-center gap-1.5 shadow active:scale-95">
                         <i class="fa-solid fa-chevron-left text-sm"></i>
@@ -197,7 +196,7 @@
                     <span id="session-deck-name" class="text-xs font-bold text-slate-200 tracking-wide uppercase truncate max-w-[140px] sm:max-w-[200px]">General Surgery</span>
                 </div>
 
-                <!-- AnkiDroid Whiteboard Toolbar -->
+                <!-- Anki Toolbar -->
                 <div class="flex items-center gap-1.5 bg-slate-950/80 p-1 rounded-xl border border-slate-800 text-xs">
                     <button onclick="setPenColor('#38bdf8')" class="w-5 h-5 rounded-full bg-sky-400 border border-sky-300 shadow" title="Blue Pen"></button>
                     <button onclick="setPenColor('#ef4444')" class="w-5 h-5 rounded-full bg-rose-500 border border-rose-300 shadow" title="Red Pen"></button>
@@ -217,7 +216,7 @@
                 </div>
             </div>
 
-            <!-- Card Box with Full Overlay Whiteboard -->
+            <!-- Single Card Box with Protected Isolated Buttons -->
             <div id="single-card-box" class="glass-panel rounded-3xl p-5 sm:p-8 border border-indigo-500/30 shadow-2xl space-y-4 w-full">
                 <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-slate-800">
                     <div class="flex items-center gap-2 text-xs font-semibold">
@@ -234,23 +233,18 @@
                     </div>
                 </div>
 
-                <!-- OVERLAY CONTAINER -->
-                <div class="whiteboard-overlay-container">
+                <!-- OVERLAY CONTAINER (Bounded exclusively to Question & Answer text) -->
+                <div class="whiteboard-overlay-container relative min-h-[260px] rounded-2xl border border-slate-800/60 p-4">
                     <div class="whiteboard-content-layer space-y-4">
                         <div class="space-y-1">
                             <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest font-mono">Clinical Vignette Question:</span>
                             <div id="card-question-text" class="text-slate-100 font-bold text-base sm:text-xl leading-relaxed select-text"></div>
                         </div>
 
-                        <div id="reveal-btn-container" class="pt-2">
-                            <button onclick="revealModelAnswer()" class="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm tracking-wide shadow-lg shadow-indigo-600/30 transition active:scale-95 flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-eye"></i> Show Answer <span class="text-xs opacity-60 font-mono hidden sm:inline">(Space)</span>
-                            </button>
-                        </div>
-
-                        <div id="model-answer-box" class="hidden space-y-4 pt-3 border-t border-slate-800">
-                            <div class="glass-card border-l-4 border-emerald-500 rounded-r-2xl p-4 sm:p-6 space-y-2">
-                                <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2 pb-2 border-b border-slate-800/80">
+                        <!-- Model Answer Box (Revealed underneath handwriting) -->
+                        <div id="model-answer-box" class="hidden space-y-3 pt-3 border-t border-slate-800">
+                            <div class="glass-card border-l-4 border-emerald-500 rounded-r-2xl p-4 space-y-2">
+                                <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2 pb-1 border-b border-slate-800/80">
                                     <i class="fa-solid fa-check-double"></i> Model Answer & Key Points
                                 </h4>
                                 <div id="card-answer-html" class="model-answer-content text-sm sm:text-base leading-relaxed select-text"></div>
@@ -258,26 +252,33 @@
                         </div>
                     </div>
 
-                    <!-- Transparent Whiteboard Overlay -->
-                    <canvas id="whiteboard-canvas" class="whiteboard-canvas-layer"></canvas>
+                    <!-- Overlay Whiteboard Canvas: NEVER overlaps buttons! -->
+                    <canvas id="whiteboard-canvas" class="whiteboard-canvas-layer rounded-2xl"></canvas>
                 </div>
 
-                <!-- 4 EXACT ANKI BUTTONS -->
-                <div id="anki-buttons-bar" class="hidden pt-3 border-t border-slate-800">
+                <!-- SHOW ANSWER BUTTON (Isolated outside canvas bounds) -->
+                <div id="reveal-btn-container" class="pt-2 relative z-50">
+                    <button onclick="revealModelAnswer()" class="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm tracking-wide shadow-lg shadow-indigo-600/30 transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-eye"></i> Show Answer <span class="text-xs opacity-60 font-mono hidden sm:inline">(Space)</span>
+                    </button>
+                </div>
+
+                <!-- 4 ANKI BUTTONS (Isolated outside canvas bounds) -->
+                <div id="anki-buttons-bar" class="hidden pt-2 relative z-50">
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full">
-                        <button onclick="rateCard('very_hard')" class="p-3 rounded-2xl font-bold text-xs bg-slate-900 hover:bg-rose-950 text-rose-400 border border-rose-500/40 transition flex flex-col items-center shadow active:scale-95">
+                        <button onclick="rateCard('very_hard')" class="p-3 rounded-2xl font-bold text-xs bg-slate-900 hover:bg-rose-950 text-rose-400 border border-rose-500/40 transition flex flex-col items-center shadow active:scale-95 cursor-pointer">
                             <span class="font-extrabold text-sm">Very Hard</span>
                             <span class="text-[10px] font-mono opacity-80 mt-0.5">2 Cards / 3m</span>
                         </button>
-                        <button onclick="rateCard('hard')" class="p-3 rounded-2xl font-bold text-xs bg-slate-900 hover:bg-amber-950 text-amber-400 border border-amber-500/40 transition flex flex-col items-center shadow active:scale-95">
+                        <button onclick="rateCard('hard')" class="p-3 rounded-2xl font-bold text-xs bg-slate-900 hover:bg-amber-950 text-amber-400 border border-amber-500/40 transition flex flex-col items-center shadow active:scale-95 cursor-pointer">
                             <span class="font-extrabold text-sm">Hard</span>
                             <span class="text-[10px] font-mono opacity-80 mt-0.5">5 Cards / 5m</span>
                         </button>
-                        <button onclick="rateCard('good')" class="p-3 rounded-2xl font-bold text-xs bg-slate-900 hover:bg-sky-950 text-sky-400 border border-sky-500/40 transition flex flex-col items-center shadow active:scale-95">
+                        <button onclick="rateCard('good')" class="p-3 rounded-2xl font-bold text-xs bg-slate-900 hover:bg-sky-950 text-sky-400 border border-sky-500/40 transition flex flex-col items-center shadow active:scale-95 cursor-pointer">
                             <span class="font-extrabold text-sm">Good</span>
                             <span class="text-[10px] font-mono opacity-80 mt-0.5">End of Cards</span>
                         </button>
-                        <button onclick="rateCard('easy')" class="p-3 rounded-2xl font-bold text-xs bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg transition flex flex-col items-center active:scale-95">
+                        <button onclick="rateCard('easy')" class="p-3 rounded-2xl font-bold text-xs bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg transition flex flex-col items-center active:scale-95 cursor-pointer">
                             <span class="font-extrabold text-sm">Easy</span>
                             <span class="text-[10px] font-mono opacity-90 mt-0.5">After 1 Day</span>
                         </button>
@@ -289,7 +290,7 @@
 
     </main>
 
-    <!-- ================= ADMIN MODALS ================= -->
+    <!-- ================= ADMIN MODALS (SECURE & LOCKED) ================= -->
     <div id="written-edit-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
         <div class="glass-panel border-indigo-500/40 rounded-2xl p-6 w-full max-w-2xl shadow-2xl space-y-3 max-h-[92vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -304,7 +305,7 @@
                 <div><label class="text-[10px] text-slate-400 block mb-1">Marks</label><input type="text" id="edit-q-marks" placeholder="5 Marks" class="w-full glass-input p-2 rounded-lg text-xs text-slate-200"></div>
             </div>
             <div>
-                <label class="text-[11px] font-semibold text-slate-400 block mb-1">Question Prompt / Case Vignette:</label>
+                <label class="text-[11px] font-semibold text-slate-400 block mb-1">Question Scenario / Vignette:</label>
                 <textarea id="edit-q-text" class="w-full glass-input p-3 rounded-xl text-xs sm:text-sm h-24 focus:outline-none focus:border-indigo-500 text-slate-200" placeholder="Enter clinical scenario here..."></textarea>
             </div>
             <div>
@@ -315,7 +316,7 @@
         </div>
     </div>
 
-    <!-- Manager Modal -->
+    <!-- Question Manager Modal -->
     <div id="manager-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-2 sm:p-4">
         <div class="glass-panel border-indigo-500/40 rounded-2xl p-4 sm:p-6 w-full max-w-6xl shadow-2xl max-h-[94vh] flex flex-col space-y-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-3 shrink-0">
@@ -484,6 +485,7 @@
             }, 100);
         }
 
+        // ================= AUTH CHECK (SECURE) =================
         function checkAdminSession() {
             const checkAuth = setInterval(() => {
                 if (window.authTools && window.firebaseAuth) {
@@ -622,6 +624,7 @@
             }
 
             const q = activeSessionQueue[currentQueueIndex];
+
             document.getElementById('card-index-display').innerText = currentQueueIndex + 1;
             document.getElementById('card-total-display').innerText = activeSessionQueue.length;
             const progress = ((currentQueueIndex + 1) / activeSessionQueue.length) * 100;
@@ -653,7 +656,7 @@
             setTimeout(resizeWhiteboardCanvas, 60);
         }
 
-        // ================= EXACT 4 ANKI BUTTONS LOGIC =================
+        // ================= THE 4 EXACT ANKI BUTTONS LOGIC =================
         function rateCard(ratingType) {
             const q = activeSessionQueue[currentQueueIndex];
             undoStack.push({
@@ -671,15 +674,18 @@
                 meta.dueTime = now + 3 * 60 * 1000;
                 const insertAt = Math.min(currentQueueIndex + 3, activeSessionQueue.length);
                 activeSessionQueue.splice(insertAt, 0, q);
-            } else if (ratingType === 'hard') {
+            } 
+            else if (ratingType === 'hard') {
                 meta.status = 'learning';
                 meta.dueTime = now + 5 * 60 * 1000;
                 const insertAt = Math.min(currentQueueIndex + 6, activeSessionQueue.length);
                 activeSessionQueue.splice(insertAt, 0, q);
-            } else if (ratingType === 'good') {
+            } 
+            else if (ratingType === 'good') {
                 meta.status = 'learning';
                 activeSessionQueue.push(q);
-            } else if (ratingType === 'easy') {
+            } 
+            else if (ratingType === 'easy') {
                 meta.status = 'easy';
                 meta.dueTime = now + 24 * 3600 * 1000;
             }
@@ -701,7 +707,7 @@
             renderActiveCard();
         }
 
-        // ================= FULL-CARD OVERLAY WHITEBOARD =================
+        // ================= FULL-CARD OVERLAY WHITEBOARD ENGINE =================
         let wbCanvas, wbCtx, isDrawing = false, lastX = 0, lastY = 0;
 
         function initWhiteboard() {
@@ -712,6 +718,7 @@
             wbCanvas.onpointerdown = (e) => {
                 if (textHighlightActive) return;
                 if (isStylusOnlyMode && e.pointerType !== 'pen') return;
+                
                 e.preventDefault();
                 isDrawing = true;
                 const pos = getWbPos(e);
@@ -725,6 +732,7 @@
             wbCanvas.onpointermove = (e) => {
                 if (!isDrawing || textHighlightActive) return;
                 if (isStylusOnlyMode && e.pointerType !== 'pen') return;
+
                 e.preventDefault();
                 const pos = getWbPos(e);
                 wbCtx.beginPath();
@@ -743,6 +751,7 @@
             if (!wbCanvas) return;
             const container = wbCanvas.closest('.whiteboard-overlay-container');
             if (!container) return;
+
             const rect = container.getBoundingClientRect();
             wbCanvas.width = rect.width * (window.devicePixelRatio || 1);
             wbCanvas.height = rect.height * (window.devicePixelRatio || 1);
@@ -777,6 +786,7 @@
             }
         }
 
+        // ================= TRUE PERSISTENT TEXT HIGHLIGHTER =================
         function toggleTextHighlightTool() {
             textHighlightActive = !textHighlightActive;
             const btn = document.getElementById('hl-tool-btn');
@@ -796,14 +806,17 @@
             if (!textHighlightActive) return;
             const sel = window.getSelection();
             if (!sel.rangeCount || sel.isCollapsed) return;
+
             const text = sel.toString().trim();
             if (!text) return;
+
             const range = sel.getRangeAt(0);
             try {
                 const mark = document.createElement('mark');
                 mark.className = 'hl-yellow';
                 mark.appendChild(range.extractContents());
                 range.insertNode(mark);
+
                 const q = activeSessionQueue[currentQueueIndex];
                 if (q) {
                     localStorage.setItem(`hl_q_${q.id}`, document.getElementById('card-question-text').innerHTML);
@@ -870,7 +883,7 @@
             setTimeout(() => { window.print(); }, 250);
         }
 
-        // ================= ADMIN: QUESTION MANAGER =================
+        // ================= ADMIN: QUESTION MANAGER (LOCKED) =================
         let mgrAll = [], mgrSelected = new Set();
 
         function openManagerModal() {
@@ -952,6 +965,7 @@
         }
 
         async function mgrApplyBulk() {
+            if (!isAdmin) return alert("Faculty admin access required.");
             const changes = {};
             const sub = document.getElementById('mgr-set-subject').value.trim();
             const br = document.getElementById('mgr-set-branch').value.trim();
@@ -978,8 +992,10 @@
         }
 
         async function mgrDeleteSelected() {
+            if (!isAdmin) return alert("Faculty admin access required.");
             if (mgrSelected.size === 0) return alert("Select questions first.");
             if (!confirm(`Move ${mgrSelected.size} questions to Recycle Bin?`)) return;
+
             const { doc, setDoc, serverTimestamp } = window.firestoreTools;
             const removed = [];
             for (const id of mgrSelected) {
@@ -1022,6 +1038,7 @@
         function closeAddQuestionModal() { document.getElementById('written-edit-modal').classList.add('hidden'); }
 
         async function saveWrittenQuestion() {
+            if (!isAdmin) return alert("Faculty admin access required.");
             const qId = document.getElementById('edit-q-id').value;
             const subject = document.getElementById('edit-q-subject').value.trim() || 'General';
             const branch = document.getElementById('edit-q-branch').value.trim() || 'General';
@@ -1063,6 +1080,7 @@
         }
 
         async function deleteCurrentActiveCard() {
+            if (!isAdmin) return alert("Faculty admin access required.");
             const q = activeSessionQueue[currentQueueIndex];
             if (!q || !confirm("Move this written question to Recycle Bin?")) return;
             try {
@@ -1077,10 +1095,14 @@
         }
 
         // ================= CLOUD TOOLS & TRASH =================
-        function openCloudToolsModal() { document.getElementById('cloud-tools-modal').classList.remove('hidden'); }
+        function openCloudToolsModal() { 
+            if (!isAdmin) return alert("Faculty admin access required.");
+            document.getElementById('cloud-tools-modal').classList.remove('hidden'); 
+        }
         function closeCloudToolsModal() { document.getElementById('cloud-tools-modal').classList.add('hidden'); }
 
         async function uploadPastedWrittenJSON() {
+            if (!isAdmin) return alert("Faculty admin access required.");
             const rawText = document.getElementById('bulk-json-text').value.trim();
             if (!rawText) return alert("Paste JSON first.");
             try {
@@ -1107,6 +1129,7 @@
         }
 
         async function removeDuplicates() {
+            if (!isAdmin) return alert("Faculty admin access required.");
             const seen = new Set(), dups = [];
             allWrittenQuestions.forEach(q => {
                 if (q._deleted) return;
@@ -1129,6 +1152,7 @@
         }
 
         function openTrashModal() {
+            if (!isAdmin) return alert("Faculty admin access required.");
             document.getElementById('trash-modal').classList.remove('hidden');
             const list = document.getElementById('trash-list');
             const trashed = allWrittenQuestions.filter(q => q._deleted);
@@ -1147,6 +1171,7 @@
         function closeTrashModal() { document.getElementById('trash-modal').classList.add('hidden'); }
 
         async function restoreFromTrash(id) {
+            if (!isAdmin) return alert("Faculty admin access required.");
             const { doc, setDoc, serverTimestamp } = window.firestoreTools;
             await setDoc(doc(window.db, "written_questions", id), { _deleted: false, updatedAt: serverTimestamp() }, { merge: true });
             const localQ = allWrittenQuestions.find(q => q.id === id);
@@ -1157,9 +1182,11 @@
         }
 
         async function restoreAllFromTrash() {
+            if (!isAdmin) return alert("Faculty admin access required.");
             const trashed = allWrittenQuestions.filter(q => q._deleted);
             if (trashed.length === 0) return;
             if (!confirm(`Restore all ${trashed.length} questions?`)) return;
+
             const { doc, setDoc, serverTimestamp } = window.firestoreTools;
             const restored = [];
             for (const q of trashed) {
