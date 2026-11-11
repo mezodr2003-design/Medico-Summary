@@ -2,23 +2,21 @@
 <html lang="en" dir="ltr" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medico Summary - Written Library & Anki</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Medico Summary - Written Library & Anki Pro</title>
     <link rel="icon" type="image/png" href="logo.png">
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
-    <!-- Load Admins Config -->
     <script src="admins.js" onerror="console.log('No admins.js found')"></script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc, serverTimestamp, query, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc, serverTimestamp, query, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyCPHgq_0Nm13ZVJ-IKHB5d0aoichUi9hek",
@@ -35,65 +33,60 @@
 
         window.db = db;
         window.firebaseAuth = auth;
-        window.firestoreTools = { collection, addDoc, getDocs, deleteDoc, doc, setDoc, serverTimestamp, query, where, Timestamp };
-        window.authTools = { onAuthStateChanged, signOut };
+        window.firestoreTools = { collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc, serverTimestamp, query, where, Timestamp };
+        window.authTools = { onAuthStateChanged, signOut, signInWithEmailAndPassword };
     </script>
 
     <style>
-        .glass-panel { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); }
+        .glass-panel { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37); }
         .glass-card { background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .glass-input { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.12); }
+        .glass-input { background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.12); }
 
-        /* Full Screen Focus Mode */
         body.anki-focus-mode header, body.anki-focus-mode #decks-view, body.anki-focus-mode #admin-toolbar { display: none !important; }
         body.anki-focus-mode #study-session-view { display: flex !important; }
-        body.anki-focus-mode main { max-width: 1024px !important; margin: 0 auto; width: 100%; padding: 1rem; }
+        body.anki-focus-mode main { max-width: 1040px !important; margin: 0 auto; width: 100%; padding: 0.5rem; }
 
-        /* True Translucent Highlighting (Never covers text) */
-        mark.hl-yellow { background-color: rgba(250, 204, 21, 0.35) !important; color: inherit !important; padding: 2px 3px; border-radius: 4px; border-bottom: 2px solid #eab308; }
-        mark.hl-green { background-color: rgba(52, 211, 153, 0.35) !important; color: inherit !important; padding: 2px 3px; border-radius: 4px; border-bottom: 2px solid #10b981; }
-        mark.hl-pink { background-color: rgba(244, 114, 182, 0.35) !important; color: inherit !important; padding: 2px 3px; border-radius: 4px; border-bottom: 2px solid #ec4899; }
+        /* Anki Full-Card Transparent Overlay Canvas */
+        .whiteboard-overlay-container { position: relative; width: 100%; min-height: 480px; }
+        .whiteboard-content-layer { position: relative; z-index: 10; user-select: text; }
+        .whiteboard-canvas-layer { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 30; touch-action: none; pointer-events: auto; }
+        .whiteboard-canvas-layer.pointer-disabled { pointer-events: none !important; }
 
-        /* Scratchpad Canvas */
-        .scratchpad-canvas { touch-action: none; background: repeating-linear-gradient(transparent, transparent 31px, rgba(255, 255, 255, 0.06) 31px, rgba(255, 255, 255, 0.06) 32px); }
+        /* True Text Highlighter (Persists behind text) */
+        mark.hl-yellow { background-color: rgba(250, 204, 21, 0.38) !important; color: inherit !important; border-bottom: 2px solid #eab308; border-radius: 3px; padding: 1px 3px; }
+        mark.hl-green { background-color: rgba(52, 211, 153, 0.38) !important; color: inherit !important; border-bottom: 2px solid #10b981; border-radius: 3px; padding: 1px 3px; }
+        mark.hl-pink { background-color: rgba(244, 114, 182, 0.38) !important; color: inherit !important; border-bottom: 2px solid #ec4899; border-radius: 3px; padding: 1px 3px; }
 
-        /* Model Answer Tables */
         .model-answer-content { font-family: 'Inter', sans-serif !important; line-height: 1.8 !important; white-space: pre-line !important; }
         .model-answer-content b, .model-answer-content strong { color: #38bdf8 !important; font-weight: 700 !important; }
         .model-answer-content table { width: 100% !important; border-collapse: separate !important; border-spacing: 0 !important; margin: 1.25rem 0 !important; border-radius: 12px !important; overflow: hidden !important; border: 1px solid rgba(255, 255, 255, 0.15) !important; background-color: rgba(15, 23, 42, 0.6) !important; white-space: normal !important; }
         .model-answer-content th { background: rgba(30, 41, 59, 0.95) !important; color: #38bdf8 !important; font-weight: 700 !important; font-size: 0.85rem !important; text-transform: uppercase !important; padding: 10px 14px !important; border-bottom: 2px solid rgba(255, 255, 255, 0.15) !important; text-align: left !important; }
         .model-answer-content td { padding: 10px 14px !important; font-size: 0.875rem !important; color: #e2e8f0 !important; border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important; vertical-align: top !important; }
 
-        /* High Contrast Themes */
+        /* Themes */
         .theme-eyecare { background-color: #f5eedc !important; color: #2c2114 !important; }
         .theme-eyecare header, .theme-eyecare .glass-panel { background: #e8ddc2 !important; border-color: #d6c6a2 !important; color: #2c2114 !important; }
         .theme-eyecare .glass-card { background: #faf4e8 !important; border-color: #dfceaa !important; }
         .theme-eyecare .text-white, .theme-eyecare .text-slate-100, .theme-eyecare .text-slate-200 { color: #23190e !important; }
         .theme-eyecare .text-slate-400 { color: #5a4632 !important; }
-        .theme-eyecare .scratchpad-canvas { background: repeating-linear-gradient(transparent, transparent 31px, rgba(44, 33, 20, 0.08) 31px, rgba(44, 33, 20, 0.08) 32px); }
 
         .theme-light { background-color: #f8fafc !important; color: #0f172a !important; }
         .theme-light header, .theme-light .glass-panel { background: #ffffff !important; border-color: #e2e8f0 !important; color: #0f172a !important; }
         .theme-light .glass-card { background: #ffffff !important; border-color: #e2e8f0 !important; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
         .theme-light .text-white, .theme-light .text-slate-100, .theme-light .text-slate-200 { color: #0f172a !important; }
         .theme-light .text-slate-400 { color: #475569 !important; }
-        .theme-light .scratchpad-canvas { background: repeating-linear-gradient(transparent, transparent 31px, rgba(15, 23, 42, 0.06) 31px, rgba(15, 23, 42, 0.06) 32px); }
-
-        @media print { body * { display: none !important; } #print-area, #print-area * { display: block !important; } #print-area { position: absolute; left: 0; top: 0; width: 100%; background: white; color: black; } }
     </style>
 </head>
-<body id="app-body" class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col transition-colors duration-200 select-text relative">
+<body id="app-body" class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col transition-colors duration-150 select-text relative">
 
-    <div id="print-area" class="hidden"></div>
-
-    <!-- MAIN HEADER -->
+    <!-- HEADER (Visible in Dashboard) -->
     <header class="glass-panel sticky top-0 z-50 shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex justify-between items-center gap-3">
             <div class="flex items-center gap-3 cursor-pointer" onclick="exitStudySession()">
-                <img src="logo.png" alt="Logo" class="w-9 h-9 rounded-full object-cover ring-1 ring-slate-700">
+                <img src="logo.png" alt="Logo" class="w-9 h-9 rounded-full object-cover ring-1 ring-slate-700" onerror="this.src='https://via.placeholder.com/36/4f46e5/ffffff?text=MS'">
                 <div class="flex flex-col">
                     <h1 class="font-bold text-sm tracking-tight text-slate-100">Medico Summary</h1>
-                    <span class="text-[10px] text-indigo-400 leading-none">Spaced Repetition Written Hub</span>
+                    <span class="text-[10px] text-indigo-400 leading-none">Written Library & Anki Pro</span>
                 </div>
             </div>
 
@@ -106,7 +99,7 @@
                 </div>
 
                 <!-- Sync Button -->
-                <button onclick="syncWithCloud(true)" title="Check for cloud updates" class="text-xs bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-indigo-400 border border-slate-700/80 px-2.5 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
+                <button onclick="syncWithCloud(true)" title="Force Sync from Cloud" class="text-xs bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-indigo-400 border border-slate-700/80 px-2.5 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
                     <i id="sync-icon" class="fa-solid fa-rotate text-xs"></i>
                     <span class="hidden sm:inline text-[11px]">Sync</span>
                 </button>
@@ -123,98 +116,124 @@
         </div>
     </header>
 
-    <!-- ADMIN FLOATING TOOLBAR -->
+    <!-- ADMIN ACTION BAR (Identical to index.html) -->
     <div id="admin-toolbar" class="hidden bg-slate-900/95 border-b border-indigo-500/30 px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs shadow-md">
         <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-            <span class="font-bold text-amber-400 uppercase tracking-wider">Faculty Cloud Control Panel</span>
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="font-bold text-amber-400 uppercase tracking-wider">Faculty Written Control</span>
         </div>
-        <div class="flex items-center gap-2">
-            <button onclick="openAddQuestionModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow">
-                <i class="fa-solid fa-plus"></i> Add Written Question
+        <div class="flex items-center gap-2 flex-wrap">
+            <button onclick="openCloudToolsModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Cloud Database Tools
             </button>
-            <button onclick="openBulkJSONModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow">
-                <i class="fa-solid fa-file-import"></i> Paste JSON / PDF
+            <button onclick="openManagerModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow">
+                <i class="fa-solid fa-screwdriver-wrench"></i> Question Manager
+            </button>
+            <button onclick="openTrashModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                <i class="fa-solid fa-trash-can-arrow-up text-emerald-400"></i> Recycle Bin
+            </button>
+            <button onclick="openAddQuestionModal()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow">
+                <i class="fa-solid fa-plus"></i> Add Question
             </button>
         </div>
     </div>
 
-    <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex flex-col justify-start">
+    <main class="flex-grow max-w-7xl mx-auto w-full px-3 sm:px-6 py-4 flex flex-col justify-start">
 
-        <!-- ================= VIEW 1: CLEAN DECKS DASHBOARD ================= -->
+        <!-- ================= VIEW 1: ANKI DECKS DASHBOARD ================= -->
         <div id="decks-view" class="space-y-6 w-full max-w-5xl mx-auto">
             
-            <!-- Global Recall Counter -->
             <div class="glass-panel rounded-2xl p-5 shadow-xl flex flex-wrap items-center justify-between gap-4 border border-indigo-500/20">
                 <div>
                     <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
                         <i class="fa-solid fa-brain text-indigo-400"></i> Active Recall Flashcard Decks
                     </h2>
-                    <p class="text-xs text-slate-400 mt-0.5">Select a medical specialty deck to enter full-screen practice mode.</p>
+                    <p class="text-xs text-slate-400 mt-0.5">Select a specialty deck. Works 100% offline with zero cloud reads.</p>
                 </div>
-                <div class="flex items-center gap-3">
-                    <button onclick="startSessionWithFilter('again')" class="px-3 py-2 rounded-xl glass-card border-rose-500/30 text-rose-400 hover:bg-rose-950/40 text-xs font-bold transition flex items-center gap-2">
-                        <span id="stat-again-count" class="font-mono text-sm">0</span> Again (Due)
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button onclick="startStudySession('due')" class="px-3.5 py-2 rounded-xl glass-card border-rose-500/30 text-rose-400 hover:bg-rose-950/40 text-xs font-bold transition flex items-center gap-2">
+                        <span id="stat-due-count" class="font-mono text-sm">0</span> Due Review
                     </button>
-                    <button onclick="startSessionWithFilter('all')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-5 py-2 rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-indigo-600/30 transition">
-                        <i class="fa-solid fa-bolt"></i> Practice All Cards
+                    <button onclick="startStudySession('all')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-5 py-2 rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-indigo-600/30 transition active:scale-95">
+                        <i class="fa-solid fa-bolt"></i> Practice All Decks
                     </button>
                 </div>
             </div>
 
-            <!-- Search and Filter Bar -->
+            <!-- Search -->
             <div class="relative">
-                <input type="text" id="deck-search-input" oninput="renderDecksGrid()" placeholder="Search topics, questions, or keywords..." class="w-full glass-input py-3 pl-10 pr-4 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-slate-200">
+                <input type="text" id="deck-search-input" oninput="renderDecksGrid()" placeholder="Search written topics, scenarios, or clinical questions..." class="w-full glass-input py-3 pl-10 pr-4 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-slate-200">
                 <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-500 text-sm pointer-events-none"></i>
             </div>
 
             <!-- Decks Grid -->
-            <div id="decks-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <p class="col-span-full text-center text-slate-400 py-12">Loading flashcard decks from local storage...</p>
-            </div>
+            <div id="decks-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </div>
 
-        <!-- ================= VIEW 2: FULL-SCREEN STUDY SESSION ================= -->
-        <div id="study-session-view" class="hidden flex-col space-y-4 w-full">
+        <!-- ================= VIEW 2: ANKI STUDY SESSION (FULL SCREEN WITH WHITEBOARD) ================= -->
+        <div id="study-session-view" class="hidden flex-col space-y-3 w-full">
             
-            <!-- Top Controls in Fullscreen Mode -->
-            <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900/90 backdrop-blur-md p-3 rounded-2xl border border-slate-800 shadow-xl">
-                <div class="flex items-center gap-3">
-                    <button onclick="exitStudySession()" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-arrow-left"></i> Exit Full Screen
+            <!-- ANKIDROID TOP BAR WITH MOBILE-FIRST BACK BUTTON & TOOLS -->
+            <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-900/90 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl border border-slate-800 shadow-xl">
+                
+                <!-- Dedicated Back to Decks Button (Crucial for Mobile/Tablet users!) -->
+                <div class="flex items-center gap-2">
+                    <button onclick="exitStudySession()" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white border border-indigo-500/40 transition flex items-center gap-1.5 shadow active:scale-95">
+                        <i class="fa-solid fa-chevron-left text-sm"></i>
+                        <span>Decks</span>
                     </button>
-                    <span id="session-deck-name" class="text-xs font-bold text-indigo-400 tracking-wide uppercase">General Surgery</span>
+                    <button onclick="undoLastCardAction()" id="undo-btn" title="Undo Last Card Rating" class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 transition flex items-center gap-1 disabled:opacity-30 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-rotate-left"></i> <span class="hidden sm:inline">Undo</span>
+                    </button>
+                    <span id="session-deck-name" class="text-xs font-bold text-slate-200 tracking-wide uppercase truncate max-w-[140px] sm:max-w-[200px]">General Surgery</span>
                 </div>
 
-                <!-- Text Highlighter Tools (Native Translucent Highlight) -->
-                <div class="flex items-center gap-1.5 bg-slate-950/80 px-2.5 py-1 rounded-xl border border-slate-800 text-xs">
-                    <span class="text-slate-400 text-[10px] font-bold uppercase mr-1"><i class="fa-solid fa-highlighter text-amber-400"></i> Mark:</span>
-                    <button onclick="setHighlightColor('yellow')" id="hl-yellow" class="w-5 h-5 rounded-full bg-yellow-400/80 border border-yellow-300 hover:scale-110 transition shadow"></button>
-                    <button onclick="setHighlightColor('green')" id="hl-green" class="w-5 h-5 rounded-full bg-emerald-400/80 border border-emerald-300 hover:scale-110 transition shadow"></button>
-                    <button onclick="setHighlightColor('pink')" id="hl-pink" class="w-5 h-5 rounded-full bg-pink-400/80 border border-pink-300 hover:scale-110 transition shadow"></button>
-                    <button onclick="setHighlightColor('off')" id="hl-off" class="text-[10px] text-slate-400 hover:text-white px-1.5 py-0.5 rounded font-bold">OFF</button>
+                <!-- ANKIDROID MINI TOOLBAR (Top Right: Pen, Color, Clear, Stylus Toggle) -->
+                <div class="flex items-center gap-1.5 bg-slate-950/80 p-1 rounded-xl border border-slate-800 text-xs">
+                    <!-- Pen Colors -->
+                    <button onclick="setPenColor('#38bdf8')" class="w-5 h-5 rounded-full bg-sky-400 border border-sky-300 shadow" title="Blue Pen"></button>
+                    <button onclick="setPenColor('#ef4444')" class="w-5 h-5 rounded-full bg-rose-500 border border-rose-300 shadow" title="Red Pen"></button>
+                    <button onclick="setPenColor('#ffffff')" class="w-5 h-5 rounded-full bg-white border border-slate-300 shadow" title="White Pen"></button>
+                    
+                    <span class="w-[1px] h-4 bg-slate-800 mx-0.5"></span>
+
+                    <!-- Clear Whiteboard Button (Like AnkiDroid video) -->
+                    <button onclick="clearWhiteboardOnly()" title="Clear Scribble" class="p-1.5 text-slate-400 hover:text-rose-400 font-bold transition">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+
+                    <!-- Enable Stylus Writing vs Touch Toggle -->
+                    <button id="stylus-toggle-btn" onclick="toggleStylusMode()" title="Toggle S-Pen Only vs Touch" class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:border-indigo-500 transition">
+                        <i class="fa-solid fa-hand-pointer mr-1"></i>Touch
+                    </button>
+
+                    <!-- Text Highlighter Switch -->
+                    <span class="w-[1px] h-4 bg-slate-800 mx-0.5"></span>
+                    <button onclick="toggleTextHighlightTool()" id="hl-tool-btn" class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-400 hover:text-amber-400 transition" title="Highlight text">
+                        <i class="fa-solid fa-highlighter mr-1"></i>Mark
+                    </button>
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <span class="text-xs font-mono text-slate-400"><b id="card-index-display" class="text-indigo-400">1</b> / <span id="card-total-display">10</span></span>
-                    <div class="w-24 sm:w-32 bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
+                    <span class="text-xs font-mono text-slate-400"><b id="card-index-display" class="text-indigo-400">1</b>/<span id="card-total-display">10</span></span>
+                    <div class="w-20 sm:w-28 bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
                         <div id="session-progress-bar" class="bg-indigo-500 h-full transition-all duration-300" style="width: 10%"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Single Anki Card Area -->
-            <div id="single-card-box" class="glass-panel rounded-3xl p-6 sm:p-8 border border-indigo-500/30 shadow-2xl space-y-6 w-full">
+            <!-- FULL-CARD ANKI FRAME WITH TRANSPARENT OVERLAY WHITEBOARD -->
+            <div id="single-card-box" class="glass-panel rounded-3xl p-5 sm:p-8 border border-indigo-500/30 shadow-2xl space-y-4 w-full">
                 
-                <!-- Taxonomy & Marks -->
-                <div class="flex flex-wrap justify-between items-center gap-2 pb-3 border-b border-slate-800">
+                <!-- Tags & Marks -->
+                <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-slate-800">
                     <div class="flex items-center gap-2 text-xs font-semibold">
-                        <span id="card-subject-tag" class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-3 py-1 rounded-md uppercase tracking-wider">Subject</span>
-                        <span id="card-branch-tag" class="bg-slate-800 text-slate-300 px-3 py-1 rounded-md">Branch</span>
-                        <span id="card-topic-tag" class="bg-slate-900 text-slate-400 px-2.5 py-1 rounded text-xs">Topic</span>
+                        <span id="card-subject-tag" class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-3 py-0.5 rounded-md uppercase tracking-wider">Subject</span>
+                        <span id="card-branch-tag" class="bg-slate-800 text-slate-300 px-3 py-0.5 rounded-md">Branch</span>
+                        <span id="card-topic-tag" class="bg-slate-900 text-slate-400 px-2 py-0.5 rounded text-xs">Topic</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span id="card-marks-tag" class="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded border border-amber-500/20">5 Marks</span>
+                        <span id="card-marks-tag" class="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded border border-amber-500/20">5 Marks</span>
                         <div id="card-admin-actions" class="hidden items-center gap-1.5">
                             <button onclick="editCurrentActiveCard()" class="text-xs bg-amber-500/20 text-amber-300 hover:bg-amber-500 hover:text-white px-2 py-1 rounded-lg transition"><i class="fa-solid fa-pen"></i></button>
                             <button onclick="deleteCurrentActiveCard()" class="text-xs bg-rose-500/20 text-rose-300 hover:bg-rose-500 hover:text-white px-2 py-1 rounded-lg transition"><i class="fa-solid fa-trash-can"></i></button>
@@ -222,73 +241,67 @@
                     </div>
                 </div>
 
-                <!-- Question Prompt -->
-                <div class="space-y-1">
-                    <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest font-mono">Clinical Vignette Question:</span>
-                    <p id="card-question-text" class="text-slate-100 font-bold text-base sm:text-xl leading-relaxed select-text"></p>
-                </div>
-
-                <!-- DEDICATED S-PEN & TOUCH SCRATCHPAD (Write your answer before revealing) -->
-                <div class="glass-card rounded-2xl p-3 border border-slate-800 space-y-2">
-                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-2">
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-                                <i class="fa-solid fa-pen-nib text-indigo-400"></i> Scratchpad (Write Your Recall)
-                            </span>
-                            <span class="text-[10px] text-slate-500 hidden sm:inline">| Practice writing with Pen or Touch before checking</span>
+                <!-- THE ANKI TRANSPARENT OVERLAY CANVAS (Covers question & answer completely!) -->
+                <div class="whiteboard-overlay-container">
+                    
+                    <!-- Content Layer (Text sits underneath so scribbles stay on top) -->
+                    <div class="whiteboard-content-layer space-y-4">
+                        <!-- Question Prompt -->
+                        <div class="space-y-1">
+                            <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest font-mono">Clinical Vignette Question:</span>
+                            <div id="card-question-text" class="text-slate-100 font-bold text-base sm:text-xl leading-relaxed select-text"></div>
                         </div>
-                        <!-- Canvas Controls -->
-                        <div class="flex items-center gap-1 text-xs">
-                            <button onclick="setScratchpadColor('#38bdf8')" class="w-5 h-5 rounded-full bg-sky-400 border border-sky-300" title="Blue Pen"></button>
-                            <button onclick="setScratchpadColor('#ef4444')" class="w-5 h-5 rounded-full bg-rose-500 border border-rose-300" title="Red Pen"></button>
-                            <button onclick="setScratchpadColor('#ffffff')" class="w-5 h-5 rounded-full bg-white border border-slate-300" title="White Pen"></button>
-                            <button onclick="clearScratchpad()" class="px-2 py-1 text-slate-400 hover:text-rose-400 text-xs ml-1 font-bold" title="Clear Pad"><i class="fa-solid fa-trash-can"></i> Clear</button>
-                            
-                            <!-- Touch / S-Pen mode switch -->
-                            <button id="spen-toggle-btn" onclick="toggleSpenMode()" class="ml-2 px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700 hover:border-indigo-500 transition">
-                                Touch / Any Pen
+
+                        <!-- Reveal Model Answer Button -->
+                        <div id="reveal-btn-container" class="pt-2">
+                            <button onclick="revealModelAnswer()" class="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm tracking-wide shadow-lg shadow-indigo-600/30 transition active:scale-95 flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-eye"></i> Show Answer <span class="text-xs opacity-60 font-mono hidden sm:inline">(Space)</span>
                             </button>
                         </div>
-                    </div>
-                    <!-- Handwriting Canvas Area -->
-                    <div class="relative w-full h-44 rounded-xl overflow-hidden">
-                        <canvas id="scratchpad" class="scratchpad-canvas w-full h-full rounded-xl cursor-crosshair"></canvas>
-                    </div>
-                </div>
 
-                <!-- Reveal Button -->
-                <div id="reveal-btn-container" class="pt-2">
-                    <button onclick="revealModelAnswer()" class="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm tracking-wide shadow-lg shadow-indigo-600/30 transition active:scale-95 flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-eye"></i> Show Official Model Answer
-                    </button>
-                </div>
-
-                <!-- Model Answer Box (Revealed) -->
-                <div id="model-answer-box" class="hidden space-y-6 pt-4 border-t border-slate-800 animate-fadeIn">
-                    <div class="glass-card border-l-4 border-emerald-500 rounded-r-2xl p-5 sm:p-7 space-y-3">
-                        <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2 pb-2 border-b border-slate-800/80">
-                            <i class="fa-solid fa-check-double"></i> Model Answer & Scoring Breakdown
-                        </h4>
-                        <div id="card-answer-html" class="model-answer-content text-sm sm:text-base leading-relaxed select-text"></div>
-                    </div>
-
-                    <!-- Spaced Repetition Recall Rating (SM-2) -->
-                    <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Rate Your Active Recall:</span>
-                        <div class="grid grid-cols-3 gap-3 w-full sm:w-auto">
-                            <button onclick="rateCard('again')" class="px-5 py-3 rounded-2xl font-bold text-xs bg-slate-900 hover:bg-rose-950 text-rose-400 border border-rose-500/40 transition flex flex-col items-center">
-                                <span>Again</span>
-                                <span class="text-[9px] font-mono opacity-60">< 10 min</span>
-                            </button>
-                            <button onclick="rateCard('hard')" class="px-5 py-3 rounded-2xl font-bold text-xs bg-slate-900 hover:bg-amber-950 text-amber-400 border border-amber-500/40 transition flex flex-col items-center">
-                                <span>Hard</span>
-                                <span class="text-[9px] font-mono opacity-60">1 day</span>
-                            </button>
-                            <button onclick="rateCard('easy')" class="px-6 py-3 rounded-2xl font-bold text-xs bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg transition flex flex-col items-center">
-                                <span>Easy</span>
-                                <span class="text-[9px] font-mono opacity-80">4 days</span>
-                            </button>
+                        <!-- Model Answer (Hidden initially, revealed underneath handwriting!) -->
+                        <div id="model-answer-box" class="hidden space-y-4 pt-3 border-t border-slate-800">
+                            <div class="glass-card border-l-4 border-emerald-500 rounded-r-2xl p-4 sm:p-6 space-y-2">
+                                <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2 pb-2 border-b border-slate-800/80">
+                                    <i class="fa-solid fa-check-double"></i> Model Answer & Key Points
+                                </h4>
+                                <div id="card-answer-html" class="model-answer-content text-sm sm:text-base leading-relaxed select-text"></div>
+                            </div>
                         </div>
+                    </div>
+
+                    <!-- Transparent Canvas Overlay: You can scribble directly anywhere! -->
+                    <canvas id="whiteboard-canvas" class="whiteboard-canvas-layer"></canvas>
+                </div>
+
+                <!-- THE 4 EXACT ANKI BUTTONS REQUESTED (Shown after Show Answer) -->
+                <div id="anki-buttons-bar" class="hidden pt-3 border-t border-slate-800">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full">
+                        
+                        <!-- 1. Very Hard (2 cards or 3 min) -->
+                        <button onclick="rateCard('very_hard')" class="p-3 rounded-2xl font-bold text-xs bg-slate-900 hover:bg-rose-950 text-rose-400 border border-rose-500/40 transition flex flex-col items-center shadow active:scale-95">
+                            <span class="font-extrabold text-sm">Very Hard</span>
+                            <span class="text-[10px] font-mono opacity-80 mt-0.5">2 Cards / 3m</span>
+                        </button>
+
+                        <!-- 2. Hard (5 cards or 5 min) -->
+                        <button onclick="rateCard('hard')" class="p-3 rounded-2xl font-bold text-xs bg-slate-900 hover:bg-amber-950 text-amber-400 border border-amber-500/40 transition flex flex-col items-center shadow active:scale-95">
+                            <span class="font-extrabold text-sm">Hard</span>
+                            <span class="text-[10px] font-mono opacity-80 mt-0.5">5 Cards / 5m</span>
+                        </button>
+
+                        <!-- 3. Good (End of cards) -->
+                        <button onclick="rateCard('good')" class="p-3 rounded-2xl font-bold text-xs bg-slate-900 hover:bg-sky-950 text-sky-400 border border-sky-500/40 transition flex flex-col items-center shadow active:scale-95">
+                            <span class="font-extrabold text-sm">Good</span>
+                            <span class="text-[10px] font-mono opacity-80 mt-0.5">End of Cards</span>
+                        </button>
+
+                        <!-- 4. Easy (After 1 day) -->
+                        <button onclick="rateCard('easy')" class="p-3 rounded-2xl font-bold text-xs bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg transition flex flex-col items-center active:scale-95">
+                            <span class="font-extrabold text-sm">Easy</span>
+                            <span class="text-[10px] font-mono opacity-90 mt-0.5">After 1 Day</span>
+                        </button>
+
                     </div>
                 </div>
 
@@ -297,51 +310,111 @@
 
     </main>
 
-    <!-- ADD / EDIT WRITTEN QUESTION MODAL (Admin Only) -->
+    <!-- ================= ADMIN MODALS (FULL SYSTEM LIKE INDEX.HTML) ================= -->
+
+    <!-- 1. ADD / EDIT QUESTION MODAL -->
     <div id="written-edit-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
         <div class="glass-panel border-indigo-500/40 rounded-2xl p-6 w-full max-w-2xl shadow-2xl space-y-3 max-h-[92vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                 <h3 id="edit-modal-title" class="text-sm font-bold text-indigo-400 flex items-center gap-2 uppercase tracking-wide">
                     <i class="fa-solid fa-pen-to-square"></i> Add Written Question
                 </h3>
-                <button onclick="closeAddQuestionModal()" class="text-slate-400 hover:text-slate-200 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button onclick="closeAddQuestionModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
             <input type="hidden" id="edit-q-id" value="">
 
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                <div><label class="text-[10px] text-slate-400 block mb-1">Subject</label><input type="text" id="edit-q-subject" placeholder="e.g. Surgery" class="w-full glass-input p-2 rounded-lg text-xs text-slate-200"></div>
-                <div><label class="text-[10px] text-slate-400 block mb-1">Branch</label><input type="text" id="edit-q-branch" placeholder="e.g. GI" class="w-full glass-input p-2 rounded-lg text-xs text-slate-200"></div>
-                <div><label class="text-[10px] text-slate-400 block mb-1">Topic</label><input type="text" id="edit-q-topic" placeholder="e.g. Appendicitis" class="w-full glass-input p-2 rounded-lg text-xs text-slate-200"></div>
-                <div><label class="text-[10px] text-slate-400 block mb-1">Marks</label><input type="text" id="edit-q-marks" placeholder="e.g. 5 Marks" class="w-full glass-input p-2 rounded-lg text-xs text-slate-200"></div>
+                <div><label class="text-[10px] text-slate-400 block mb-1">Subject</label><input type="text" id="edit-q-subject" placeholder="Surgery" class="w-full glass-input p-2 rounded-lg text-xs text-slate-200"></div>
+                <div><label class="text-[10px] text-slate-400 block mb-1">Branch</label><input type="text" id="edit-q-branch" placeholder="GI" class="w-full glass-input p-2 rounded-lg text-xs text-slate-200"></div>
+                <div><label class="text-[10px] text-slate-400 block mb-1">Topic</label><input type="text" id="edit-q-topic" placeholder="Appendicitis" class="w-full glass-input p-2 rounded-lg text-xs text-slate-200"></div>
+                <div><label class="text-[10px] text-slate-400 block mb-1">Marks</label><input type="text" id="edit-q-marks" placeholder="5 Marks" class="w-full glass-input p-2 rounded-lg text-xs text-slate-200"></div>
             </div>
 
             <div>
                 <label class="text-[11px] font-semibold text-slate-400 block mb-1">Question Scenario / Vignette:</label>
-                <textarea id="edit-q-text" class="w-full glass-input p-3 rounded-xl text-xs sm:text-sm h-24 focus:outline-none focus:border-indigo-500 text-slate-200" placeholder="Type question here..."></textarea>
+                <textarea id="edit-q-text" class="w-full glass-input p-3 rounded-xl text-xs sm:text-sm h-24 focus:outline-none focus:border-indigo-500 text-slate-200" placeholder="Enter clinical scenario here..."></textarea>
             </div>
 
             <div>
-                <label class="text-[11px] font-semibold text-slate-400 block mb-1">Model Answer / Key Points / HTML Table:</label>
-                <textarea id="edit-q-model-answer" class="w-full glass-input p-3 rounded-xl text-xs sm:text-sm h-36 focus:outline-none focus:border-indigo-500 text-slate-200 font-mono" placeholder="Enter model answer or table..."></textarea>
+                <label class="text-[11px] font-semibold text-slate-400 block mb-1">Model Answer & Tables (HTML Supported):</label>
+                <textarea id="edit-q-model-answer" class="w-full glass-input p-3 rounded-xl text-xs sm:text-sm h-36 focus:outline-none focus:border-indigo-500 text-slate-200 font-mono" placeholder="Enter model answer or HTML tables..."></textarea>
             </div>
 
-            <button id="save-written-btn" onclick="saveWrittenQuestion()" class="w-full bg-indigo-600 hover:bg-indigo-500 font-bold py-2.5 rounded-xl text-white transition text-xs uppercase tracking-wider shadow">Save to Library</button>
+            <button id="save-written-btn" onclick="saveWrittenQuestion()" class="w-full bg-indigo-600 hover:bg-indigo-500 font-bold py-2.5 rounded-xl text-white transition text-xs uppercase tracking-wider shadow">Save Question</button>
         </div>
     </div>
 
-    <!-- BULK JSON MODAL -->
-    <div id="bulk-json-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="glass-panel border-emerald-500/40 rounded-2xl p-6 w-full max-w-2xl shadow-2xl space-y-3">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                <h3 class="text-sm font-bold text-emerald-400 flex items-center gap-2 uppercase tracking-wide">
-                    <i class="fa-solid fa-file-import"></i> Paste JSON / Questions from PDF
-                </h3>
-                <button onclick="closeBulkJSONModal()" class="text-slate-400 hover:text-slate-200 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+    <!-- 2. QUESTION MANAGER MODAL -->
+    <div id="manager-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-2 sm:p-4">
+        <div class="glass-panel border-indigo-500/40 rounded-2xl p-4 sm:p-6 w-full max-w-6xl shadow-2xl max-h-[94vh] flex flex-col space-y-3">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3 shrink-0">
+                <h3 class="text-sm font-bold text-indigo-400 flex items-center gap-2 uppercase tracking-wide"><i class="fa-solid fa-screwdriver-wrench"></i> Written Question Manager</h3>
+                <button onclick="closeManagerModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <p class="text-xs text-slate-400">Paste your questions JSON array `[ { subject, branch, topic, marks, question, modelAnswer } ]`:</p>
-            <textarea id="bulk-json-text" class="w-full glass-input p-3 rounded-xl text-xs font-mono h-48 focus:border-emerald-500 text-slate-200 outline-none" placeholder="Paste array here..."></textarea>
-            <button id="bulk-upload-btn" onclick="uploadBulkWrittenJSON()" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-2.5 rounded-xl text-white transition text-xs uppercase tracking-wider shadow">Upload Questions</button>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 shrink-0">
+                <select id="mgr-f-subject" onchange="mgrFilterChanged()" class="glass-input rounded-lg p-2 text-xs text-slate-200"></select>
+                <select id="mgr-f-branch" onchange="mgrFilterChanged()" class="glass-input rounded-lg p-2 text-xs text-slate-200"></select>
+                <select id="mgr-f-topic" onchange="mgrFilterChanged()" class="glass-input rounded-lg p-2 text-xs text-slate-200"></select>
+                <input type="text" id="mgr-search" onkeyup="mgrFilterChanged()" placeholder="Search text..." class="glass-input rounded-lg p-2 text-xs text-slate-200">
+            </div>
+
+            <div class="glass-card rounded-xl p-3 space-y-2 shrink-0">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer select-none">
+                        <input type="checkbox" id="mgr-select-all" onchange="mgrSelectAllFiltered(this.checked)" class="w-4 h-4 accent-indigo-500">
+                        Select all matching filter
+                    </label>
+                    <span id="mgr-count" class="text-xs font-mono text-indigo-300"></span>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <input type="text" id="mgr-set-subject" placeholder="New Subject" class="glass-input rounded-lg p-2 text-xs text-slate-200">
+                    <input type="text" id="mgr-set-branch" placeholder="New Branch" class="glass-input rounded-lg p-2 text-xs text-slate-200">
+                    <input type="text" id="mgr-set-topic" placeholder="New Topic" class="glass-input rounded-lg p-2 text-xs text-slate-200">
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="mgrApplyBulk()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-4 py-2 rounded-lg transition"><i class="fa-solid fa-pen-to-square"></i> Apply Bulk Changes</button>
+                    <button onclick="mgrDeleteSelected()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs px-4 py-2 rounded-lg transition"><i class="fa-solid fa-trash-can"></i> Move to Trash</button>
+                    <button onclick="mgrClearSelection()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-bold text-xs px-4 py-2 rounded-lg transition">Clear</button>
+                </div>
+            </div>
+
+            <div id="mgr-list" class="flex-grow overflow-y-auto space-y-2 pr-1 min-h-[160px]"></div>
+        </div>
+    </div>
+
+    <!-- 3. CLOUD TOOLS & DEDUPLICATE MODAL -->
+    <div id="cloud-tools-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="glass-panel border-indigo-500/40 rounded-2xl p-6 w-full max-w-3xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="text-sm font-bold text-indigo-400 flex items-center gap-2 uppercase tracking-wide"><i class="fa-solid fa-database"></i> Cloud Database Operations</h3>
+                <button onclick="closeCloudToolsModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="glass-card p-4 rounded-xl space-y-2">
+                <h4 class="font-bold text-xs uppercase tracking-wider text-emerald-400">1. Paste Direct JSON Array (From PDF)</h4>
+                <textarea id="bulk-json-text" class="w-full glass-input p-3 rounded-lg text-xs text-slate-200 h-32 font-mono focus:border-emerald-500 outline-none" placeholder="Paste questions JSON array [ { subject, branch, topic, marks, question, modelAnswer } ]..."></textarea>
+                <button onclick="uploadPastedWrittenJSON()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl transition text-xs uppercase tracking-wider">Upload Pasted Data</button>
+            </div>
+            <div class="glass-card border-rose-900/50 p-4 rounded-xl space-y-2">
+                <h4 class="font-bold text-xs uppercase tracking-wider text-rose-400 flex items-center gap-1.5"><i class="fa-solid fa-broom"></i> Deduplicate Repository</h4>
+                <p class="text-xs text-slate-400">Scans for duplicate written questions. Retains master and moves redundant copies to Recycle Bin.</p>
+                <button onclick="removeDuplicates()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-xl transition text-xs uppercase tracking-wider">Scan & Deduplicate</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. RECYCLE BIN MODAL -->
+    <div id="trash-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="glass-panel border-slate-500/40 rounded-2xl p-6 w-full max-w-4xl shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3 shrink-0 gap-2">
+                <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2 uppercase tracking-wide"><i class="fa-solid fa-trash-can-arrow-up text-emerald-400"></i> Recycle Bin</h3>
+                <div class="flex items-center gap-2">
+                    <button onclick="restoreAllFromTrash()" class="text-[11px] bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/30 px-3 py-1.5 rounded-lg font-bold transition">Restore All</button>
+                    <button onclick="closeTrashModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+            </div>
+            <div id="trash-list" class="flex-grow overflow-y-auto space-y-2.5 text-xs pr-2"></div>
         </div>
     </div>
 
@@ -353,12 +426,19 @@
         let allWrittenQuestions = [];
         let activeSessionQueue = [];
         let currentQueueIndex = 0;
-        let cardScores = JSON.parse(localStorage.getItem('medico_written_scores')) || {};
+        let undoStack = [];
 
-        // Canvas / Scratchpad State
+        // SM-2 persistence: { [cardId]: { dueTime: ms, status: 'new'|'learning'|'easy' } }
+        let ankiStorage = JSON.parse(localStorage.getItem('medico_anki_meta')) || {};
+
+        // Inking Overlay State
         let padColor = '#38bdf8';
-        let isSpenOnly = false;
-        let activeHlColor = 'off';
+        let isStylusOnlyMode = false;
+        let textHighlightActive = false;
+
+        function esc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
 
         function setTheme(mode) {
             const body = document.getElementById('app-body');
@@ -386,7 +466,7 @@
             });
         }
 
-        async function getCachedWrittenFromIDB() {
+        async function getAllFromIDB() {
             try {
                 const db = await openIDB();
                 return new Promise((resolve) => {
@@ -408,18 +488,10 @@
                     if (it._deleted) store.delete(it.id);
                     else store.put(it);
                 });
-            } catch(e) { console.warn("IDB Save failed", e); }
-        }
-
-        async function clearWrittenIDB() {
-            try {
-                const db = await openIDB();
-                const tx = db.transaction(IDB_STORE, "readwrite");
-                tx.objectStore(IDB_STORE).clear();
             } catch(e) {}
         }
 
-        // ================= BACKGROUND CLOUD SYNC =================
+        // ================= CLOUD SYNC =================
         async function syncWithCloud(forceAll = false) {
             const icon = document.getElementById('sync-icon');
             if (icon) icon.classList.add('fa-spin');
@@ -443,13 +515,12 @@
                             const newOrModified = [];
                             snap.forEach(d => newOrModified.push({ id: d.id, ...d.data() }));
                             await saveBatchToIDB(newOrModified);
-                            allWrittenQuestions = await getCachedWrittenFromIDB();
+                            allWrittenQuestions = await getAllFromIDB();
                             renderDecksGrid();
                         }
-
                         localStorage.setItem('medico_written_last_sync', Date.now().toString());
                     } catch(e) {
-                        console.warn("Cloud sync offline:", e.message);
+                        console.warn("Sync skipped/offline:", e.message);
                     }
                     if (icon) icon.classList.remove('fa-spin');
                 }
@@ -482,39 +553,44 @@
             }, 150);
         }
 
-        // ================= VIEW 1: RENDER DECKS GRID =================
+        // ================= VIEW 1: DECKS GRID =================
         function renderDecksGrid() {
             const grid = document.getElementById('decks-grid');
             const searchVal = document.getElementById('deck-search-input').value.toLowerCase().trim();
 
-            let againTotal = 0;
+            let dueTotal = 0;
             const decks = {};
+            const now = Date.now();
 
             allWrittenQuestions.forEach(q => {
-                const status = cardScores[q.id] || 'new';
-                if (status === 'again') againTotal++;
+                if (q._deleted) return;
+                const meta = ankiStorage[q.id] || { status: 'new', dueTime: 0 };
+                const isDue = meta.status === 'learning' || (meta.dueTime && meta.dueTime <= now);
+                if (isDue) dueTotal++;
 
                 const key = `${q.subject || 'General'} - ${q.branch || 'General'}`;
-                if (!decks[key]) decks[key] = { subject: q.subject || 'General', branch: q.branch || 'General', questions: [], again: 0 };
+                if (!decks[key]) decks[key] = { subject: q.subject || 'General', branch: q.branch || 'General', questions: [], newCount: 0, dueCount: 0, doneCount: 0 };
                 
                 decks[key].questions.push(q);
-                if (status === 'again') decks[key].again++;
+                if (meta.status === 'new' || !meta.status) decks[key].newCount++;
+                else if (meta.status === 'learning' || isDue) decks[key].dueCount++;
+                else decks[key].doneCount++;
             });
 
-            document.getElementById('stat-again-count').innerText = againTotal;
+            document.getElementById('stat-due-count').innerText = dueTotal;
 
-            const filteredDeckKeys = Object.keys(decks).sort().filter(key => {
+            const filteredKeys = Object.keys(decks).sort().filter(key => {
                 if (!searchVal) return true;
                 return key.toLowerCase().includes(searchVal) || decks[key].questions.some(q => (q.question + q.modelAnswer).toLowerCase().includes(searchVal));
             });
 
-            if (filteredDeckKeys.length === 0) {
-                grid.innerHTML = '<p class="col-span-full text-center text-slate-400 py-12">No matching decks found.</p>';
+            if (filteredKeys.length === 0) {
+                grid.innerHTML = '<p class="col-span-full text-center text-slate-400 py-12 text-sm">No written decks found.</p>';
                 return;
             }
 
             let html = '';
-            filteredDeckKeys.forEach(key => {
+            filteredKeys.forEach(key => {
                 const d = decks[key];
                 html += `
                 <div class="glass-card rounded-2xl p-5 border border-slate-800 hover:border-indigo-500/50 transition shadow-lg flex flex-col justify-between space-y-4">
@@ -526,12 +602,13 @@
                         <h3 class="font-bold text-base text-slate-100 mt-2">${d.branch}</h3>
                     </div>
 
-                    <div class="flex items-center justify-between pt-2">
-                        <span class="text-xs font-semibold ${d.again > 0 ? 'text-rose-400' : 'text-slate-400'}">
-                            <i class="fa-solid fa-clock-rotate-left mr-1"></i> ${d.again} Due for Review
-                        </span>
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-800/60">
+                        <div class="flex items-center gap-3 text-xs font-mono font-bold">
+                            <span class="text-sky-400" title="New Cards">${d.newCount} New</span>
+                            <span class="text-rose-400" title="Due / Learning">${d.dueCount} Due</span>
+                        </div>
                         <button onclick="startDeckSession('${key}')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-xl transition shadow active:scale-95">
-                            Practice Deck <i class="fa-solid fa-arrow-right text-[10px] ml-1"></i>
+                            Study <i class="fa-solid fa-arrow-right text-[10px] ml-1"></i>
                         </button>
                     </div>
                 </div>`;
@@ -541,27 +618,34 @@
 
         // ================= VIEW 2: STUDY SESSION ENGINE =================
         function startDeckSession(deckKey) {
-            const queue = allWrittenQuestions.filter(q => `${q.subject || 'General'} - ${q.branch || 'General'}` === deckKey);
+            const queue = allWrittenQuestions.filter(q => !q._deleted && `${q.subject || 'General'} - ${q.branch || 'General'}` === deckKey);
             if (queue.length === 0) return alert("Deck is empty.");
             activeSessionQueue = queue;
             currentQueueIndex = 0;
+            undoStack = [];
             document.getElementById('session-deck-name').innerText = deckKey;
             enterStudyMode();
         }
 
-        function startSessionWithFilter(filter) {
+        function startStudySession(type) {
+            const now = Date.now();
             let queue = [];
-            if (filter === 'again') {
-                queue = allWrittenQuestions.filter(q => cardScores[q.id] === 'again');
-                if (queue.length === 0) return alert("No cards currently due for review!");
-                document.getElementById('session-deck-name').innerText = "Due Cards Review";
+            if (type === 'due') {
+                queue = allWrittenQuestions.filter(q => {
+                    if (q._deleted) return false;
+                    const meta = ankiStorage[q.id];
+                    return meta && (meta.status === 'learning' || (meta.dueTime && meta.dueTime <= now));
+                });
+                if (queue.length === 0) return alert("No cards are due for review!");
+                document.getElementById('session-deck-name').innerText = "Due Cards Practice";
             } else {
-                queue = [...allWrittenQuestions];
-                if (queue.length === 0) return alert("No written questions loaded.");
+                queue = allWrittenQuestions.filter(q => !q._deleted);
+                if (queue.length === 0) return alert("No written cards found.");
                 document.getElementById('session-deck-name').innerText = "All Decks Combined";
             }
             activeSessionQueue = queue;
             currentQueueIndex = 0;
+            undoStack = [];
             enterStudyMode();
         }
 
@@ -577,150 +661,207 @@
 
         function renderActiveCard() {
             if (currentQueueIndex >= activeSessionQueue.length) {
-                alert("Deck Session Completed! Well done. 🎉");
+                alert("Deck Session Completed! Well done! 🎉");
                 exitStudySession();
                 return;
             }
 
             const q = activeSessionQueue[currentQueueIndex];
 
-            // Progress & Counters
+            // Progress Counters
             document.getElementById('card-index-display').innerText = currentQueueIndex + 1;
             document.getElementById('card-total-display').innerText = activeSessionQueue.length;
             const progress = ((currentQueueIndex + 1) / activeSessionQueue.length) * 100;
             document.getElementById('session-progress-bar').style.width = `${progress}%`;
 
-            // Tags & Texts
+            // Undo Button State
+            document.getElementById('undo-btn').disabled = (undoStack.length === 0);
+
+            // Tags
             document.getElementById('card-subject-tag').innerText = q.subject || 'General';
             document.getElementById('card-branch-tag').innerText = q.branch || 'General';
             document.getElementById('card-topic-tag').innerText = q.topic || 'General Topic';
             document.getElementById('card-marks-tag').innerText = q.marks ? `${q.marks}` : 'Written';
-            document.getElementById('card-question-text').innerText = q.question;
 
-            // Model answer
-            document.getElementById('card-answer-html').innerHTML = q.modelAnswer || 'No model answer provided.';
+            // RESTORE PERSISTENT TEXT HIGHLIGHTS
+            const savedHlPrompt = localStorage.getItem(`hl_q_${q.id}`);
+            document.getElementById('card-question-text').innerHTML = savedHlPrompt || q.question;
+
+            const savedHlAns = localStorage.getItem(`hl_a_${q.id}`);
+            document.getElementById('card-answer-html').innerHTML = savedHlAns || q.modelAnswer || 'No model answer provided.';
+
+            // Reset buttons & Model Answer
             document.getElementById('model-answer-box').classList.add('hidden');
+            document.getElementById('anki-buttons-bar').classList.add('hidden');
             document.getElementById('reveal-btn-container').classList.remove('hidden');
 
-            // Setup Scratchpad Canvas
-            initScratchpadCanvas(q.id);
+            // CRITICAL: CLEAR WHITEBOARD ONLY ON NEXT CARD (Just like AnkiDroid!)
+            clearWhiteboardOnly();
+            setTimeout(resizeWhiteboardCanvas, 50);
         }
 
         function revealModelAnswer() {
             document.getElementById('model-answer-box').classList.remove('hidden');
+            document.getElementById('anki-buttons-bar').classList.remove('hidden');
             document.getElementById('reveal-btn-container').classList.add('hidden');
+            // Re-adjust canvas bounds to cover the newly expanded model answer table!
+            setTimeout(resizeWhiteboardCanvas, 60);
         }
 
-        function rateCard(rating) {
+        // ================= THE 4 EXACT ANKI BUTTONS LOGIC =================
+        function rateCard(ratingType) {
             const q = activeSessionQueue[currentQueueIndex];
-            cardScores[q.id] = rating; // 'again', 'hard', 'easy'
-            localStorage.setItem('medico_written_scores', JSON.stringify(cardScores));
+            
+            // Push to Undo stack
+            undoStack.push({
+                queueIndex: currentQueueIndex,
+                queue: [...activeSessionQueue],
+                metaSnapshot: { ...ankiStorage[q.id] },
+                cardId: q.id
+            });
 
-            if (rating === 'again') {
-                // Insert again within next 3 cards like Anki
+            let meta = ankiStorage[q.id] || { status: 'new' };
+            const now = Date.now();
+
+            if (ratingType === 'very_hard') {
+                // 1. Very Hard: After 2 cards or 3 min
+                meta.status = 'learning';
+                meta.dueTime = now + 3 * 60 * 1000;
                 const insertAt = Math.min(currentQueueIndex + 3, activeSessionQueue.length);
                 activeSessionQueue.splice(insertAt, 0, q);
+            } 
+            else if (ratingType === 'hard') {
+                // 2. Hard: After 5 cards or 5 min
+                meta.status = 'learning';
+                meta.dueTime = now + 5 * 60 * 1000;
+                const insertAt = Math.min(currentQueueIndex + 6, activeSessionQueue.length);
+                activeSessionQueue.splice(insertAt, 0, q);
+            } 
+            else if (ratingType === 'good') {
+                // 3. Good: After end of cards
+                meta.status = 'learning';
+                activeSessionQueue.push(q);
+            } 
+            else if (ratingType === 'easy') {
+                // 4. Easy: After 1 day
+                meta.status = 'easy';
+                meta.dueTime = now + 24 * 3600 * 1000;
             }
+
+            ankiStorage[q.id] = meta;
+            localStorage.setItem('medico_anki_meta', JSON.stringify(ankiStorage));
 
             currentQueueIndex++;
             renderActiveCard();
         }
 
-        // ================= SCRATCHPAD ENGINE (CANVAS) =================
-        let canvas, ctx, isDrawing = false;
-        let lastX = 0, lastY = 0;
-
-        function initScratchpadCanvas(cardId) {
-            canvas = document.getElementById('scratchpad');
-            if (!canvas) return;
-            ctx = canvas.getContext('2d');
-
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width * (window.devicePixelRatio || 1);
-            canvas.height = rect.height * (window.devicePixelRatio || 1);
-            ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
-
-            // Restore saved handwriting for this card
-            const savedInk = localStorage.getItem(`ink_card_${cardId}`);
-            if (savedInk) {
-                const img = new Image();
-                img.onload = () => ctx.drawImage(img, 0, 0, rect.width, rect.height);
-                img.src = savedInk;
-            }
-
-            canvas.onpointerdown = (e) => {
-                if (isSpenOnly && e.pointerType !== 'pen') return;
-                e.preventDefault();
-                isDrawing = true;
-                const pos = getPos(e);
-                lastX = pos.x; lastY = pos.y;
-                ctx.strokeStyle = padColor;
-                ctx.lineWidth = 2.5;
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-            };
-
-            canvas.onpointermove = (e) => {
-                if (!isDrawing) return;
-                if (isSpenOnly && e.pointerType !== 'pen') return;
-                e.preventDefault();
-                const pos = getPos(e);
-                ctx.beginPath();
-                ctx.moveTo(lastX, lastY);
-                ctx.lineTo(pos.x, pos.y);
-                ctx.stroke();
-                lastX = pos.x; lastY = pos.y;
-            };
-
-            const stopDraw = () => {
-                if (!isDrawing) return;
-                isDrawing = false;
-                localStorage.setItem(`ink_card_${cardId}`, canvas.toDataURL());
-            };
-            canvas.onpointerup = stopDraw;
-            canvas.onpointercancel = stopDraw;
+        function undoLastCardAction() {
+            if (undoStack.length === 0) return;
+            const last = undoStack.pop();
+            currentQueueIndex = last.queueIndex;
+            activeSessionQueue = last.queue;
+            ankiStorage[last.cardId] = last.metaSnapshot;
+            localStorage.setItem('medico_anki_meta', JSON.stringify(ankiStorage));
+            renderActiveCard();
         }
 
-        function getPos(e) {
-            const rect = canvas.getBoundingClientRect();
+        // ================= FULL-CARD OVERLAY WHITEBOARD ENGINE =================
+        let wbCanvas, wbCtx, isDrawing = false, lastX = 0, lastY = 0;
+
+        function initWhiteboard() {
+            wbCanvas = document.getElementById('whiteboard-canvas');
+            if (!wbCanvas) return;
+            wbCtx = wbCanvas.getContext('2d');
+
+            wbCanvas.onpointerdown = (e) => {
+                if (textHighlightActive) return;
+                if (isStylusOnlyMode && e.pointerType !== 'pen') return;
+                
+                e.preventDefault();
+                isDrawing = true;
+                const pos = getWbPos(e);
+                lastX = pos.x; lastY = pos.y;
+                wbCtx.strokeStyle = padColor;
+                wbCtx.lineWidth = 2.5;
+                wbCtx.lineCap = 'round';
+                wbCtx.lineJoin = 'round';
+            };
+
+            wbCanvas.onpointermove = (e) => {
+                if (!isDrawing || textHighlightActive) return;
+                if (isStylusOnlyMode && e.pointerType !== 'pen') return;
+
+                e.preventDefault();
+                const pos = getWbPos(e);
+                wbCtx.beginPath();
+                wbCtx.moveTo(lastX, lastY);
+                wbCtx.lineTo(pos.x, pos.y);
+                wbCtx.stroke();
+                lastX = pos.x; lastY = pos.y;
+            };
+
+            const stop = () => { isDrawing = false; };
+            wbCanvas.onpointerup = stop;
+            wbCanvas.onpointercancel = stop;
+        }
+
+        function resizeWhiteboardCanvas() {
+            if (!wbCanvas) return;
+            const container = wbCanvas.closest('.whiteboard-overlay-container');
+            if (!container) return;
+
+            const rect = container.getBoundingClientRect();
+            wbCanvas.width = rect.width * (window.devicePixelRatio || 1);
+            wbCanvas.height = rect.height * (window.devicePixelRatio || 1);
+            wbCtx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
+        }
+
+        function getWbPos(e) {
+            const rect = wbCanvas.getBoundingClientRect();
             return { x: e.clientX - rect.left, y: e.clientY - rect.top };
         }
 
-        function setScratchpadColor(color) { padColor = color; }
-
-        function clearScratchpad() {
-            if (!canvas || !ctx) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const q = activeSessionQueue[currentQueueIndex];
-            if (q) localStorage.removeItem(`ink_card_${q.id}`);
+        function setPenColor(c) {
+            padColor = c;
+            textHighlightActive = false;
+            wbCanvas.classList.remove('pointer-disabled');
         }
 
-        function toggleSpenMode() {
-            isSpenOnly = !isSpenOnly;
-            const btn = document.getElementById('spen-toggle-btn');
-            if (isSpenOnly) {
-                btn.className = "ml-2 px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-indigo-600 text-white shadow";
-                btn.innerText = "S-Pen Only (Palm Rejection)";
+        function clearWhiteboardOnly() {
+            if (!wbCanvas || !wbCtx) return;
+            wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height);
+        }
+
+        function toggleStylusMode() {
+            isStylusOnlyMode = !isStylusOnlyMode;
+            const btn = document.getElementById('stylus-toggle-btn');
+            if (isStylusOnlyMode) {
+                btn.className = "px-2 py-0.5 rounded-lg text-[10px] font-bold bg-indigo-600 text-white shadow";
+                btn.innerHTML = `<i class="fa-solid fa-pen-fancy mr-1"></i>S-Pen Only`;
             } else {
-                btn.className = "ml-2 px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700";
-                btn.innerText = "Touch / Any Pen";
+                btn.className = "px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700";
+                btn.innerHTML = `<i class="fa-solid fa-hand-pointer mr-1"></i>Touch`;
             }
         }
 
-        // ================= TEXT HIGHLIGHTER (CLEAN MARK TAGS) =================
-        function setHighlightColor(color) {
-            activeHlColor = color;
-            ['yellow', 'green', 'pink'].forEach(c => {
-                const btn = document.getElementById('hl-' + c);
-                if (btn) btn.classList.toggle('ring-2', c === color);
-            });
+        // ================= TRUE PERSISTENT TEXT HIGHLIGHTER =================
+        function toggleTextHighlightTool() {
+            textHighlightActive = !textHighlightActive;
+            const btn = document.getElementById('hl-tool-btn');
+            if (textHighlightActive) {
+                btn.className = "px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-500 text-slate-950 shadow";
+                wbCanvas.classList.add('pointer-disabled'); // allow text selection
+            } else {
+                btn.className = "px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-400";
+                wbCanvas.classList.remove('pointer-disabled');
+            }
         }
 
-        document.addEventListener('mouseup', applyTextHighlight);
-        document.addEventListener('touchend', applyTextHighlight);
+        document.addEventListener('mouseup', applyTextSelectionHighlight);
+        document.addEventListener('touchend', applyTextSelectionHighlight);
 
-        function applyTextHighlight() {
-            if (activeHlColor === 'off') return;
+        function applyTextSelectionHighlight() {
+            if (!textHighlightActive) return;
             const sel = window.getSelection();
             if (!sel.rangeCount || sel.isCollapsed) return;
 
@@ -730,14 +871,169 @@
             const range = sel.getRangeAt(0);
             try {
                 const mark = document.createElement('mark');
-                mark.className = `hl-${activeHlColor}`;
+                mark.className = 'hl-yellow';
                 mark.appendChild(range.extractContents());
                 range.insertNode(mark);
-            } catch(e) { console.warn("Highlight failed", e); }
+
+                const q = activeSessionQueue[currentQueueIndex];
+                if (q) {
+                    localStorage.setItem(`hl_q_${q.id}`, document.getElementById('card-question-text').innerHTML);
+                    localStorage.setItem(`hl_a_${q.id}`, document.getElementById('card-answer-html').innerHTML);
+                }
+            } catch(e) {}
             sel.removeAllRanges();
         }
 
-        // ================= CRUD (ADMIN ONLY) =================
+        // ================= KEYBOARD SHORTCUTS =================
+        window.addEventListener('keydown', (e) => {
+            if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+            if (document.getElementById('study-session-view').classList.contains('hidden')) return;
+
+            if (e.code === 'Space') {
+                e.preventDefault();
+                revealModelAnswer();
+            } else if (['Digit1', 'Numpad1'].includes(e.code)) {
+                rateCard('very_hard');
+            } else if (['Digit2', 'Numpad2'].includes(e.code)) {
+                rateCard('hard');
+            } else if (['Digit3', 'Numpad3'].includes(e.code)) {
+                rateCard('good');
+            } else if (['Digit4', 'Numpad4'].includes(e.code)) {
+                rateCard('easy');
+            } else if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey)) {
+                undoLastCardAction();
+            }
+        });
+
+        // ================= ADMIN: QUESTION MANAGER =================
+        let mgrAll = [], mgrSelected = new Set();
+
+        function openManagerModal() {
+            if (!isAdmin) return alert("Faculty admin access required.");
+            document.getElementById('manager-modal').classList.remove('hidden');
+            mgrAll = allWrittenQuestions.filter(q => !q._deleted);
+            mgrBuildFilters();
+            mgrRender();
+        }
+
+        function closeManagerModal() { document.getElementById('manager-modal').classList.add('hidden'); }
+
+        function mgrBuildFilters() {
+            const subjects = [...new Set(mgrAll.map(q => q.subject || 'General'))].sort();
+            const branches = [...new Set(mgrAll.map(q => q.branch || 'General'))].sort();
+            const topics = [...new Set(mgrAll.map(q => q.topic || 'General'))].sort();
+
+            document.getElementById('mgr-f-subject').innerHTML = '<option value="">All Subjects</option>' + subjects.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+            document.getElementById('mgr-f-branch').innerHTML = '<option value="">All Branches</option>' + branches.map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('');
+            document.getElementById('mgr-f-topic').innerHTML = '<option value="">All Topics</option>' + topics.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
+        }
+
+        function mgrFiltered() {
+            const fSub = document.getElementById('mgr-f-subject').value;
+            const fBr = document.getElementById('mgr-f-branch').value;
+            const fTop = document.getElementById('mgr-f-topic').value;
+            const sText = document.getElementById('mgr-search').value.toLowerCase().trim();
+
+            return mgrAll.filter(q => {
+                if (fSub && (q.subject || 'General') !== fSub) return false;
+                if (fBr && (q.branch || 'General') !== fBr) return false;
+                if (fTop && (q.topic || 'General') !== fTop) return false;
+                if (sText && !(q.question + q.modelAnswer).toLowerCase().includes(sText)) return false;
+                return true;
+            });
+        }
+
+        function mgrFilterChanged() { mgrRender(); }
+
+        function mgrRender() {
+            const list = document.getElementById('mgr-list');
+            const filtered = mgrFiltered();
+            document.getElementById('mgr-count').innerText = `${filtered.length} match · ${mgrSelected.size} selected`;
+            document.getElementById('mgr-select-all').checked = filtered.length > 0 && filtered.every(q => mgrSelected.has(q.id));
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<p class="text-slate-400 text-center py-8 text-xs">No questions match filter.</p>';
+                return;
+            }
+
+            list.innerHTML = filtered.slice(0, 100).map(q => `
+                <div class="glass-card p-2.5 rounded-xl flex items-start gap-3 text-xs">
+                    <input type="checkbox" ${mgrSelected.has(q.id) ? 'checked' : ''} onchange="mgrToggle('${q.id}', this.checked)" class="mt-1 w-4 h-4 accent-indigo-500 shrink-0">
+                    <div class="min-w-0 flex-grow">
+                        <div class="text-slate-200 font-medium truncate">${esc(q.question)}</div>
+                        <div class="text-[10px] text-slate-400 mt-1 flex gap-2">
+                            <span class="bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">${esc(q.subject || 'General')}</span>
+                            <span class="bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">${esc(q.branch || 'General')}</span>
+                            <span class="bg-slate-900 px-1.5 py-0.5 rounded text-indigo-400">${esc(q.topic || 'General')}</span>
+                        </div>
+                    </div>
+                    <button onclick="openAddQuestionModal(allWrittenQuestions.find(x => x.id === '${q.id}'))" class="text-xs bg-amber-500/20 text-amber-300 p-1.5 rounded-lg hover:bg-amber-500 hover:text-white"><i class="fa-solid fa-pen"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function mgrToggle(id, checked) {
+            if (checked) mgrSelected.add(id); else mgrSelected.delete(id);
+            mgrRender();
+        }
+
+        function mgrSelectAllFiltered(checked) {
+            const filtered = mgrFiltered();
+            filtered.forEach(q => { if (checked) mgrSelected.add(q.id); else mgrSelected.delete(q.id); });
+            mgrRender();
+        }
+
+        function mgrClearSelection() {
+            mgrSelected.clear();
+            mgrRender();
+        }
+
+        async function mgrApplyBulk() {
+            const changes = {};
+            const sub = document.getElementById('mgr-set-subject').value.trim();
+            const br = document.getElementById('mgr-set-branch').value.trim();
+            const top = document.getElementById('mgr-set-topic').value.trim();
+            if (sub) changes.subject = sub;
+            if (br) changes.branch = br;
+            if (top) changes.topic = top;
+
+            if (Object.keys(changes).length === 0) return alert("Fill at least one field to change.");
+            if (mgrSelected.size === 0) return alert("Select cards first.");
+
+            if (!confirm(`Apply changes to ${mgrSelected.size} questions?`)) return;
+
+            const { doc, setDoc, serverTimestamp } = window.firestoreTools;
+            const updated = [];
+            for (const id of mgrSelected) {
+                await setDoc(doc(window.db, "written_questions", id), { ...changes, updatedAt: serverTimestamp() }, { merge: true });
+                const localQ = allWrittenQuestions.find(x => x.id === id);
+                if (localQ) { Object.assign(localQ, changes); updated.push(localQ); }
+            }
+
+            await saveBatchToIDB(updated);
+            alert("Bulk update successful!");
+            mgrBuildFilters();
+            mgrRender();
+        }
+
+        async function mgrDeleteSelected() {
+            if (mgrSelected.size === 0) return alert("Select questions first.");
+            if (!confirm(`Move ${mgrSelected.size} questions to Recycle Bin?`)) return;
+
+            const { doc, setDoc, serverTimestamp } = window.firestoreTools;
+            const removed = [];
+            for (const id of mgrSelected) {
+                await setDoc(doc(window.db, "written_questions", id), { _deleted: true, _deletedAt: serverTimestamp(), updatedAt: serverTimestamp() }, { merge: true });
+                const localQ = allWrittenQuestions.find(x => x.id === id);
+                if (localQ) { localQ._deleted = true; removed.push({ id, _deleted: true }); }
+            }
+            await saveBatchToIDB(removed);
+            mgrSelected.clear();
+            mgrRender();
+            alert("Moved to Recycle Bin.");
+        }
+
+        // ================= CRUD (ADD / EDIT / DELETE) =================
         function openAddQuestionModal(editQ = null) {
             if (!isAdmin) return alert("Faculty admin access required.");
             document.getElementById('written-edit-modal').classList.remove('hidden');
@@ -800,7 +1096,7 @@
             } catch(e) {
                 alert("Error saving: " + e.message);
             }
-            btn.disabled = false; btn.innerText = "Save to Library";
+            btn.disabled = false; btn.innerText = "Save Question";
         }
 
         function editCurrentActiveCard() {
@@ -810,27 +1106,25 @@
 
         async function deleteCurrentActiveCard() {
             const q = activeSessionQueue[currentQueueIndex];
-            if (!q || !confirm("Permanently delete this written question?")) return;
+            if (!q || !confirm("Move this written question to Recycle Bin?")) return;
             try {
-                const { doc, deleteDoc } = window.firestoreTools;
-                await deleteDoc(doc(window.db, "written_questions", q.id));
-                allWrittenQuestions = allWrittenQuestions.filter(item => item.id !== q.id);
+                const { doc, setDoc, serverTimestamp } = window.firestoreTools;
+                await setDoc(doc(window.db, "written_questions", q.id), { _deleted: true, _deletedAt: serverTimestamp(), updatedAt: serverTimestamp() }, { merge: true });
+                q._deleted = true;
                 activeSessionQueue.splice(currentQueueIndex, 1);
                 await saveBatchToIDB([{ id: q.id, _deleted: true }]);
-                alert("Deleted.");
+                alert("Moved to Recycle Bin.");
                 renderActiveCard();
             } catch(e) { alert("Delete failed: " + e.message); }
         }
 
-        function openBulkJSONModal() { document.getElementById('bulk-json-modal').classList.remove('hidden'); }
-        function closeBulkJSONModal() { document.getElementById('bulk-json-modal').classList.add('hidden'); }
+        // ================= CLOUD TOOLS & TRASH =================
+        function openCloudToolsModal() { document.getElementById('cloud-tools-modal').classList.remove('hidden'); }
+        function closeCloudToolsModal() { document.getElementById('cloud-tools-modal').classList.add('hidden'); }
 
-        async function uploadBulkWrittenJSON() {
+        async function uploadPastedWrittenJSON() {
             const rawText = document.getElementById('bulk-json-text').value.trim();
             if (!rawText) return alert("Paste JSON first.");
-
-            const btn = document.getElementById('bulk-upload-btn');
-            btn.disabled = true; btn.innerText = "Uploading...";
 
             try {
                 const arr = JSON.parse(rawText);
@@ -857,27 +1151,101 @@
                 }
 
                 await saveBatchToIDB(saved);
-                closeBulkJSONModal();
+                closeCloudToolsModal();
                 renderDecksGrid();
                 alert(`Uploaded ${saved.length} questions successfully!`);
             } catch(e) { alert("Upload error: " + e.message); }
-            btn.disabled = false; btn.innerText = "Upload Questions";
         }
 
-        // ================= INITIALIZATION =================
+        async function removeDuplicates() {
+            const seen = new Set();
+            const dups = [];
+            allWrittenQuestions.forEach(q => {
+                if (q._deleted) return;
+                const key = `${q.subject || ''}|${q.branch || ''}|${q.question || ''}`.toLowerCase().trim();
+                if (seen.has(key)) dups.push(q);
+                else seen.add(key);
+            });
+
+            if (dups.length === 0) return alert("No duplicates found!");
+            if (!confirm(`Move ${dups.length} duplicate questions to Recycle Bin?`)) return;
+
+            const { doc, setDoc, serverTimestamp } = window.firestoreTools;
+            const removed = [];
+            for (const d of dups) {
+                await setDoc(doc(window.db, "written_questions", d.id), { _deleted: true, _deletedAt: serverTimestamp(), updatedAt: serverTimestamp() }, { merge: true });
+                d._deleted = true;
+                removed.push({ id: d.id, _deleted: true });
+            }
+            await saveBatchToIDB(removed);
+            renderDecksGrid();
+            alert("Deduplicated successfully!");
+        }
+
+        function openTrashModal() {
+            document.getElementById('trash-modal').classList.remove('hidden');
+            const list = document.getElementById('trash-list');
+            const trashed = allWrittenQuestions.filter(q => q._deleted);
+
+            if (trashed.length === 0) {
+                list.innerHTML = '<p class="text-slate-400 text-center py-6">Recycle Bin is empty.</p>';
+                return;
+            }
+
+            list.innerHTML = trashed.map(it => `
+                <div class="glass-card p-3 rounded-xl flex justify-between items-center gap-3">
+                    <div class="truncate text-slate-200">${esc(it.question)}</div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button onclick="restoreFromTrash('${it.id}')" title="Restore" class="text-xs bg-emerald-600/20 text-emerald-400 p-2 rounded-lg hover:bg-emerald-600 hover:text-white transition"><i class="fa-solid fa-rotate-left"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function closeTrashModal() { document.getElementById('trash-modal').classList.add('hidden'); }
+
+        async function restoreFromTrash(id) {
+            const { doc, setDoc, serverTimestamp } = window.firestoreTools;
+            await setDoc(doc(window.db, "written_questions", id), { _deleted: false, updatedAt: serverTimestamp() }, { merge: true });
+            const localQ = allWrittenQuestions.find(q => q.id === id);
+            if (localQ) localQ._deleted = false;
+            await saveBatchToIDB([{ id, _deleted: false }]);
+            openTrashModal();
+            renderDecksGrid();
+        }
+
+        async function restoreAllFromTrash() {
+            const trashed = allWrittenQuestions.filter(q => q._deleted);
+            if (trashed.length === 0) return;
+            if (!confirm(`Restore all ${trashed.length} questions?`)) return;
+
+            const { doc, setDoc, serverTimestamp } = window.firestoreTools;
+            const restored = [];
+            for (const q of trashed) {
+                await setDoc(doc(window.db, "written_questions", q.id), { _deleted: false, updatedAt: serverTimestamp() }, { merge: true });
+                q._deleted = false;
+                restored.push({ id: q.id, _deleted: false });
+            }
+            await saveBatchToIDB(restored);
+            openTrashModal();
+            renderDecksGrid();
+        }
+
+        // ================= INIT =================
         async function initApp() {
             setTheme(localStorage.getItem('medico_theme') || 'dark');
             checkAdminSession();
+            initWhiteboard();
 
-            // 1. Instant Local-First Load from IndexedDB (0 Reads!)
-            allWrittenQuestions = await getCachedWrittenFromIDB();
+            // 1. Instant 0-Read Load from IndexedDB
+            allWrittenQuestions = await getAllFromIDB();
             renderDecksGrid();
 
-            // 2. Background cloud delta sync
+            // 2. Background Cloud Sync
             syncWithCloud(false);
         }
 
         window.onload = initApp;
     </script>
 </body>
-                                </html>
+</html>
