@@ -182,7 +182,7 @@
                 </div>
 
                 <!-- Instant Sync Status Badge -->
-                <button onclick="forceFullSync()" title="Force check for updates on Cloud" class="text-xs bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-indigo-400 border border-slate-700/80 px-2.5 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
+                <button onclick="quickSync()" title="Check for new or edited questions" class="text-xs bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-indigo-400 border border-slate-700/80 px-2.5 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
                     <i id="cloud-sync-icon" class="fa-solid fa-rotate text-xs"></i>
                     <span id="sync-status-text" class="hidden sm:inline text-[11px]">Sync Cloud</span>
                 </button>
@@ -250,7 +250,7 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">Global Keyword Search</label>
                     <div class="relative flex items-center">
-                        <input type="text" id="search-bar" onkeyup="handleSearchInput()" placeholder="Search keywords in questions or explanations..." class="w-full glass-input p-3 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-slate-200 pl-10 pr-10 transition">
+                        <input type="text" id="search-bar" name="question-search" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore onkeyup="handleSearchInput()" placeholder="Search keywords in questions or explanations..." class="w-full glass-input p-3 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-slate-200 pl-10 pr-10 transition">
                         <i class="fa-solid fa-search absolute left-3.5 text-slate-500 text-sm pointer-events-none"></i>
                         <button type="button" id="search-clear-btn" onclick="clearGlobalSearch()" class="hidden absolute right-3 w-6 h-6 rounded-md hover:bg-slate-700/80 text-slate-400 hover:text-rose-400 flex items-center justify-center transition text-xs" title="Clear Search">
                             <i class="fa-solid fa-xmark"></i>
@@ -275,10 +275,10 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Block Size (Question Count)</label>
                         <select id="filter-block-size" onchange="updateAvailableCount()" class="w-full glass-input rounded-xl p-3 text-xs text-slate-200 outline-none focus:border-indigo-500">
-                            <option value="all">All Available Questions</option>
+                            <option value="all" selected>All Available Questions</option>
                             <option value="10">10 Questions (Quick Review)</option>
                             <option value="20">20 Questions (Standard Quiz)</option>
-                            <option value="40" selected>40 Questions (Official Block Size)</option>
+                            <option value="40">40 Questions (Official Block Size)</option>
                         </select>
                     </div>
                     <div>
@@ -451,8 +451,8 @@
                 </div>
                 <p class="text-xs text-slate-400">Sign in or create a student account to sync your analytics and bookmarks across sessions.</p>
                 <div class="space-y-3">
-                    <input type="text" id="student-email" placeholder="Username (e.g. ahmed123)" class="w-full glass-input p-3 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-slate-200">
-                    <input type="password" id="student-password" placeholder="Password (Min 6 characters)" class="w-full glass-input p-3 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-slate-200">
+                    <input type="text" id="student-email" name="username" autocomplete="username" placeholder="Username (e.g. ahmed123)" class="w-full glass-input p-3 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-slate-200">
+                    <input type="password" id="student-password" name="password" autocomplete="current-password" placeholder="Password (Min 6 characters)" class="w-full glass-input p-3 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-slate-200">
                     <div class="flex gap-2 pt-2">
                         <button id="student-login-btn" onclick="studentLogin()" class="w-1/2 bg-indigo-600 hover:bg-indigo-500 font-bold py-2.5 rounded-xl text-white transition text-xs tracking-wider uppercase shadow">Login</button>
                         <button id="student-signup-btn" onclick="studentSignup()" class="w-1/2 bg-emerald-600 hover:bg-emerald-500 font-bold py-2.5 rounded-xl text-white transition text-xs tracking-wider uppercase shadow">Sign Up</button>
@@ -468,8 +468,8 @@
                     <button onclick="closeLoginModal()" class="text-slate-400 hover:text-slate-200 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
                 </div>
                 <div class="space-y-3">
-                    <input type="email" id="admin-email" placeholder="Admin Email / Username" class="w-full glass-input p-3 rounded-xl text-sm focus:outline-none focus:border-amber-500 text-slate-200">
-                    <input type="password" id="admin-password" placeholder="Password" class="w-full glass-input p-3 rounded-xl text-sm focus:outline-none focus:border-amber-500 text-slate-200">
+                    <input type="email" id="admin-email" name="admin-username" autocomplete="username" placeholder="Admin Email / Username" class="w-full glass-input p-3 rounded-xl text-sm focus:outline-none focus:border-amber-500 text-slate-200">
+                    <input type="password" id="admin-password" name="admin-password" autocomplete="current-password" placeholder="Password" class="w-full glass-input p-3 rounded-xl text-sm focus:outline-none focus:border-amber-500 text-slate-200">
                     <button id="login-submit-btn" onclick="submitLogin()" class="w-full bg-amber-600 hover:bg-amber-500 font-bold py-2.5 rounded-xl text-white transition text-xs uppercase tracking-wider shadow">Authenticate</button>
                 </div>
             </div>
@@ -495,6 +495,11 @@
                     <h4 class="font-bold text-xs uppercase tracking-wider text-rose-400 flex items-center gap-1.5"><i class="fa-solid fa-broom"></i> Deduplicate Repository</h4>
                     <p class="text-xs text-slate-400">Checks for 4-factor exact duplicates (Subject + Branch + Subtype + Vignette). Retains the master copy and moves redundant entries to the Recycle Bin (they can be restored).</p>
                     <button id="clean-dup-btn" onclick="removeDuplicates()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-xl transition text-xs uppercase tracking-wider"> Scan & Deduplicate </button>
+                </div>
+                <div class="glass-card border-slate-700/60 p-4 rounded-xl space-y-2">
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-slate-300 flex items-center gap-1.5"><i class="fa-solid fa-cloud-arrow-down"></i> Re-download All Questions</h4>
+                    <p class="text-xs text-slate-400">Clears this device's cache and reads the whole question bank again (uses many reads). Only needed if a question looks missing.</p>
+                    <button onclick="forceFullSync()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-2.5 rounded-xl transition text-xs uppercase tracking-wider"> Full Re-download </button>
                 </div>
             </div>
         </div>
@@ -555,7 +560,7 @@
                     <select id="mgr-f-subtype" onchange="mgrFilterChanged()" class="glass-input rounded-lg p-2 text-xs text-slate-200"></select>
                     <select id="mgr-f-source" onchange="mgrFilterChanged()" class="glass-input rounded-lg p-2 text-xs text-slate-200"></select>
                     <select id="mgr-f-batch" onchange="mgrFilterChanged()" class="glass-input rounded-lg p-2 text-xs text-slate-200 col-span-2 md:col-span-1"></select>
-                    <input type="text" id="mgr-search" onkeyup="mgrFilterChanged()" placeholder="Search text..." class="glass-input rounded-lg p-2 text-xs text-slate-200 col-span-2 md:col-span-1">
+                    <input type="text" id="mgr-search" name="manager-search" autocomplete="off" data-lpignore="true" data-1p-ignore onkeyup="mgrFilterChanged()" placeholder="Search text..." class="glass-input rounded-lg p-2 text-xs text-slate-200 col-span-2 md:col-span-1">
                 </div>
 
                 <div class="glass-card rounded-xl p-3 space-y-2 shrink-0">
@@ -752,6 +757,7 @@
             }
 
             // 2. Background check for newly added / modified documents ONLY
+            let syncDone; const syncFinished = new Promise(r => { syncDone = r; });
             const checkFirebase = setInterval(async () => {
                 if (window.db && window.firestoreTools) {
                     clearInterval(checkFirebase);
@@ -762,7 +768,8 @@
                         let qRef;
                         if (lastSyncMs > 0 && cachedCloudData && cachedCloudData.length > 0) {
                             // Incremental sync: Only documents created/updated AFTER last sync!
-                            const lastSyncDate = Timestamp.fromMillis(lastSyncMs);
+                            // 5-minute safety margin: protects against device-clock drift (re-reads only a handful of docs)
+                            const lastSyncDate = Timestamp.fromMillis(Math.max(0, lastSyncMs - 5 * 60 * 1000));
                             qRef = query(collection(window.db, "questions"), where("updatedAt", ">", lastSyncDate));
                         } else {
                             // Initial full sync on first visit
@@ -800,8 +807,18 @@
                             updateAvailableCount();
                         }
                     }
+                    syncDone();
                 }
             }, 200);
+            return syncFinished;
+        }
+
+        // Quick sync (header button): asks only for new/edited questions. Costs 1 read when nothing changed.
+        async function quickSync() {
+            const icon = document.getElementById('cloud-sync-icon');
+            if (icon) icon.classList.add('fa-spin');
+            try { await Promise.race([initCloudSync(), new Promise(r => setTimeout(r, 8000))]); } catch (e) {}
+            if (icon) icon.classList.remove('fa-spin');
         }
 
         async function forceFullSync() {
@@ -1353,7 +1370,15 @@
             return userStats;
         }
 
-        function scheduleCloudFlush() { clearTimeout(cloudFlushTimer); cloudFlushTimer = setTimeout(flushCloudPending, 800); }
+        // Write batching: send everything in ONE write once ~5 changes are pending,
+        // or after at most 3 minutes (whichever comes first). Also flushed on tab hide / page leave / End Block.
+        const CLOUD_FLUSH_MAX_CHANGES = 5;
+        const CLOUD_FLUSH_MAX_WAIT_MS = 3 * 60 * 1000;
+        function scheduleCloudFlush() {
+            const n = Object.keys(cloudPending.q).length + Object.keys(cloudPending.f).length;
+            if (n >= CLOUD_FLUSH_MAX_CHANGES) { flushCloudPending(); return; }
+            if (!cloudFlushTimer) cloudFlushTimer = setTimeout(flushCloudPending, CLOUD_FLUSH_MAX_WAIT_MS); // not reset on every change, so it can't be postponed forever
+        }
 
         function cloudSyncQuestion(id, s) {
             statsMeta().ts[id] = Date.now();
@@ -1372,6 +1397,7 @@
         async function flushCloudPending() {
             const user = window.firebaseAuth && window.firebaseAuth.currentUser;
             if (!user || !window.db || !window.firestoreTools) return;
+            clearTimeout(cloudFlushTimer); cloudFlushTimer = null;
             if (!Object.keys(cloudPending.q).length && !Object.keys(cloudPending.f).length) return;
             const batch = cloudPending;
             cloudPending = { q: {}, f: {} };
@@ -1478,7 +1504,7 @@
         function saveStats() { localStorage.setItem('medico_stats', JSON.stringify(userStats)); }
         function updateTimer() { if (timeRemaining <= 0) { clearInterval(timerInterval); alert("Time is up! Switching to review mode."); testMode = 'tutor'; loadQuestion(); return; } timeRemaining--; const hrs = Math.floor(timeRemaining / 3600).toString().padStart(2, '0'); const mins = Math.floor((timeRemaining % 3600) / 60).toString().padStart(2, '0'); const secs = (timeRemaining % 60).toString().padStart(2, '0'); document.getElementById('time-left').innerText = `${hrs}:${mins}:${secs}`; if (timeRemaining % 15 === 0) saveSession(); }
         function endQuizEarly() { if(confirm("Are you sure you want to exit this block?")) { goHome(); } }
-        function goHome() { clearInterval(timerInterval); document.getElementById('app-body').classList.remove('focus-mode'); document.getElementById('quiz-screen').classList.add('hidden'); document.getElementById('quiz-screen').classList.remove('flex'); document.getElementById('quiz-header-controls').classList.add('hidden'); document.getElementById('quiz-header-controls').classList.remove('flex'); document.getElementById('dashboard-screen').classList.remove('hidden'); sessionStorage.removeItem('medico_session'); updateAvailableCount(); }
+        function goHome() { flushCloudPending(); clearInterval(timerInterval); document.getElementById('app-body').classList.remove('focus-mode'); document.getElementById('quiz-screen').classList.add('hidden'); document.getElementById('quiz-screen').classList.remove('flex'); document.getElementById('quiz-header-controls').classList.add('hidden'); document.getElementById('quiz-header-controls').classList.remove('flex'); document.getElementById('dashboard-screen').classList.remove('hidden'); sessionStorage.removeItem('medico_session'); updateAvailableCount(); }
         
         function exportToPDF() { const printArea = document.getElementById('print-area'); let htmlContent = `<style>@media print { @page { size: A4; margin: 0; } body { margin: 0; background-color: #fdfbf2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .print-page-container { width: 100%; min-height: 297mm; display: flex; flex-direction: column; page-break-after: always; padding: 20mm; box-sizing: border-box; background-color: #fdfbf2 !important; } } .print-page-container { width: 100%; min-height: 100vh; display: flex; flex-direction: column; padding: 40px; box-sizing: border-box; background-color: #fdfbf2; margin-bottom: 20px; }</style>`; const Q_PER_PAGE = 4; for (let i = 0; i < activeBlock.length; i += Q_PER_PAGE) { const chunk = activeBlock.slice(i, i + Q_PER_PAGE); htmlContent += `<div class="print-page-container" dir="ltr">`; if (i === 0) { htmlContent += `<h2 style="color: #b8860b; font-size: 22px; font-weight: bold; margin-bottom: 30px; font-family: Arial, sans-serif;">Custom Exam Block</h2>`; } htmlContent += `<div style="flex-grow: 1; font-family: Arial, sans-serif;">`; chunk.forEach((q, chunkIdx) => { const globalIndex = i + chunkIdx; htmlContent += `<div style="margin-bottom: 28px;"><div style="font-size: 16px; margin: 0 0 10px 0; line-height: 1.5; display: flex; align-items: flex-start;"><span style="color: #b8860b; font-weight: bold; min-width: 28px;">${globalIndex + 1}.</span><span style="color: #701a75; font-weight: bold; flex: 1;">${q.question}&nbsp;<sup style="color: #000; font-size: 10px; font-weight: normal;">${globalIndex + 1}</sup></span></div><div style="margin-left: 28px;">`; q.options.forEach((opt, optIdx) => { const letter = String.fromCharCode(97 + optIdx); htmlContent += `<div style="margin-bottom: 6px; font-size: 15px; color: #000;">${letter}. ${opt}</div>`; }); htmlContent += `</div></div>`; }); htmlContent += `</div><div style="margin-top: auto; border-top: 1px solid #000; padding-top: 15px; font-family: Arial, sans-serif; font-size: 12px; line-height: 1.6; color: #000;">`; chunk.forEach((q, chunkIdx) => { const globalIndex = i + chunkIdx; const correctOptText = q.options[q.correct]; htmlContent += `<div style="margin-bottom: 8px;"><sup style="font-size: 10px;">${globalIndex + 1}</sup> <b>Answer:</b> ${correctOptText}</div>`; }); htmlContent += `</div></div>`; } printArea.innerHTML = htmlContent; setTimeout(() => { window.print(); }, 500); }
         
@@ -1744,14 +1770,14 @@
             const btn = document.getElementById('clean-dup-btn');
             btn.disabled = true; btn.innerText = "Scanning database for duplicates...";
             try {
-                const { collection, getDocs } = window.firestoreTools;
-                const querySnapshot = await getDocs(collection(window.db, "questions"));
+                // Uses the local cache (after a cheap incremental sync) instead of re-reading the whole bank
+                await Promise.race([initCloudSync(), new Promise(r => setTimeout(r, 8000))]); // don't hang if offline
+                const cachedAll = await getAllFromIDB();
                 const seen = new Set(); let duplicates = [];
-                querySnapshot.forEach((document) => {
-                    const data = document.data();
+                cachedAll.forEach((data) => {
                     if (data._deleted || !data.question) return;
                     const uniqueKey = `${data.subject || ''}|${data.branch || ''}|${data.subtype || ''}|${data.question || ''}`.trim().toLowerCase();
-                    if (seen.has(uniqueKey)) { duplicates.push({ id: document.id, data: data }); } else { seen.add(uniqueKey); }
+                    if (seen.has(uniqueKey)) { duplicates.push({ id: data.id, data: data }); } else { seen.add(uniqueKey); }
                 });
                 if (duplicates.length === 0) { alert("No duplicates found in the Cloud Database! Your database is clean."); } 
                 else {
@@ -1886,8 +1912,9 @@
             const list = document.getElementById('trash-list');
             list.innerHTML = '<p class="text-slate-400 text-center py-4">Loading...</p>';
             try {
-                const { collection, getDocs } = window.firestoreTools;
-                const snap = await getDocs(collection(window.db, "questions"));
+                const { collection, getDocs, query, where } = window.firestoreTools;
+                // Reads ONLY the deleted questions, not the whole bank
+                const snap = await getDocs(query(collection(window.db, "questions"), where("_deleted", "==", true)));
                 let items = [];
                 snap.forEach(d => { const x = d.data(); if (x._deleted) items.push({ ...x, id: d.id }); });
                 items.sort((a, b) => ((b._deletedAt && b._deletedAt.seconds) || 0) - ((a._deletedAt && a._deletedAt.seconds) || 0));
@@ -1932,8 +1959,8 @@
 
         async function restoreAllFromTrash() {
             try {
-                const { collection, getDocs } = window.firestoreTools;
-                const snap = await getDocs(collection(window.db, "questions"));
+                const { collection, getDocs, query, where } = window.firestoreTools;
+                const snap = await getDocs(query(collection(window.db, "questions"), where("_deleted", "==", true)));
                 const ids = [];
                 snap.forEach(d => { if (d.data()._deleted) ids.push(d.id); });
                 if (ids.length === 0) return;
@@ -1967,14 +1994,14 @@
             document.getElementById('manager-modal').classList.remove('hidden');
             document.getElementById('mgr-delete-btn').classList.toggle('hidden', !isSuperAdmin);
             const list = document.getElementById('mgr-list');
-            list.innerHTML = '<p class="text-slate-400 text-center py-6">Loading all questions from the cloud...</p>';
+            list.innerHTML = '<p class="text-slate-400 text-center py-6">Loading questions...</p>';
             try {
-                const { collection, getDocs } = window.firestoreTools;
-                const snap = await getDocs(collection(window.db, "questions"));
+                // Cheap incremental sync (only changed questions), then list from the local cache: no full re-read of the bank
+                await Promise.race([initCloudSync(), new Promise(r => setTimeout(r, 8000))]); // don't hang if offline
+                const cachedAll = await getAllFromIDB();
                 mgrAll = [];
-                snap.forEach(d => {
-                    const x = d.data();
-                    if (!x._deleted && x.question) mgrAll.push({ ...x, id: d.id });
+                cachedAll.forEach(x => {
+                    if (!x._deleted && x.question) mgrAll.push({ ...x, id: String(x.id) });
                 });
                 mgrSelected.clear();
                 mgrLimit = 100;
