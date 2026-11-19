@@ -143,8 +143,17 @@
         .theme-light #explanation-box { background-color: #ffffff !important; border-color: #e2e8f0 !important; }
 
         body.focus-mode header, body.focus-mode footer, body.focus-mode #matrix-sidebar, body.focus-mode #quiz-extra-actions { display: none !important; }
-        body.focus-mode #quiz-screen { max-width: 1000px !important; margin: 0 auto; padding-top: 2rem; }
-        body.focus-mode .quiz-container { border-width: 2px !important; border-color: #6366f1 !important; box-shadow: 0 0 40px rgba(99, 102, 241, 0.2) !important; }
+        body.focus-mode main { max-width: 100% !important; padding: 0.5rem !important; }
+        body.focus-mode #quiz-screen { max-width: 1100px !important; margin: 0 auto; padding-top: 0 !important; width: 100%; }
+        body.focus-mode .quiz-container { border-width: 2px !important; border-color: #6366f1 !important; box-shadow: 0 0 40px rgba(99, 102, 241, 0.2) !important; border-radius: 0.875rem !important; padding: 1rem 1.25rem !important; }
+        @media (max-width: 640px) {
+            /* Phones: use the whole screen, square corners, no wasted margins */
+            body.focus-mode main { padding: 0 !important; }
+            body.focus-mode #quiz-screen { max-width: 100% !important; }
+            body.focus-mode .quiz-container { border-radius: 0 !important; border-width: 0 !important; box-shadow: none !important; padding: 0.75rem !important; min-height: 100vh; min-height: 100dvh; }
+            /* Phones (normal view): tighter padding so the question gets more room */
+            .quiz-container { padding: 1rem !important; }
+        }
 
         @media print {
             body * { display: none !important; }
@@ -355,7 +364,7 @@
                             <button onclick="adjustFontSize(0)" title="Reset Font Size" class="px-2 py-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 font-bold transition">A</button>
                             <button onclick="adjustFontSize(1)" title="Increase Font Size" class="px-2 py-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 font-bold transition">A+</button>
                         </div>
-                        <button onclick="toggleFocusMode()" class="hidden md:flex text-xs items-center gap-1.5 px-3 py-1.5 rounded-lg border border-indigo-500/40 bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600 hover:text-white transition font-semibold">
+                        <button onclick="toggleFocusMode()" class="flex text-xs items-center gap-1.5 px-3 py-1.5 rounded-lg border border-indigo-500/40 bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600 hover:text-white transition font-semibold">
                             <i class="fa-solid fa-expand"></i> <span id="focus-btn-text">Focus View</span>
                         </button>
                         <button id="flag-btn" onclick="toggleFlag()" class="text-xs flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 text-slate-400 hover:text-amber-400 hover:border-amber-500/50 transition font-semibold">
@@ -933,18 +942,23 @@
                 tree[subj].branches[branch].subtypes[subtype]++;
             });
 
+            const selState = (keys) => { const n = keys.filter(k => selectedTaxonomySet.has(k)).length; return n === 0 ? 'none' : (n === keys.length ? 'all' : 'some'); };
+            const prevScroll = container.scrollTop;
             let html = '';
             Object.keys(tree).sort().forEach(subj => {
                 const subjData = tree[subj];
+                const subjKeys = [];
+                Object.keys(subjData.branches).forEach(b => Object.keys(subjData.branches[b].subtypes).forEach(st => subjKeys.push(`${subj}||${b}||${st}`)));
+                const subjState = selState(subjKeys);
                 const isSubjExpanded = expandedNodesState[subj] || false;
                 const branchKeys = Object.keys(subjData.branches).sort();
 
                 html += `
-                <div class="glass-card rounded-xl p-3 border border-slate-800/80 space-y-2 transition">
+                <div class="glass-card rounded-xl p-3 border ${subjState === 'none' ? 'border-slate-800/80' : 'border-emerald-500/60 bg-emerald-500/5'} space-y-2 transition">
                     <div class="flex items-center justify-between">
                         <label class="flex items-center gap-2.5 cursor-pointer flex-grow select-none">
-                            <input type="checkbox" onchange="toggleSubjectSelection('${subj}', this.checked)" class="w-4 h-4 rounded accent-indigo-500">
-                            <span class="text-xs font-bold text-slate-200 tracking-wide">${subj}</span>
+                            <input type="checkbox" onchange="toggleSubjectSelection('${subj}', this.checked)" ${subjState === 'all' ? 'checked' : ''} ${subjState === 'some' ? 'data-indet="1"' : ''} class="w-5 h-5 rounded accent-emerald-500">
+                            <span class="text-xs font-bold tracking-wide ${subjState === 'none' ? 'text-slate-200' : 'text-emerald-400'}">${subj}</span>
                         </label>
                         <div class="flex items-center gap-2">
                             <span class="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-slate-950 text-indigo-400 border border-indigo-500/20">${subjData.total}</span>
@@ -961,13 +975,14 @@
                                 const branchNodeKey = `${subj}||${branch}`;
                                 const isBranchExpanded = expandedNodesState[branchNodeKey] || false;
                                 const subtypeKeys = Object.keys(branchData.subtypes).sort();
+                                const branchState = selState(subtypeKeys.map(st => `${subj}||${branch}||${st}`));
 
                                 return `
                                 <div class="space-y-1">
                                     <div class="flex items-center justify-between">
                                         <label class="flex items-center gap-2 cursor-pointer select-none">
-                                            <input type="checkbox" onchange="toggleBranchSelection('${subj}', '${branch}', this.checked)" class="w-3.5 h-3.5 rounded accent-indigo-500">
-                                            <span class="text-[11px] font-semibold text-slate-300">${branch}</span>
+                                            <input type="checkbox" onchange="toggleBranchSelection('${subj}', '${branch}', this.checked)" ${branchState === 'all' ? 'checked' : ''} ${branchState === 'some' ? 'data-indet="1"' : ''} class="w-4 h-4 rounded accent-emerald-500">
+                                            <span class="text-[11px] font-semibold ${branchState === 'none' ? 'text-slate-300' : 'text-emerald-400'}">${branch}</span>
                                         </label>
                                         <div class="flex items-center gap-1.5">
                                             <span class="text-[10px] font-mono text-slate-400 bg-slate-950/60 px-1.5 py-0.2 rounded">${branchData.total}</span>
@@ -984,8 +999,8 @@
                                                 return `
                                                     <div class="flex items-center justify-between">
                                                         <label class="flex items-center gap-2 cursor-pointer select-none">
-                                                            <input type="checkbox" onchange="toggleSubtypeSelection('${key}', this.checked)" ${isChecked ? 'checked' : ''} class="w-3 h-3 rounded accent-indigo-500">
-                                                            <span class="text-[10px] text-slate-400">${sub}</span>
+                                                            <input type="checkbox" onchange="toggleSubtypeSelection('${key}', this.checked)" ${isChecked ? 'checked' : ''} class="w-4 h-4 rounded accent-emerald-500">
+                                                            <span class="text-[10px] ${isChecked ? 'text-emerald-400 font-semibold' : 'text-slate-400'}">${sub}</span>
                                                         </label>
                                                         <span class="text-[9px] font-mono text-slate-500">${branchData.subtypes[sub]}</span>
                                                     </div>
@@ -1003,6 +1018,8 @@
             });
 
             container.innerHTML = html || '<p class="text-xs text-slate-400 col-span-2 text-center py-4">No taxonomy items found.</p>';
+            container.querySelectorAll('input[data-indet="1"]').forEach(i => { i.indeterminate = true; });
+            container.scrollTop = prevScroll; // don't jump back to the top after every click
             updateAvailableCount();
         }
 
@@ -1033,7 +1050,7 @@
 
         function toggleSubtypeSelection(key, isChecked) {
             if (isChecked) selectedTaxonomySet.add(key); else selectedTaxonomySet.delete(key);
-            updateAvailableCount();
+            renderSystemsTree(); // refreshes the subject/branch boxes (green / partial) too
         }
 
         function selectAllTree(selectAll) {
@@ -1060,6 +1077,8 @@
                 if (source !== 'all' && q.source !== source) return false;
 
                 const qKey = `${q.subject || "General"}||${q.branch || "General Branch"}||${q.subtype || "General Subtype"}`;
+                // Nothing selected => nothing available (unless the user is searching, which looks across the whole bank)
+                if (selectedTaxonomySet.size === 0 && !searchQuery) return false;
                 if (selectedTaxonomySet.size > 0 && !selectedTaxonomySet.has(qKey)) return false;
 
                 if (searchQuery) {
@@ -1089,7 +1108,10 @@
             if (blockSizeVal !== 'all') {
                 effectiveCount = Math.min(parseInt(blockSizeVal), pool.length);
             }
-            document.getElementById('available-count').innerText = `${pool.length} Available (${effectiveCount} in this block)`; 
+            const hasSearch = !!(document.getElementById('search-bar')?.value || '').trim();
+            document.getElementById('available-count').innerText = (selectedTaxonomySet.size === 0 && !hasSearch)
+                ? `0 Available — pick subjects / branches below (or press Select All)`
+                : `${pool.length} Available (${effectiveCount} in this block)`; 
         }
 
         function saveSession() {
@@ -1194,7 +1216,11 @@
 
         function startQuiz() {
             let pool = getFilteredQuestions(); 
-            if (pool.length === 0) return alert("No questions match your criteria.");
+            if (pool.length === 0) {
+                const hasSearch = !!(document.getElementById('search-bar')?.value || '').trim();
+                if (selectedTaxonomySet.size === 0 && !hasSearch) return alert("Please select at least one subject or branch first (or press Select All).");
+                return alert("No questions match your criteria.");
+            }
             
             const blockSizeVal = document.getElementById('filter-block-size')?.value || 'all';
             if (blockSizeVal !== 'all') {
